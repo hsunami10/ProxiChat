@@ -9,4 +9,5 @@ pod 'ChameleonFramework'
 pod 'SwiftyJSON'
 pod 'Socket.IO-Client-Swift'
 pod 'SVProgressHUD'
+pod 'SwiftDate'
 end

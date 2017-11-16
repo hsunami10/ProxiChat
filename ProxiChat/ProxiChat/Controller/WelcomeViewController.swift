@@ -9,6 +9,7 @@
 import UIKit
 import SocketIO
 import SwiftyJSON
+import SVProgressHUD
 
 class WelcomeViewController: UIViewController {
     
@@ -27,6 +28,9 @@ class WelcomeViewController: UIViewController {
             self.signUpButton.isEnabled = false
             self.logInButton.isEnabled = false
             self.statusLabel.text = "Connection Failed."
+            
+            SVProgressHUD.showError(withStatus: "Connection Failed.")
+            // TODO: Add UIAlertController to reconnect and show failure.
         }
         // Do any additional setup after loading the view, typically from a nib.
     }
@@ -34,20 +38,6 @@ class WelcomeViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-    
-    // MARK: Sockets
-    func eventHandlers() {
-        socket.on("greetings") { [weak self] data, ack in
-            print("greetings has been received!")
-            print(data)
-            let realData: JSON = JSON(data[0])
-            print(realData["greet"])
-            
-            self?.socket.emit("received", with: [[
-                "greeting": "hello, I replied!"
-                ]])
-        }
     }
     
     // MARK: Segue prepare

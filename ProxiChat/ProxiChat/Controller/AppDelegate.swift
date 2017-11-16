@@ -19,9 +19,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Go to groups page if already logged in
         let logInStatus = UserDefaults.standard.bool(forKey: "isUserLoggedInProxiChat")
         if logInStatus {
-            let mainStoryBoard = UIStoryboard(name: "Main", bundle: nil) // Get Storyboard
-            let page = mainStoryBoard.instantiateViewController(withIdentifier: "groups") as! GroupsViewController // Get storyboard's view controller
-            page.username = UserDefaults.standard.object(forKey: "proxiChatUsername") as! String
+            let mainStoryBoard = UIStoryboard(name: "Main", bundle: nil) // Get Main Storyboard
+            let page = mainStoryBoard.instantiateViewController(withIdentifier: "groups") as! GroupsViewController // Cast main storyboard as GroupsViewController
+            page.username = UserDefaults.standard.object(forKey: "proxiChatUsername") as! String // Set saved username
             window?.rootViewController = page // Set root view controller
             window?.makeKeyAndVisible()
         }

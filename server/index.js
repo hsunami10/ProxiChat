@@ -18,13 +18,16 @@ pool.on('error', (err, client) => {
 })
 
 // ========================================================================== //
-
-http.listen(3000, function() {
-  console.log('Server listening on port 3000')
+var port = 3000
+http.listen(port, function() {
+  console.log('Server listening on port ' + port)
 })
 
-var SOCKETID_TO_USERNAME = {}
-var USERNAME_TO_SOCKET = {}
+// NOTE: ONLINE ONLY
+var SOCKETID_TO_USERNAME = {} // Links actual socket.id to username
+var GROUP_TO_USERNAMES = {} // Holds all the usernames that are in a group_id
+var USERNAME_TO_GROUPS = {} // Holds all the group_ids the user is in
+var USERNAME_TO_SOCKET = {} // Links username to corresponding socket
 
 // NOTE: Declare namespaces
 var proxichat_nsp = io.of('/proxichat_namespace')
@@ -35,12 +38,18 @@ var proxichat_nsp = io.of('/proxichat_namespace')
 proxichat_nsp.on('connection', socket => {
   console.log('connected to proxichat namespace - online: ' + socket.id);
 
+  // This sets the sockets so users are able to send to these sockets
   socket.on('go_online', username => {
     SOCKETID_TO_USERNAME[socket.id] = username
     USERNAME_TO_SOCKET[username] = socket
+
+    console.log(SOCKETID_TO_USERNAME);
+    console.log(USERNAME_TO_SOCKET);
   })
 
   socket.on('disconnect', () => {
+    // TODO: User USERNAME_TO_GROUPS to find all group_ids,
+    // then delete that username from GROUP_TO_USERNAMES
     console.log('disconnected from proxichat_namespace: ' + socket.id);
     delete USERNAME_TO_SOCKET[SOCKETID_TO_USERNAME[socket.id]]
     delete SOCKETID_TO_USERNAME[socket.id]
@@ -49,8 +58,6 @@ proxichat_nsp.on('connection', socket => {
 
 // NOTE: General Connection - Not "online" - welcome, log in, sign up
 io.on('connection', socket => {
-  console.log('user connected with socket id: ' + socket.id)
-
   // Sign up
   socket.on('sign_up', (username, password) => {
     pool.connect()
@@ -95,10 +102,5 @@ io.on('connection', socket => {
       client.release()
       console.log(error.stack);
     })
-  })
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected with socket id: ' + socket.id)
-    delete SOCKETID_TO_USERNAME[socket.id]
   })
 })
