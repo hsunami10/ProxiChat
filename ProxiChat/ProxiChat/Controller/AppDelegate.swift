@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SocketIO
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,12 +17,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        // TODO: Remove these later
+//        UserDefaults.standard.removeObject(forKey: "isUserLoggedInProxiChat")
+//        UserDefaults.standard.removeObject(forKey: "proxiChatUsername")
+        
         // Go to groups page if already logged in
-        let logInStatus = UserDefaults.standard.bool(forKey: "isUserLoggedInProxiChat")
+        let logInStatus = UserDefaults.standard.bool(forKey: "isUserLoggedInProxiChat") // Can be nil
         if logInStatus {
             let mainStoryBoard = UIStoryboard(name: "Main", bundle: nil) // Get Main Storyboard
             let page = mainStoryBoard.instantiateViewController(withIdentifier: "groups") as! GroupsViewController // Cast main storyboard as GroupsViewController
-            page.username = UserDefaults.standard.object(forKey: "proxiChatUsername") as! String // Set saved username
+            
+            if let username = UserDefaults.standard.object(forKey: "proxiChatUsername") {
+                page.username = username as! String // Set saved username
+                page.socket = SocketIOClient(socketURL: URL(string: "http://localhost:3000")!)
+            }
             window?.rootViewController = page // Set root view controller
             window?.makeKeyAndVisible()
         }

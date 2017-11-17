@@ -18,6 +18,8 @@
 		E4CB11851FBC10A7003B627E /* GroupsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11841FBC10A7003B627E /* GroupsViewController.swift */; };
 		E4CB118D1FBD12B9003B627E /* GroupCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB118B1FBD12B9003B627E /* GroupCell.swift */; };
 		E4CB118E1FBD12B9003B627E /* GroupCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4CB118C1FBD12B9003B627E /* GroupCell.xib */; };
+		E4CB11921FBEA58B003B627E /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11911FBEA58B003B627E /* Group.swift */; };
+		E4CB11941FBEAE7F003B627E /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11931FBEAE7F003B627E /* Message.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +38,8 @@
 		E4CB11841FBC10A7003B627E /* GroupsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsViewController.swift; sourceTree = "<group>"; };
 		E4CB118B1FBD12B9003B627E /* GroupCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupCell.swift; sourceTree = "<group>"; };
 		E4CB118C1FBD12B9003B627E /* GroupCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GroupCell.xib; sourceTree = "<group>"; };
+		E4CB11911FBEA58B003B627E /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
+		E4CB11931FBEAE7F003B627E /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +104,8 @@
 		E4B3D7581FBAADE700F539EA /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				E4CB11911FBEA58B003B627E /* Group.swift */,
+				E4CB11931FBEAE7F003B627E /* Message.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -283,10 +289,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
 				E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */,
 				E4B3D75D1FBB849D00F539EA /* WelcomeViewController.swift in Sources */,
 				E4B3D75F1FBB857900F539EA /* LogInViewController.swift in Sources */,
 				E4CB118D1FBD12B9003B627E /* GroupCell.swift in Sources */,
+				E4CB11941FBEAE7F003B627E /* Message.swift in Sources */,
 				E4B3D7611FBB85AF00F539EA /* SignUpViewController.swift in Sources */,
 				E4CB11851FBC10A7003B627E /* GroupsViewController.swift in Sources */,
 			);
@@ -429,6 +437,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XX93R7QZLE;
 				INFOPLIST_FILE = "ProxiChat/Supporting Files/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.michaelhsu.ProxiChat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -445,6 +454,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XX93R7QZLE;
 				INFOPLIST_FILE = "ProxiChat/Supporting Files/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.michaelhsu.ProxiChat;
 				PRODUCT_NAME = "$(TARGET_NAME)";

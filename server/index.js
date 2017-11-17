@@ -2,14 +2,10 @@ var express = require('express')
 var app = express()
 var http = require('http').Server(app)
 var io = require('socket.io')(http)
-const { Pool } = require('pg')
+const { Pool, Client } = require('pg')
 
 const pool = new Pool({
-  host: 'proxichat.csgmdrzqsp2i.us-east-2.rds.amazonaws.com',
-  port: 5432,
-  database: 'proxichat',
-  user: 'hsunami10',
-  password: 'ewoks4life'
+  connectionString: 'postgres://hsunami10:ewoks4life@proxichat.csgmdrzqsp2i.us-east-2.rds.amazonaws.com:5432/proxichat'
 })
 
 pool.on('error', (err, client) => {
@@ -37,7 +33,7 @@ var proxichat_nsp = io.of('/proxichat_namespace')
 // NOTE: ProxiChat app connection - "online"
 proxichat_nsp.on('connection', socket => {
   console.log('connected to proxichat namespace - online: ' + socket.id);
-
+  
   // This sets the sockets so users are able to send to these sockets
   socket.on('go_online', username => {
     SOCKETID_TO_USERNAME[socket.id] = username
@@ -45,6 +41,28 @@ proxichat_nsp.on('connection', socket => {
 
     console.log(SOCKETID_TO_USERNAME);
     console.log(USERNAME_TO_SOCKET);
+  })
+
+  socket.on('update_location_and_get_groups', data => {
+    let username = data.username
+    let coordinates = data.latitude + ' ' + data.longitude
+    let radius = data.radius
+
+    pool.query(`SELECT * FROM update_location_proxichat(
+      '${username}',
+      '${coordinates}',
+      ${radius})`,
+      (err, res) => {
+        if (err) {
+          // TODO: Handle so it doesn't crash
+          socket.emit('update_location_and_get_groups_response', { success: false })
+          console.log(err);
+        } else {
+          console.log('success');
+          console.log(res.rows);
+          socket.emit('update_location_and_get_groups_response', { success: true, data: res.rows })
+        }
+      })
   })
 
   socket.on('disconnect', () => {
@@ -58,20 +76,21 @@ proxichat_nsp.on('connection', socket => {
 
 // NOTE: General Connection - Not "online" - welcome, log in, sign up
 io.on('connection', socket => {
+
   // Sign up
   socket.on('sign_up', (username, password) => {
+    // First connect to check whether the username exists
     pool.connect()
       .then(client => {
         return client.query(`SELECT * FROM users WHERE username = '${username}'`)
-          .then(user => {
-            if(user.rows.length == 0) {
+          .then(users => {
+            if (users.rows.length == 0) {
               client.query(`INSERT INTO users (username, password) VALUES ('${username}', '${password}')`)
-              client.release()
               socket.emit('sign_up_response', { success: true, error_msg: '' })
             } else {
-              client.release()
-              socket.emit('sign_up_response', { success: false, error_msg: 'Username has been taken.' })
+              socket.emit('sign_up_response', { success: false, error_msg: 'Username already taken.' })
             }
+            client.release()
           })
       })
       .catch(error => {
@@ -82,25 +101,22 @@ io.on('connection', socket => {
 
   // Sign in
   socket.on('sign_in', (username, password) => {
-    pool.connect()
-    .then(client => {
-      return client.query(`SELECT * FROM users WHERE username = '${username}'`)
-        .then(user => {
-          if(user.rows.length == 0) {
-            client.release()
-            socket.emit('sign_in_response', { success: false, error_msg: 'Username does not exist.' })
+    pool.query(`SELECT password FROM users WHERE username = '${username}'`)
+      .then(user => {
+        if(user.rows.length == 0) {
+          socket.emit('sign_in_response', { success: false, error_msg: 'Username does not exist.' })
+        } else {
+          if(user.rows[0].password == password) {
+            socket.emit('sign_in_response', { success: true, error_msg: '' })
           } else {
-            if(user.rows[0].password == password) {
-              socket.emit('sign_in_response', { success: true, error_msg: '' })
-            } else {
-              socket.emit('sign_in_response', { success: false, error_msg: 'Incorrect password.' })
-            }
+            socket.emit('sign_in_response', { success: false, error_msg: 'Incorrect password.' })
           }
-        })
-    })
-    .catch(error => {
-      client.release()
-      console.log(error.stack);
-    })
+        }
+      })
+      .catch(e => setImmediate(() => { throw e }))
+  })
+
+  socket.on('disconnect', () => {
+    console.log('disconnected from main namespace /');
   })
 })
