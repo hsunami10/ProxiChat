@@ -25,6 +25,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var username: String = ""
     var refreshControl: UIRefreshControl!
     var groupArray: [Group] = [Group]()
+    var selectedGroup = Group()
 
     @IBOutlet var groupsTableView: UITableView!
     
@@ -65,11 +66,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         locationManager.startUpdatingLocation()
     }
     
-    // MARK: Socket event handlers
+    // MARK: SocketIO Event Handlers
     func eventHandlers() {
         // Update array of GroupCell objects to display on uitableview
         socket.on("update_location_and_get_groups_response", callback: { (data, ack) in
-            
             let success = JSON(data[0])["success"].boolValue
             let groups = JSON(data[0])["data"].arrayValue // Array of groups
             self.groupArray = [Group]()
@@ -99,11 +99,21 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.stopEverything()
             }
         })
-    }
-    
-    func stopEverything() {
-        refreshControl.endRefreshing()
-        locationManager.stopUpdatingLocation()
+        // Join private group response
+        socket.on("join_private_group_response") { (data, ack) in
+            let success = JSON(data[0])["success"].boolValue
+            let error_msg = JSON(data[0])["error_msg"].stringValue
+            
+            if success {
+                let row = JSON(data[0])["row_index"].intValue
+                self.joinGroup(row)
+            } else {
+                // TODO: Maybe have a "try again" option
+                let alert = UIAlertController(title: "Oops!", message: error_msg, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -113,9 +123,28 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // MARK: UITableView Methods
     
-    /// Refresh groups in proximity
-    @objc func refreshGroups(_ sender: AnyObject) {
-        locationManager.startUpdatingLocation()
+    // When a group is selected
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Check public or private
+        if groupArray[indexPath.row].is_public {
+            joinGroup(indexPath.row)
+        } else {
+            let alert = UIAlertController(title: groupArray[indexPath.row].title + " is private!", message: "Please enter a password:", preferredStyle: .alert)
+            alert.addTextField(configurationHandler: { (textField) in
+                textField.placeholder = "Enter a password"
+                textField.isSecureTextEntry = true
+            })
+            alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
+                self.socket.emit("join_private_group", [
+                    "id": self.groupArray[indexPath.row].id,
+                    "passwordEntered": alert.textFields?.first?.text!,
+                    "rowIndex": String(indexPath.row)
+                    ])
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+        groupsTableView.deselectRow(at: indexPath, animated: true)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -138,26 +167,50 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     // MARK: CLLocationManager Methods
-    func sendUpdateLocation(_ latitude: CLLocationDegrees, _ longitude: CLLocationDegrees, _ username: String, _ radius: Int) {
-        socket.emit("update_location_and_get_groups", [
-            "latitude": latitude,
-            "longitude": longitude,
-            "username": username,
-            "radius": radius
-            ])
-    }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             // If the current location (timestamps are the same)
             if String(describing: Date()) == String(describing: location.timestamp) {
-                sendUpdateLocation(location.coordinate.latitude, location.coordinate.longitude, username, 800000)
+                socket.emit("update_location_and_get_groups", [
+                    "latitude": location.coordinate.latitude,
+                    "longitude": location.coordinate.longitude,
+                    "username": username,
+                    "radius": 800000
+                    ])
             }
         }
     }
+    
     // TODO: Change this later
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         SVProgressHUD.showError(withStatus: "Location unavailable. Check your internet connection.")
+    }
+    
+    // MARK: Navigation Methods
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "joinGroup" {
+            let destinationVC = segue.destination as! MessageViewController
+            destinationVC.groupInformation = selectedGroup
+            destinationVC.socket = socket
+        }
+    }
+    
+    // MARK: Miscellaneous Methods
+    func stopEverything() {
+        refreshControl.endRefreshing()
+        locationManager.stopUpdatingLocation()
+    }
+    
+    /// Refresh groups in proximity
+    @objc func refreshGroups(_ sender: AnyObject) {
+        locationManager.startUpdatingLocation()
+    }
+    
+    /// Selects group, and performs segue to MessageViewController
+    func joinGroup(_ row: Int) {
+        selectedGroup = groupArray[row]
+        performSegue(withIdentifier: "joinGroup", sender: self)
     }
 }

@@ -42,6 +42,7 @@ proxichat_nsp.on('connection', socket => {
     console.log(SOCKETID_TO_USERNAME);
   })
 
+  // NOTE: Update location and groups
   socket.on('update_location_and_get_groups', data => {
     let username = data.username
     let coordinates = data.latitude + ' ' + data.longitude
@@ -60,6 +61,29 @@ proxichat_nsp.on('connection', socket => {
           socket.emit('update_location_and_get_groups_response', { success: true, data: res.rows })
         }
       })
+  })
+
+  // NOTE: Request to join a private group
+  socket.on('join_private_group', data => {
+    let group_id = data.id
+    let enteredPassword = data.passwordEntered
+    let rowIndex = data.rowIndex
+
+    pool.query(`SELECT title FROM groups WHERE id = '${group_id}' AND password = '${enteredPassword}'`,
+      (err, res) => {
+        if (err) {
+          // TODO: Handle so it doesn't crash
+          socket.emit('join_private_group_response', { success: false, error_msg: 'There was a problem joining. Please try again.' })
+          console.log(err);
+        } else {
+          // If there is no group with that password, then entered password is incorrect
+          if (res.rows.length == 0) {
+            socket.emit('join_private_group_response', { success: false, error_msg: 'The password you entered was incorrect.' })
+          } else {
+            socket.emit('join_private_group_response', { success: true, error_msg: '', row_index: rowIndex })
+          }
+        }
+    })
   })
 
   socket.on('disconnect', () => {

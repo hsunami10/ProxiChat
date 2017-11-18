@@ -20,6 +20,7 @@
 		E4CB118E1FBD12B9003B627E /* GroupCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4CB118C1FBD12B9003B627E /* GroupCell.xib */; };
 		E4CB11921FBEA58B003B627E /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11911FBEA58B003B627E /* Group.swift */; };
 		E4CB11941FBEAE7F003B627E /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11931FBEAE7F003B627E /* Message.swift */; };
+		E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11951FC0D71D003B627E /* MessageViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		E4CB118C1FBD12B9003B627E /* GroupCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GroupCell.xib; sourceTree = "<group>"; };
 		E4CB11911FBEA58B003B627E /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		E4CB11931FBEAE7F003B627E /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		E4CB11951FC0D71D003B627E /* MessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +130,7 @@
 				E4B3D75E1FBB857900F539EA /* LogInViewController.swift */,
 				E4B3D7601FBB85AF00F539EA /* SignUpViewController.swift */,
 				E4CB11841FBC10A7003B627E /* GroupsViewController.swift */,
+				E4CB11951FC0D71D003B627E /* MessageViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -290,6 +293,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
+				E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */,
 				E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */,
 				E4B3D75D1FBB849D00F539EA /* WelcomeViewController.swift in Sources */,
 				E4B3D75F1FBB857900F539EA /* LogInViewController.swift in Sources */,
