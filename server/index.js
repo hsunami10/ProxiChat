@@ -33,14 +33,13 @@ var proxichat_nsp = io.of('/proxichat_namespace')
 // NOTE: ProxiChat app connection - "online"
 proxichat_nsp.on('connection', socket => {
   console.log('connected to proxichat namespace - online: ' + socket.id);
-  
+
   // This sets the sockets so users are able to send to these sockets
   socket.on('go_online', username => {
     SOCKETID_TO_USERNAME[socket.id] = username
     USERNAME_TO_SOCKET[username] = socket
 
     console.log(SOCKETID_TO_USERNAME);
-    console.log(USERNAME_TO_SOCKET);
   })
 
   socket.on('update_location_and_get_groups', data => {
@@ -58,8 +57,6 @@ proxichat_nsp.on('connection', socket => {
           socket.emit('update_location_and_get_groups_response', { success: false })
           console.log(err);
         } else {
-          console.log('success');
-          console.log(res.rows);
           socket.emit('update_location_and_get_groups_response', { success: true, data: res.rows })
         }
       })

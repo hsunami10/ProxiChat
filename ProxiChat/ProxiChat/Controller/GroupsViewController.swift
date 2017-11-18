@@ -14,13 +14,13 @@ import CoreLocation
 
 /*
  TODO / BUGS
- - doesn't refresh on start? only on sign up, log in, and pull to refresh
+ - have an option for the user to choose when to update
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
     /// Instance variables
-    let locationManager = CLLocationManager()
+    var locationManager = CLLocationManager()
     var socket: SocketIOClient!
     var username: String = ""
     var refreshControl: UIRefreshControl!
@@ -61,8 +61,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // Core location initialization
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.distanceFilter = 0
-        locationManager.requestWhenInUseAuthorization() // Manual update, not tracking
+        locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
     }
     
@@ -70,6 +69,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func eventHandlers() {
         // Update array of GroupCell objects to display on uitableview
         socket.on("update_location_and_get_groups_response", callback: { (data, ack) in
+            
             let success = JSON(data[0])["success"].boolValue
             let groups = JSON(data[0])["data"].arrayValue // Array of groups
             self.groupArray = [Group]()
@@ -79,6 +79,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 for group in groups {
                     let groupObj = Group()
                     
+                    // Group Info
                     groupObj.coordinates = group["coordinates"].stringValue
                     groupObj.creator = group["created_by"].stringValue
                     groupObj.dateCreated = group["date_created"].stringValue
@@ -91,13 +92,18 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     
                     self.groupArray.append(groupObj)
                 }
-                self.groupsTableView.reloadData()
-                self.refreshControl.endRefreshing()
+                self.groupsTableView.reloadData() // cellforRowAt
+                self.stopEverything()
             } else {
                 SVProgressHUD.showError(withStatus: "There was a problem getting groups. Please try again.")
-                self.refreshControl.endRefreshing()
+                self.stopEverything()
             }
         })
+    }
+    
+    func stopEverything() {
+        refreshControl.endRefreshing()
+        locationManager.stopUpdatingLocation()
     }
     
     override func didReceiveMemoryWarning() {
@@ -112,7 +118,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         locationManager.startUpdatingLocation()
     }
     
-    // TODO: Return the number of groups in proximity here
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return groupArray.count
     }
@@ -133,15 +138,21 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     // MARK: CLLocationManager Methods
+    func sendUpdateLocation(_ latitude: CLLocationDegrees, _ longitude: CLLocationDegrees, _ username: String, _ radius: Int) {
+        socket.emit("update_location_and_get_groups", [
+            "latitude": latitude,
+            "longitude": longitude,
+            "username": username,
+            "radius": radius
+            ])
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
-            manager.stopUpdatingLocation()
-            socket.emit("update_location_and_get_groups", [
-                "latitude": location.coordinate.latitude,
-                "longitude": location.coordinate.longitude,
-                "username": username,
-                "radius": 800000
-                ])
+            // If the current location (timestamps are the same)
+            if String(describing: Date()) == String(describing: location.timestamp) {
+                sendUpdateLocation(location.coordinate.latitude, location.coordinate.longitude, username, 800000)
+            }
         }
     }
     // TODO: Change this later
