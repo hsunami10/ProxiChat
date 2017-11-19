@@ -12,4 +12,7 @@ class Message {
     var groupID = ""
     var content = ""
     var dateSent = ""
+    var picture = ""
+    var isAlert = false
+    var joined: Bool?
 }

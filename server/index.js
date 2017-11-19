@@ -21,11 +21,11 @@ http.listen(port, function() {
 
 // NOTE: ONLINE ONLY
 var SOCKETID_TO_USERNAME = {} // Links actual socket.id to username
-var GROUP_TO_USERNAMES = {} // Holds all the usernames that are in a group_id
-var USERNAME_TO_GROUPS = {} // Holds all the group_ids the user is in
+var GROUP_TO_USERNAMES = {} // Holds all online members in group
+var USERNAME_TO_GROUPS = {} // NOTE: handle "user has left the group" message - one group ID per username
 var USERNAME_TO_SOCKET = {} // Links username to corresponding socket
 
-// NOTE: Declare namespaces
+// // NOTE: Declare namespaces
 var proxichat_nsp = io.of('/proxichat_namespace')
 
 // ========================================================================== //
@@ -34,12 +34,12 @@ var proxichat_nsp = io.of('/proxichat_namespace')
 proxichat_nsp.on('connection', socket => {
   console.log('connected to proxichat namespace - online: ' + socket.id);
 
+  socket.emit('join_success')
+
   // This sets the sockets so users are able to send to these sockets
   socket.on('go_online', username => {
     SOCKETID_TO_USERNAME[socket.id] = username
     USERNAME_TO_SOCKET[username] = socket
-
-    console.log(SOCKETID_TO_USERNAME);
   })
 
   // NOTE: Update location and groups
@@ -86,9 +86,63 @@ proxichat_nsp.on('connection', socket => {
     })
   })
 
+  // NOTE: Joining and leaving a room (group chat)
+  socket.on('join_room', data => {
+    var group_id = data.group_id
+    var username = data.username
+
+    // Add to object to handle leaving the room while terminating app
+    if (USERNAME_TO_GROUPS[username]) {
+      USERNAME_TO_GROUPS[username][group_id] = true
+    } else {
+      USERNAME_TO_GROUPS[username] = {}
+      USERNAME_TO_GROUPS[username][group_id] = true
+    }
+
+    // "Join" group - add username => socket to group object
+    if (GROUP_TO_USERNAMES[group_id]) {
+      GROUP_TO_USERNAMES[group_id][username] = USERNAME_TO_SOCKET[username]
+    } else {
+      GROUP_TO_USERNAMES[group_id] = {}
+      GROUP_TO_USERNAMES[group_id][username] = USERNAME_TO_SOCKET[username]
+    }
+
+    // TODO: Add events to show if someone left
+  })
+
+  // NOTE: Only triggered when going back to groups page and not starred
+  socket.on('leave_room', data => {
+    var group_id = data.group_id
+    var username = data.username
+
+    delete USERNAME_TO_GROUPS[username][group_id]
+    delete GROUP_TO_USERNAMES[group_id][username]
+
+    // TODO: Add events to show if someone left
+  })
+
+  // NOTE: Getting messages
+  // TODO: Paginate
+  socket.on('get_messages', group_id => {
+    pool.query(`SELECT messages.id, messages.author, messages.group_id, messages.content, messages.date_sent, messages.is_alert, users.picture FROM messages INNER JOIN users ON messages.author = users.username WHERE group_id = '${group_id}'`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        socket.emit('get_messages_response', { success: false, error_msg: 'There was a problem getting messages. Please try again.' })
+      } else {
+        socket.emit('get_messages_response', { success: true, error_msg: '', messages: res.rows })
+      }
+    })
+  })
+
+  // NOTE: Sending messages
+  socket.on('send_message', data => {
+    console.log("a message was sent");
+  })
+
+
   socket.on('disconnect', () => {
-    // TODO: User USERNAME_TO_GROUPS to find all group_ids,
-    // then delete that username from GROUP_TO_USERNAMES
+    // TODO: user USERNAME_TO_GROUPS to send "user has left the group" to room if not starred
+    // NOTE: Check if is starred in database, if not, then use socketID to get username to get group_id (if exists) to get room
     console.log('disconnected from proxichat_namespace: ' + socket.id);
     delete USERNAME_TO_SOCKET[SOCKETID_TO_USERNAME[socket.id]]
     delete SOCKETID_TO_USERNAME[socket.id]
@@ -97,6 +151,8 @@ proxichat_nsp.on('connection', socket => {
 
 // NOTE: General Connection - Not "online" - welcome, log in, sign up
 io.on('connection', socket => {
+
+
 
   // Sign up
   socket.on('sign_up', (username, password) => {

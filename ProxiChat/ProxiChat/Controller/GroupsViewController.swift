@@ -14,7 +14,8 @@ import CoreLocation
 
 /*
  TODO / BUGS
- - have an option for the user to choose when to update
+ - have an option for the user to choose when to update (maybe?)
+ - only store in database when starred and delete when unstarred
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -40,7 +41,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             // TODO: Add UIAlertController to reconnect and show failure.
         })
         socket.joinNamespace("/proxichat_namespace")
-        socket.emit("go_online", username)
+//        socket.emit("go_online", username)
         
         // UITableView initialization
         groupsTableView.delegate = self
@@ -79,7 +80,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 for group in groups {
                     let groupObj = Group()
                     
-                    // Group Info
                     groupObj.coordinates = group["coordinates"].stringValue
                     groupObj.creator = group["created_by"].stringValue
                     groupObj.dateCreated = group["date_created"].stringValue
@@ -113,6 +113,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
                 self.present(alert, animated: true, completion: nil)
             }
+        }
+        socket.on("join_success") { (data, ack) in
+            self.socket.emit("go_online", self.username)
         }
     }
     
@@ -194,6 +197,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
             destinationVC.socket = socket
+            destinationVC.username = username
         }
     }
     

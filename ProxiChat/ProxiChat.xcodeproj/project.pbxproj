@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		62B2CB57F5955BEB62EEEF6B /* Pods_ProxiChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */; };
+		E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DA91FC1387B0027C756 /* MessageCell.swift */; };
+		E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4486DAA1FC1387B0027C756 /* MessageCell.xib */; };
+		E4486DAF1FC1388D0027C756 /* AlertMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */; };
+		E4486DB01FC1388D0027C756 /* AlertMessageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4486DAE1FC1388D0027C756 /* AlertMessageCell.xib */; };
 		E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */; };
 		E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4B3D74A1FBA9D2000F539EA /* Main.storyboard */; };
 		E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E4B3D74D1FBA9D2000F539EA /* Assets.xcassets */; };
@@ -27,6 +31,10 @@
 		2CC0C6E83D7922C71F0368E2 /* Pods-ProxiChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProxiChat.release.xcconfig"; path = "Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat.release.xcconfig"; sourceTree = "<group>"; };
 		5F8E292D05CB9C559164906A /* Pods-ProxiChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProxiChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat.debug.xcconfig"; sourceTree = "<group>"; };
 		ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProxiChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4486DA91FC1387B0027C756 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
+		E4486DAA1FC1387B0027C756 /* MessageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MessageCell.xib; sourceTree = "<group>"; };
+		E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageCell.swift; sourceTree = "<group>"; };
+		E4486DAE1FC1388D0027C756 /* AlertMessageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AlertMessageCell.xib; sourceTree = "<group>"; };
 		E4B3D7431FBA9D2000F539EA /* ProxiChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProxiChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E4B3D74B1FBA9D2000F539EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -73,6 +81,17 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		E4486DA81FC1385F0027C756 /* Custom Message Cells */ = {
+			isa = PBXGroup;
+			children = (
+				E4486DA91FC1387B0027C756 /* MessageCell.swift */,
+				E4486DAA1FC1387B0027C756 /* MessageCell.xib */,
+				E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */,
+				E4486DAE1FC1388D0027C756 /* AlertMessageCell.xib */,
+			);
+			path = "Custom Message Cells";
+			sourceTree = "<group>";
+		};
 		E4B3D73A1FBA9D1F00F539EA = {
 			isa = PBXGroup;
 			children = (
@@ -115,7 +134,8 @@
 		E4B3D7591FBAADF000F539EA /* View */ = {
 			isa = PBXGroup;
 			children = (
-				E4CB11861FBD1207003B627E /* Custom Cell */,
+				E4486DA81FC1385F0027C756 /* Custom Message Cells */,
+				E4CB11861FBD1207003B627E /* Custom Group Cell */,
 				E4B3D74A1FBA9D2000F539EA /* Main.storyboard */,
 				E4B3D74F1FBA9D2000F539EA /* LaunchScreen.storyboard */,
 			);
@@ -143,13 +163,13 @@
 			path = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		E4CB11861FBD1207003B627E /* Custom Cell */ = {
+		E4CB11861FBD1207003B627E /* Custom Group Cell */ = {
 			isa = PBXGroup;
 			children = (
 				E4CB118B1FBD12B9003B627E /* GroupCell.swift */,
 				E4CB118C1FBD12B9003B627E /* GroupCell.xib */,
 			);
-			path = "Custom Cell";
+			path = "Custom Group Cell";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -214,7 +234,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */,
 				E4B3D7511FBA9D2000F539EA /* LaunchScreen.storyboard in Resources */,
+				E4486DB01FC1388D0027C756 /* AlertMessageCell.xib in Resources */,
 				E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */,
 				E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */,
 				E4CB118E1FBD12B9003B627E /* GroupCell.xib in Resources */,
@@ -293,6 +315,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
+				E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */,
 				E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */,
 				E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */,
 				E4B3D75D1FBB849D00F539EA /* WelcomeViewController.swift in Sources */,
@@ -301,6 +324,7 @@
 				E4CB11941FBEAE7F003B627E /* Message.swift in Sources */,
 				E4B3D7611FBB85AF00F539EA /* SignUpViewController.swift in Sources */,
 				E4CB11851FBC10A7003B627E /* GroupsViewController.swift in Sources */,
+				E4486DAF1FC1388D0027C756 /* AlertMessageCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
