@@ -158,6 +158,18 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     messageObj.isAlert = message["is_alert"].boolValue
                     messageObj.picture = message["picture"].stringValue
                     
+//                    let dateFormatter = DateFormatter()
+//                    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+//                    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+//                    let date = dateFormatter.date(from: messageObj.dateSent)
+//                    print(date)
+//
+//                    dateFormatter.dateFormat = "EEE, MMM d, yyyy - h:mm a"
+//                    dateFormatter.timeZone = NSTimeZone.local
+//                    let timeStamp = dateFormatter.string(from: date!)
+//                    print(timeStamp)
+                    
+                    
                     self.messageArray.append(messageObj)
                 }
                 self.configureTableView()
@@ -214,16 +226,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTableView.deselectRow(at: indexPath, animated: true)
     }
     
-    /// Change the height based on content. If estimated height is wrong, then change height based on constraints
-    func configureTableView() {
-        messageTableView.rowHeight = UITableViewAutomaticDimension
-        messageTableView.estimatedRowHeight = 120.0
-    }
-    
-    @objc func tableViewTapped() {
-        messageTableView.endEditing(true)
-    }
-    
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group_id: String) {
         messageArray = [Message]()
@@ -272,6 +274,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
+    
+    /// Edit UIViewController transition left -> right
     func slideRightTransition() {
         let transition = CATransition()
         transition.duration = 0.5
@@ -279,5 +283,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromLeft
         self.view.window?.layer.add(transition, forKey: nil)
+    }
+    /// Change the height based on content. If estimated height is wrong, then change height based on constraints
+    func configureTableView() {
+        messageTableView.rowHeight = UITableViewAutomaticDimension
+        messageTableView.estimatedRowHeight = 120.0
+    }
+    @objc func tableViewTapped() {
+        messageTableView.endEditing(true)
     }
 }

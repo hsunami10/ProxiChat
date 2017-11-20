@@ -92,8 +92,6 @@ proxichat_nsp.on('connection', socket => {
     var username = data.username
     socket.join('room-' + group_id)
 
-    console.log(socket.id + ' joined room: ' + 'room-' + group_id);
-
     // Add to object to handle leaving the room while terminating app or logging out
     if (USERNAME_TO_GROUPS[username]) {
       USERNAME_TO_GROUPS[username][group_id] = group_id
@@ -110,8 +108,6 @@ proxichat_nsp.on('connection', socket => {
     var group_id = data.group_id
     var username = data.username
     socket.leave('room-' + group_id)
-
-    console.log(socket.id + ' left room: ' + 'room-' + group_id);
 
     delete USERNAME_TO_GROUPS[username][group_id]
     socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content: username + ' has left the group.' })

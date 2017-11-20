@@ -238,11 +238,11 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else {
             delegate?.joinGroup(selectedGroup.id)
             slideLeftTransition()
-            UIView.setAnimationsEnabled(false)
-            self.dismiss(animated: true, completion: nil)
+            self.dismiss(animated: false, completion: nil)
         }
     }
     
+    /// Edit UIViewController transition right -> left
     func slideLeftTransition() {
         let transition = CATransition()
         transition.duration = 0.5
