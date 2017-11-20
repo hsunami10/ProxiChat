@@ -266,7 +266,7 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="Back"/>
                                         <connections>
-                                            <action selector="goBackToGroups:" destination="bNj-gu-XBO" eventType="touchUpInside" id="4Qv-sZ-Jb3"/>
+                                            <action selector="goBack:" destination="bNj-gu-XBO" eventType="touchUpInside" id="OeS-1K-QwM"/>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="poG-Ov-25h">
@@ -329,6 +329,7 @@
                         <outlet property="messageTextField" destination="5AP-Aa-3nU" id="tCG-9R-fuD"/>
                         <outlet property="sendButton" destination="Ku6-Zw-MCO" id="9bj-M7-CRG"/>
                         <outlet property="typingViewHeight" destination="TtE-J4-tAh" id="rzs-Se-ql7"/>
+                        <segue destination="G5J-Lj-dvA" kind="show" identifier="goBackToGroups" id="OD0-pG-fXq"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fkA-EB-BVw" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -418,6 +419,6 @@
         <image name="groupInfo" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="zyO-Ug-kwz"/>
+        <segue reference="OD0-pG-fXq"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -14,5 +14,4 @@ class Message {
     var dateSent = ""
     var picture = ""
     var isAlert = false
-    var joined: Bool?
 }

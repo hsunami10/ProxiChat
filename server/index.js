@@ -77,7 +77,7 @@ proxichat_nsp.on('connection', socket => {
           console.log(err);
         } else {
           // If there is no group with that password, then entered password is incorrect
-          if (res.rows.length == 0) {
+          if (res.rows.length === 0) {
             socket.emit('join_private_group_response', { success: false, error_msg: 'The password you entered was incorrect.' })
           } else {
             socket.emit('join_private_group_response', { success: true, error_msg: '', row_index: rowIndex })
@@ -90,53 +90,52 @@ proxichat_nsp.on('connection', socket => {
   socket.on('join_room', data => {
     var group_id = data.group_id
     var username = data.username
+    socket.join('room-' + group_id)
 
-    // Add to object to handle leaving the room while terminating app
+    console.log(socket.id + ' joined room: ' + 'room-' + group_id);
+
+    // Add to object to handle leaving the room while terminating app or logging out
     if (USERNAME_TO_GROUPS[username]) {
-      USERNAME_TO_GROUPS[username][group_id] = true
+      USERNAME_TO_GROUPS[username][group_id] = group_id
     } else {
       USERNAME_TO_GROUPS[username] = {}
-      USERNAME_TO_GROUPS[username][group_id] = true
+      USERNAME_TO_GROUPS[username][group_id] = group_id
     }
 
-    // "Join" group - add username => socket to group object
-    if (GROUP_TO_USERNAMES[group_id]) {
-      GROUP_TO_USERNAMES[group_id][username] = USERNAME_TO_SOCKET[username]
-    } else {
-      GROUP_TO_USERNAMES[group_id] = {}
-      GROUP_TO_USERNAMES[group_id][username] = USERNAME_TO_SOCKET[username]
-    }
-
-    // TODO: Add events to show if someone left
+    proxichat_nsp.in('room-' + group_id).emit('receive_message', { is_alert: true, content: username + ' has joined the group.' })
   })
 
   // NOTE: Only triggered when going back to groups page and not starred
   socket.on('leave_room', data => {
     var group_id = data.group_id
     var username = data.username
+    socket.leave('room-' + group_id)
+
+    console.log(socket.id + ' left room: ' + 'room-' + group_id);
 
     delete USERNAME_TO_GROUPS[username][group_id]
-    delete GROUP_TO_USERNAMES[group_id][username]
-
-    // TODO: Add events to show if someone left
+    socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content: username + ' has left the group.' })
   })
 
   // NOTE: Getting messages
   // TODO: Paginate
-  socket.on('get_messages', group_id => {
+  socket.on('get_messages_on_start', group_id => {
     pool.query(`SELECT messages.id, messages.author, messages.group_id, messages.content, messages.date_sent, messages.is_alert, users.picture FROM messages INNER JOIN users ON messages.author = users.username WHERE group_id = '${group_id}'`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
-        socket.emit('get_messages_response', { success: false, error_msg: 'There was a problem getting messages. Please try again.' })
+        socket.emit('get_messages_on_start_response', { success: false, error_msg: 'There was a problem getting messages. Please try again.' })
       } else {
-        socket.emit('get_messages_response', { success: true, error_msg: '', messages: res.rows })
+        console.log('get messages on start response successful');
+        console.log(Object.keys(proxichat_nsp.sockets));
+        // BUG: get_messages_on_start_response here is triggered multiple times???
+        socket.emit('get_messages_on_start_response', { success: true, error_msg: '', messages: res.rows })
       }
     })
   })
 
   // NOTE: Sending messages
   socket.on('send_message', data => {
-    console.log("a message was sent");
+    console.log(data);
   })
 
 
@@ -152,8 +151,6 @@ proxichat_nsp.on('connection', socket => {
 // NOTE: General Connection - Not "online" - welcome, log in, sign up
 io.on('connection', socket => {
 
-
-
   // Sign up
   socket.on('sign_up', (username, password) => {
     // First connect to check whether the username exists
@@ -161,7 +158,7 @@ io.on('connection', socket => {
       .then(client => {
         return client.query(`SELECT * FROM users WHERE username = '${username}'`)
           .then(users => {
-            if (users.rows.length == 0) {
+            if (users.rows.length === 0) {
               client.query(`INSERT INTO users (username, password) VALUES ('${username}', '${password}')`)
               socket.emit('sign_up_response', { success: true, error_msg: '' })
             } else {
@@ -180,10 +177,10 @@ io.on('connection', socket => {
   socket.on('sign_in', (username, password) => {
     pool.query(`SELECT password FROM users WHERE username = '${username}'`)
       .then(user => {
-        if(user.rows.length == 0) {
+        if(user.rows.length === 0) {
           socket.emit('sign_in_response', { success: false, error_msg: 'Username does not exist.' })
         } else {
-          if(user.rows[0].password == password) {
+          if(user.rows[0].password === password) {
             socket.emit('sign_in_response', { success: true, error_msg: '' })
           } else {
             socket.emit('sign_in_response', { success: false, error_msg: 'Incorrect password.' })

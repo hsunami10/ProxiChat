@@ -19,18 +19,19 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="43.5"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="hsunami has joined the group." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YLd-jY-czi">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="x has left the group." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YLd-jY-czi">
+                        <rect key="frame" x="103.5" y="15" width="113.5" height="14.5"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="14.5" id="Hei-Yd-zBb"/>
+                        </constraints>
                         <fontDescription key="fontDescription" type="system" pointSize="12"/>
                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="YLd-jY-czi" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="G1B-Ai-xn2"/>
-                    <constraint firstAttribute="trailing" secondItem="YLd-jY-czi" secondAttribute="trailing" id="Qqs-cD-tie"/>
-                    <constraint firstItem="YLd-jY-czi" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="Y1F-Qr-rba"/>
-                    <constraint firstAttribute="bottom" secondItem="YLd-jY-czi" secondAttribute="bottom" id="bE5-uS-x9I"/>
+                    <constraint firstItem="YLd-jY-czi" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="5S2-Su-U4a"/>
+                    <constraint firstItem="YLd-jY-czi" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="IFB-Qg-ZGF"/>
                 </constraints>
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>

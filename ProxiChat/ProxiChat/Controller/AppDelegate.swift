@@ -9,6 +9,10 @@
 import UIKit
 import SocketIO
 
+protocol JoinGroupDelegate {
+    func joinGroup(_ group_id: String)
+}
+
 // MARK: Extension String methods
 extension String {
     /// Gets pixel height of a string
@@ -49,6 +53,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if let username = UserDefaults.standard.object(forKey: "proxiChatUsername") {
                 page.username = username as! String // Set saved username
                 page.socket = SocketIOClient(socketURL: URL(string: "http://localhost:3000")!)
+                page.justStarted = true
             }
             window?.rootViewController = page // Set root view controller
             window?.makeKeyAndVisible()

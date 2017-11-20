@@ -27,6 +27,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var refreshControl: UIRefreshControl!
     var groupArray: [Group] = [Group]()
     var selectedGroup = Group()
+    var justStarted = false
+    var delegate: JoinGroupDelegate?
 
     @IBOutlet var groupsTableView: UITableView!
     
@@ -34,14 +36,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         super.viewDidLoad()
         
         eventHandlers()
-        
-        // TODO: Add reconnecting later - socket.reconnect()
-        socket.connect(timeoutAfter: 5.0, withHandler: {
-            SVProgressHUD.showError(withStatus: "Connection Failed.")
-            // TODO: Add UIAlertController to reconnect and show failure.
-        })
-        socket.joinNamespace("/proxichat_namespace")
-//        socket.emit("go_online", username)
         
         // UITableView initialization
         groupsTableView.delegate = self
@@ -63,41 +57,32 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // Core location initialization
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
+        
+        // Handle what to do when visiting for the first time
+        if justStarted {
+            // TODO: Add reconnecting later - socket.reconnect()
+            socket.connect(timeoutAfter: 5.0, withHandler: {
+                SVProgressHUD.showError(withStatus: "Connection Failed.")
+                // TODO: Add UIAlertController to reconnect and show failure.
+            })
+            socket.joinNamespace("/proxichat_namespace")
+            
+            locationManager.requestWhenInUseAuthorization()
+            locationManager.startUpdatingLocation()
+        } else {
+            // Update last saved location here
+            updateTableWithGroups(UserDefaults.standard.object(forKey: "proxichatLastGroupUpdate")!)
+        }
     }
     
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
         // Update array of GroupCell objects to display on uitableview
         socket.on("update_location_and_get_groups_response", callback: { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let groups = JSON(data[0])["data"].arrayValue // Array of groups
-            self.groupArray = [Group]()
+            UserDefaults.standard.set(data[0], forKey: "proxichatLastGroupUpdate")
+            UserDefaults.standard.synchronize()
             
-            // If getting data was successful
-            if success {
-                for group in groups {
-                    let groupObj = Group()
-                    
-                    groupObj.coordinates = group["coordinates"].stringValue
-                    groupObj.creator = group["created_by"].stringValue
-                    groupObj.dateCreated = group["date_created"].stringValue
-                    groupObj.description = group["description"].stringValue
-                    groupObj.id = group["id"].stringValue
-                    groupObj.is_public = group["is_public"].boolValue
-                    groupObj.numMembers = group["num_members"].intValue
-                    groupObj.password = group["password"].stringValue
-                    groupObj.title = group["title"].stringValue
-                    
-                    self.groupArray.append(groupObj)
-                }
-                self.groupsTableView.reloadData() // cellforRowAt
-                self.stopEverything()
-            } else {
-                SVProgressHUD.showError(withStatus: "There was a problem getting groups. Please try again.")
-                self.stopEverything()
-            }
+            self.updateTableWithGroups(data[0])
         })
         // Join private group response
         socket.on("join_private_group_response") { (data, ack) in
@@ -202,6 +187,36 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     // MARK: Miscellaneous Methods
+    /// Take JSON data and update UITableView
+    func updateTableWithGroups(_ data: Any) {
+        let success = JSON(data)["success"].boolValue
+        let groups = JSON(data)["data"].arrayValue // Array of groups
+        self.groupArray = [Group]()
+        
+        // If getting data was successful
+        if success {
+            for group in groups {
+                let groupObj = Group()
+                
+                groupObj.coordinates = group["coordinates"].stringValue
+                groupObj.creator = group["created_by"].stringValue
+                groupObj.dateCreated = group["date_created"].stringValue
+                groupObj.description = group["description"].stringValue
+                groupObj.id = group["id"].stringValue
+                groupObj.is_public = group["is_public"].boolValue
+                groupObj.numMembers = group["num_members"].intValue
+                groupObj.password = group["password"].stringValue
+                groupObj.title = group["title"].stringValue
+                
+                self.groupArray.append(groupObj)
+            }
+            self.groupsTableView.reloadData() // cellforRowAt
+            self.stopEverything()
+        } else {
+            SVProgressHUD.showError(withStatus: "There was a problem getting groups. Please try again.")
+            self.stopEverything()
+        }
+    }
     func stopEverything() {
         refreshControl.endRefreshing()
         locationManager.stopUpdatingLocation()
@@ -215,6 +230,23 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     /// Selects group, and performs segue to MessageViewController
     func joinGroup(_ row: Int) {
         selectedGroup = groupArray[row]
-        performSegue(withIdentifier: "joinGroup", sender: self)
+        if justStarted {
+            slideLeftTransition()
+            UIView.setAnimationsEnabled(false)
+            performSegue(withIdentifier: "joinGroup", sender: self)
+        } else {
+            delegate?.joinGroup(selectedGroup.id)
+            slideLeftTransition()
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    func slideLeftTransition() {
+        let transition = CATransition()
+        transition.duration = 0.5
+        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
+        transition.type = kCATransitionPush
+        transition.subtype = kCATransitionFromRight
+        self.view.window?.layer.add(transition, forKey: nil)
     }
 }

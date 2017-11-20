@@ -15,6 +15,7 @@ import ChameleonFramework
 
 /*
  TODO / BUGS
+ - BUG: Alert message won't center???
  - REMEMBER TO HAVE ISALERT IN A MESSAGE OBJECT ALWAYS
  - find a way to display dates on messages
  - display images (find how to show images uploaded from phone - url? path?)
@@ -22,12 +23,13 @@ import ChameleonFramework
     - only send "user has left" message when NOT STARRED
  */
 
-class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, JoinGroupDelegate {
 
     var groupInformation: Group!
     var socket: SocketIOClient!
     var messageArray: [Message] = [Message]()
     var username: String!
+    var lastGroupsUpdate: Any!
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var messageTableView: UITableView!
@@ -38,6 +40,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewDidLoad() {
         super.viewDidLoad()
         groupTitle.text = groupInformation.title
+        
+        eventHandlers()
         
         messageTableView.delegate = self
         messageTableView.dataSource = self
@@ -51,15 +55,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
         messageTableView.addGestureRecognizer(tapGesture)
         
+        // Register nibs
+        messageTableView.register(UINib(nibName: "MessageCell", bundle: nil), forCellReuseIdentifier: "messageCell")
+        messageTableView.register(UINib(nibName: "AlertMessageCell", bundle: nil), forCellReuseIdentifier: "alertMessageCell")
+        
         messageTextField.keyboardType = .alphabet
         messageTableView.separatorStyle = .none
         
-        // Join room and get messages
+        // Get messages - on response, join room
         // TODO: Paginate messages
-        socket.emit("join_room", [
-            "group_id": groupInformation.id,
-            "username": username
-            ])
+        socket.emit("get_messages_on_start", groupInformation.id)
         
         configureTableView()
         self.view.layoutIfNeeded()
@@ -74,43 +79,69 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: IBOutlet Actions
+    @IBAction func goBack(_ sender: Any) {
+        // TODO: Check whether it's starred or not
+        slideRightTransition()
+        UIView.setAnimationsEnabled(false)
+        performSegue(withIdentifier: "goBackToGroups", sender: self)
+    }
+    @IBAction func showGroupInfo(_ sender: Any) {
+        print("show group info")
+    }
+    @IBAction func sendPressed(_ sender: Any) {
+        if messageTextField.text?.split(separator: " ").count != 0 {
+            messageTextField.endEditing(true)
+            messageTextField.isEnabled = false
+            sendButton.isEnabled = false
+            
+            // TODO: ***Change Date***
+            socket.emit("send_message", [
+                "username": username,
+                "content": messageTextField.text!,
+                "date_sent": String(describing: Date()),
+                "group_id": groupInformation.id,
+                "id": String(describing: UUID()),
+                "picture": ""
+                ])
+            
+            messageTextField.isEnabled = true
+            sendButton.isEnabled = true
+            messageTextField.text = ""
+        }
+    }
+    
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
         // Realtime receiving messages
         socket.on("receive_message") { (data, ack) in
-            print("received alert message")
             let isAlert = JSON(data[0])["is_alert"].boolValue
             if isAlert {
                 let messageObj = Message()
-                let username = JSON(data[0])["username"].stringValue
                 messageObj.isAlert = true
-                messageObj.author = username
-                
-                // If it's an alert of the user joining
-                if JSON(data[0])["joined"].boolValue {
-                    messageObj.joined = true
-                } else { // If it's an alert of the user leaving
-                    messageObj.joined = false
-                }
-                
+                messageObj.content = JSON(data[0])["content"].stringValue
+
                 self.messageArray.append(messageObj)
             } else {
                 let messageObj = Message()
-                
+
                 messageObj.author = JSON(data[0])["author"].stringValue
                 messageObj.content = JSON(data[0])["content"].stringValue
                 messageObj.dateSent = JSON(data[0])["date_sent"].stringValue
                 messageObj.id = JSON(data[0])["id"].stringValue
                 messageObj.isAlert = false
                 messageObj.picture = JSON(data[0])["picture"].stringValue
-                
+
                 self.messageArray.append(messageObj)
             }
             self.configureTableView()
             self.messageTableView.reloadData()
         }
+        
         // Get messages on join room
-        socket.on("get_messages_response") { (data, ack) in
+        // TODO: BUG: This event is triggered multiple times
+        // BUG: Triggers multiple times with cached groupInformation values from past view controllers
+        socket.on("get_messages_on_start_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
             let messages = JSON(data[0])["messages"].arrayValue
@@ -134,27 +165,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             } else {
                 SVProgressHUD.showError(withStatus: error_msg)
             }
-        }
-    }
-    
-    // MARK: IBOutlet Actions
-    @IBAction func goBackToGroups(_ sender: Any) {
-        self.dismiss(animated: true) {
-            self.socket.emit("leave_room", [
+            
+            // Join room after you get messages
+            print("join room : " + self.groupInformation.id)
+            self.socket.emit("join_room", [
                 "group_id": self.groupInformation.id,
                 "username": self.username
                 ])
-        }
-    }
-    @IBAction func showGroupInfo(_ sender: Any) {
-        print("show group info")
-    }
-    @IBAction func sendPressed(_ sender: Any) {
-        // TODO: socket emit send_message event
-        if messageTextField.text?.split(separator: " ").count != 0 {
-            // TODO: Set enabled to false when sending so won't be spammy
-            print(messageTextField.text)
-            messageTextField.endEditing(true)
         }
     }
     
@@ -163,16 +180,20 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         return messageArray.count
     }
     
+//    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+//        if messageArray[indexPath.row].isAlert {
+//            return 50
+//        } else {
+//            return UITableViewAutomaticDimension
+//        }
+//    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if messageArray[indexPath.row].isAlert {
             let alertCell = messageTableView.dequeueReusableCell(withIdentifier: "alertMessageCell", for: indexPath) as! AlertMessageCell
-            
-            // Check for join or leave alert
-            if messageArray[indexPath.row].joined == true {
-                alertCell.content.text = messageArray[indexPath.row].author + " has joined the group."
-            } else {
-                alertCell.content.text = messageArray[indexPath.row].author + " has left the group."
-            }
+            alertCell.content.frame = CGRect(x: 0, y: 0, width: alertCell.frame.width, height: alertCell.frame.height)
+            alertCell.content.textAlignment = .center
+            alertCell.content.text = messageArray[indexPath.row].content
             return alertCell
         } else {
             // TODO: Add date later
@@ -189,6 +210,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        messageTableView.deselectRow(at: indexPath, animated: true)
+    }
+    
     /// Change the height based on content. If estimated height is wrong, then change height based on constraints
     func configureTableView() {
         messageTableView.rowHeight = UITableViewAutomaticDimension
@@ -197,6 +222,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @objc func tableViewTapped() {
         messageTableView.endEditing(true)
+    }
+    
+    // MARK: JoinGroupDelegate Methods
+    func joinGroup(_ group_id: String) {
+        messageArray = [Message]()
+        socket.emit("get_messages_on_start", group_id)
     }
     
     // MARK: NotificationCenter Methods
@@ -227,5 +258,25 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.view.layoutIfNeeded()
             }
         }
+    }
+    
+    // MARK: Navigation Methods
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goBackToGroups" {
+            let destinationVC = segue.destination as! GroupsViewController
+            destinationVC.delegate = self
+            destinationVC.socket = socket
+            destinationVC.justStarted = false
+        }
+    }
+    
+    // MARK: Miscellaneous Methods
+    func slideRightTransition() {
+        let transition = CATransition()
+        transition.duration = 0.5
+        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
+        transition.type = kCATransitionPush
+        transition.subtype = kCATransitionFromLeft
+        self.view.window?.layer.add(transition, forKey: nil)
     }
 }
