@@ -124,14 +124,14 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.messageArray.append(messageObj)
             } else {
                 let messageObj = Message()
-
+                
                 messageObj.author = JSON(data[0])["author"].stringValue
                 messageObj.content = JSON(data[0])["content"].stringValue
                 messageObj.dateSent = JSON(data[0])["date_sent"].stringValue
                 messageObj.id = JSON(data[0])["id"].stringValue
                 messageObj.isAlert = false
                 messageObj.picture = JSON(data[0])["picture"].stringValue
-
+                
                 self.messageArray.append(messageObj)
             }
             self.configureTableView()
@@ -162,16 +162,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 self.configureTableView()
                 self.messageTableView.reloadData()
+                
+                UIView.setAnimationsEnabled(true)
+                // Join room after you get messages
+                self.socket.emit("join_room", [
+                    "group_id": self.groupInformation.id,
+                    "username": self.username
+                    ])
             } else {
                 SVProgressHUD.showError(withStatus: error_msg)
             }
-            
-            // Join room after you get messages
-            print("join room : " + self.groupInformation.id)
-            self.socket.emit("join_room", [
-                "group_id": self.groupInformation.id,
-                "username": self.username
-                ])
         }
     }
     
@@ -227,6 +227,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group_id: String) {
         messageArray = [Message]()
+        UIView.setAnimationsEnabled(false)
         socket.emit("get_messages_on_start", group_id)
     }
     

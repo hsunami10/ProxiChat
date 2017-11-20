@@ -34,6 +34,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        UIView.setAnimationsEnabled(true)
         
         eventHandlers()
         
@@ -237,6 +238,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else {
             delegate?.joinGroup(selectedGroup.id)
             slideLeftTransition()
+            UIView.setAnimationsEnabled(false)
             self.dismiss(animated: true, completion: nil)
         }
     }
