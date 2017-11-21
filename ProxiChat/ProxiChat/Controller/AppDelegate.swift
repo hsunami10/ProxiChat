@@ -10,7 +10,7 @@ import UIKit
 import SocketIO
 
 protocol JoinGroupDelegate {
-    func joinGroup(_ group_id: String)
+    func joinGroup(_ group: Group)
 }
 
 // MARK: Extension String methods

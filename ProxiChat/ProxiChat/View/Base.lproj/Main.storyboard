@@ -175,7 +175,7 @@
         <scene sceneID="pqa-MO-ygG">
             <objects>
                 <viewController storyboardIdentifier="groups" title="GroupsViewController" id="G5J-Lj-dvA" customClass="GroupsViewController" customModule="ProxiChat" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="NXz-hl-jLS">
+                    <view key="view" contentMode="scaleToFill" id="NXz-hl-jLS" userLabel="Main View">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -216,7 +216,7 @@
         <scene sceneID="vvZ-xW-Skb">
             <objects>
                 <viewController title="MessageViewController" id="bNj-gu-XBO" customClass="MessageViewController" customModule="ProxiChat" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Sk0-ar-0jc">
+                    <view key="view" contentMode="scaleToFill" id="Sk0-ar-0jc" userLabel="Main View">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -255,6 +255,13 @@
                                     <constraint firstItem="5AP-Aa-3nU" firstAttribute="leading" secondItem="rrK-X6-rsR" secondAttribute="leading" constant="8" id="sOi-4G-bMI"/>
                                 </constraints>
                             </view>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="wl2-tX-nQa">
+                                <rect key="frame" x="0.0" y="75" width="375" height="542"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="542" id="zEf-lF-tMw"/>
+                                </constraints>
+                            </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Cc-uW-389" userLabel="Info View">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="75"/>
                                 <subviews>
@@ -303,10 +310,6 @@
                                     <constraint firstAttribute="bottom" secondItem="q3l-1s-3Mj" secondAttribute="bottom" id="zHj-Us-gR5"/>
                                 </constraints>
                             </view>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="wl2-tX-nQa">
-                                <rect key="frame" x="0.0" y="75" width="375" height="542"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </tableView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -314,9 +317,11 @@
                             <constraint firstItem="6Cc-uW-389" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="Dd9-eo-hrc"/>
                             <constraint firstItem="rrK-X6-rsR" firstAttribute="trailing" secondItem="b8s-d9-G46" secondAttribute="trailing" id="IE6-vy-5uv"/>
                             <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="Ihp-W1-dZR"/>
-                            <constraint firstItem="wl2-tX-nQa" firstAttribute="top" secondItem="6Cc-uW-389" secondAttribute="bottom" id="Io1-O0-Xe9"/>
+                            <constraint firstItem="6Cc-uW-389" firstAttribute="trailing" secondItem="b8s-d9-G46" secondAttribute="trailing" id="RL6-df-haf"/>
                             <constraint firstItem="rrK-X6-rsR" firstAttribute="bottom" secondItem="b8s-d9-G46" secondAttribute="bottom" id="Rwr-P8-N7h"/>
+                            <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="Tbh-Sm-khO"/>
                             <constraint firstItem="wl2-tX-nQa" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="ZJ2-E6-K22"/>
+                            <constraint firstItem="6Cc-uW-389" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="dsh-nb-dBm"/>
                             <constraint firstItem="wl2-tX-nQa" firstAttribute="trailing" secondItem="b8s-d9-G46" secondAttribute="trailing" id="gmt-Dk-640"/>
                             <constraint firstItem="rrK-X6-rsR" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="qpj-0Y-3MZ"/>
                             <constraint firstItem="6Cc-uW-389" firstAttribute="trailing" secondItem="b8s-d9-G46" secondAttribute="trailing" id="xze-Sp-KaB"/>
@@ -326,6 +331,7 @@
                     <connections>
                         <outlet property="groupTitle" destination="poG-Ov-25h" id="TJn-pA-EEk"/>
                         <outlet property="messageTableView" destination="wl2-tX-nQa" id="Qel-7e-NzX"/>
+                        <outlet property="messageTableViewHeightConstraint" destination="zEf-lF-tMw" id="zgB-HZ-BsR"/>
                         <outlet property="messageTextField" destination="5AP-Aa-3nU" id="tCG-9R-fuD"/>
                         <outlet property="sendButton" destination="Ku6-Zw-MCO" id="9bj-M7-CRG"/>
                         <outlet property="typingViewHeight" destination="TtE-J4-tAh" id="rzs-Se-ql7"/>
@@ -419,6 +425,6 @@
         <image name="groupInfo" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="OD0-pG-fXq"/>
+        <segue reference="pVH-kq-7zq"/>
     </inferredMetricsTieBreakers>
 </document>

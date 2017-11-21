@@ -16,6 +16,10 @@ import CoreLocation
  TODO / BUGS
  - have an option for the user to choose when to update (maybe?)
  - only store in database when starred and delete when unstarred
+ - Set a condition in viewDidLoad() to be based on "finding groups" or "personal groups"
+ - for personal groups:
+    - don't include refresh or location manager - get groups from database and put those into groupArray instead
+    - have a different title label
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -187,6 +191,30 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
+    /// Selects group, and performs segue to MessageViewController
+    func joinGroup(_ row: Int) {
+        selectedGroup = groupArray[row]
+        if justStarted { // If just started, create MessageViewController
+            slideLeftTransition()
+            UIView.setAnimationsEnabled(false)
+            performSegue(withIdentifier: "joinGroup", sender: self)
+        } else {
+            delegate?.joinGroup(selectedGroup)
+            slideLeftTransition()
+            self.dismiss(animated: false, completion: nil)
+        }
+    }
+    
+    /// Edit UIViewController transition right -> left
+    func slideLeftTransition() {
+        let transition = CATransition()
+        transition.duration = 0.5
+        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
+        transition.type = kCATransitionPush
+        transition.subtype = kCATransitionFromRight
+        self.view.window?.layer.add(transition, forKey: nil)
+    }
+    
     // MARK: Miscellaneous Methods
     /// Take JSON data and update UITableView
     func updateTableWithGroups(_ data: Any) {
@@ -227,28 +255,5 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     @objc func refreshGroups(_ sender: AnyObject) {
         locationManager.startUpdatingLocation()
     }
-    
-    /// Selects group, and performs segue to MessageViewController
-    func joinGroup(_ row: Int) {
-        selectedGroup = groupArray[row]
-        if justStarted {
-            slideLeftTransition()
-            UIView.setAnimationsEnabled(false)
-            performSegue(withIdentifier: "joinGroup", sender: self)
-        } else {
-            delegate?.joinGroup(selectedGroup.id)
-            slideLeftTransition()
-            self.dismiss(animated: false, completion: nil)
-        }
-    }
-    
-    /// Edit UIViewController transition right -> left
-    func slideLeftTransition() {
-        let transition = CATransition()
-        transition.duration = 0.5
-        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
-        transition.type = kCATransitionPush
-        transition.subtype = kCATransitionFromRight
-        self.view.window?.layer.add(transition, forKey: nil)
-    }
+
 }

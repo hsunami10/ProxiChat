@@ -2,6 +2,7 @@ var express = require('express')
 var app = express()
 var http = require('http').Server(app)
 var io = require('socket.io')(http)
+var shortid = require('shortid')
 const { Pool, Client } = require('pg')
 
 const pool = new Pool({
@@ -90,6 +91,7 @@ proxichat_nsp.on('connection', socket => {
   socket.on('join_room', data => {
     var group_id = data.group_id
     var username = data.username
+    var content = username + ' has joined the group.'
     socket.join('room-' + group_id)
 
     // Add to object to handle leaving the room while terminating app or logging out
@@ -100,17 +102,31 @@ proxichat_nsp.on('connection', socket => {
       USERNAME_TO_GROUPS[username][group_id] = group_id
     }
 
-    proxichat_nsp.in('room-' + group_id).emit('receive_message', { is_alert: true, content: username + ' has joined the group.' })
+    // QUESTION: Should the user not see this or see this?
+    socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
+    pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        console.log(err);
+      }
+    })
   })
 
   // NOTE: Only triggered when going back to groups page and not starred
   socket.on('leave_room', data => {
     var group_id = data.group_id
     var username = data.username
+    var content = username + ' has left the group.'
     socket.leave('room-' + group_id)
 
     delete USERNAME_TO_GROUPS[username][group_id]
-    socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content: username + ' has left the group.' })
+    socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
+    pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        console.log(err);
+      }
+    })
   })
 
   // NOTE: Getting messages
@@ -121,8 +137,6 @@ proxichat_nsp.on('connection', socket => {
         // TODO: Handle so it doesn't crash
         socket.emit('get_messages_on_start_response', { success: false, error_msg: 'There was a problem getting messages. Please try again.' })
       } else {
-        console.log('get messages on start response successful');
-        console.log(Object.keys(proxichat_nsp.sockets));
         // BUG: get_messages_on_start_response here is triggered multiple times???
         socket.emit('get_messages_on_start_response', { success: true, error_msg: '', messages: res.rows })
       }
@@ -131,13 +145,38 @@ proxichat_nsp.on('connection', socket => {
 
   // NOTE: Sending messages
   socket.on('send_message', data => {
-    console.log(data);
+    // Send to sender first, then send to users in room
+    socket.emit('receive_message', {
+      is_alert: false,
+      author: data.username,
+      content: data.content,
+      date_sent: data.date_sent,
+      id: data.id,
+      picture: data.picture,
+      group_id: data.group_id
+    })
+    socket.to('room-' + data.group_id).emit('receive_message', {
+      is_alert: false,
+      author: data.username,
+      content: data.content,
+      date_sent: data.date_sent,
+      id: data.id,
+      picture: data.picture,
+      group_id: data.group_id
+    })
+    pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${data.id}', '${data.username}', '${data.group_id}', '${data.content}', false)`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        console.log(err);
+      }
+    })
   })
 
 
   socket.on('disconnect', () => {
     // TODO: user USERNAME_TO_GROUPS to send "user has left the group" to room if not starred
     // NOTE: Check if is starred in database, if not, then use socketID to get username to get group_id (if exists) to get room
+    // NOTE: If "starred", then in database
     console.log('disconnected from proxichat_namespace: ' + socket.id);
     delete USERNAME_TO_SOCKET[SOCKETID_TO_USERNAME[socket.id]]
     delete SOCKETID_TO_USERNAME[socket.id]

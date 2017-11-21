@@ -15,11 +15,11 @@ import ChameleonFramework
 
 /*
  TODO / BUGS
- - BUG: Alert message won't center???
- - REMEMBER TO HAVE ISALERT IN A MESSAGE OBJECT ALWAYS
+ - BUG: Alert message won't center??? - should I show to current user or no?
  - find a way to display dates on messages
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
+    - when terminating app, request from database, if no results, then send - user has left the group
     - only send "user has left" message when NOT STARRED
  */
 
@@ -29,13 +29,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var socket: SocketIOClient!
     var messageArray: [Message] = [Message]()
     var username: String!
-    var lastGroupsUpdate: Any!
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var messageTableView: UITableView!
     @IBOutlet var typingViewHeight: NSLayoutConstraint!
     @IBOutlet var messageTextField: UITextField!
     @IBOutlet var sendButton: UIButton!
+    @IBOutlet var messageTableViewHeightConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,6 +61,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         messageTextField.keyboardType = .alphabet
         messageTableView.separatorStyle = .none
+        messageTableViewHeightConstraint.constant = self.view.frame.height - (75 + 50) // TODO: Change later to make it more responsive
         
         // Get messages - on response, join room
         // TODO: Paginate messages
@@ -73,7 +74,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -85,6 +86,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         slideRightTransition()
         UIView.setAnimationsEnabled(false)
         performSegue(withIdentifier: "goBackToGroups", sender: self)
+        socket.emit("leave_room", [
+            "group_id": groupInformation.id,
+            "username": username
+            ])
     }
     @IBAction func showGroupInfo(_ sender: Any) {
         print("show group info")
@@ -96,6 +101,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             sendButton.isEnabled = false
             
             // TODO: ***Change Date***
+            // TODO: ***Get picture***
             socket.emit("send_message", [
                 "username": username,
                 "content": messageTextField.text!,
@@ -108,6 +114,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             messageTextField.isEnabled = true
             sendButton.isEnabled = true
             messageTextField.text = ""
+            scrollToBottom()
         }
     }
     
@@ -129,6 +136,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 messageObj.content = JSON(data[0])["content"].stringValue
                 messageObj.dateSent = JSON(data[0])["date_sent"].stringValue
                 messageObj.id = JSON(data[0])["id"].stringValue
+                messageObj.groupID = JSON(data[0])["group_id"].stringValue
                 messageObj.isAlert = false
                 messageObj.picture = JSON(data[0])["picture"].stringValue
                 
@@ -139,12 +147,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         // Get messages on join room
-        // TODO: BUG: This event is triggered multiple times
-        // BUG: Triggers multiple times with cached groupInformation values from past view controllers
         socket.on("get_messages_on_start_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
             let messages = JSON(data[0])["messages"].arrayValue
+            UIView.setAnimationsEnabled(true)
             
             if success {
                 for message in messages {
@@ -158,29 +165,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     messageObj.isAlert = message["is_alert"].boolValue
                     messageObj.picture = message["picture"].stringValue
                     
-//                    let dateFormatter = DateFormatter()
-//                    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-//                    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-//                    let date = dateFormatter.date(from: messageObj.dateSent)
-//                    print(date)
-//
-//                    dateFormatter.dateFormat = "EEE, MMM d, yyyy - h:mm a"
-//                    dateFormatter.timeZone = NSTimeZone.local
-//                    let timeStamp = dateFormatter.string(from: date!)
-//                    print(timeStamp)
-                    
-                    
                     self.messageArray.append(messageObj)
                 }
                 self.configureTableView()
                 self.messageTableView.reloadData()
                 
-                UIView.setAnimationsEnabled(true)
                 // Join room after you get messages
                 self.socket.emit("join_room", [
                     "group_id": self.groupInformation.id,
                     "username": self.username
                     ])
+                self.scrollToBottom()
             } else {
                 SVProgressHUD.showError(withStatus: error_msg)
             }
@@ -192,19 +187,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         return messageArray.count
     }
     
-//    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        if messageArray[indexPath.row].isAlert {
-//            return 50
-//        } else {
-//            return UITableViewAutomaticDimension
-//        }
-//    }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if messageArray[indexPath.row].isAlert {
             let alertCell = messageTableView.dequeueReusableCell(withIdentifier: "alertMessageCell", for: indexPath) as! AlertMessageCell
-            alertCell.content.frame = CGRect(x: 0, y: 0, width: alertCell.frame.width, height: alertCell.frame.height)
-            alertCell.content.textAlignment = .center
+//            alertCell.content.frame = CGRect(x: 0, y: 0, width: alertCell.frame.width, height: alertCell.frame.height)
+//            alertCell.content.textAlignment = .center
             alertCell.content.text = messageArray[indexPath.row].content
             return alertCell
         } else {
@@ -226,11 +213,30 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTableView.deselectRow(at: indexPath, animated: true)
     }
     
+    // MARK: Scrolling Methods
+    func scrollToBottom() {
+        if(needToScroll()) {
+            let path = NSIndexPath(row: messageArray.count-1, section: 0)
+            messageTableView.scrollToRow(at: path as IndexPath, at: .bottom, animated: true)
+        }
+    }
+    /// Is the table view scrolled to the bottom or no?
+    // NOTE: This doesn't work
+    func didScrollToBottom() -> Bool {
+        let distanceFromBottom = messageTableView.contentSize.height - messageTableView.contentOffset.y
+        return distanceFromBottom <= messageTableView.frame.size.height
+    }
+    /// Do you need to scroll or no?
+    func needToScroll() -> Bool {
+        return messageTableView.contentSize.height > messageTableView.frame.size.height
+    }
+    
     // MARK: JoinGroupDelegate Methods
-    func joinGroup(_ group_id: String) {
+    func joinGroup(_ group: Group) {
         messageArray = [Message]()
-        UIView.setAnimationsEnabled(false)
-        socket.emit("get_messages_on_start", group_id)
+        groupInformation = group
+        UIView.setAnimationsEnabled(true)
+        socket.emit("get_messages_on_start", group.id)
     }
     
     // MARK: NotificationCenter Methods
@@ -274,7 +280,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
-    
     /// Edit UIViewController transition left -> right
     func slideRightTransition() {
         let transition = CATransition()
@@ -290,6 +295,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTableView.estimatedRowHeight = 120.0
     }
     @objc func tableViewTapped() {
-        messageTableView.endEditing(true)
+        messageTextField.endEditing(true)
     }
 }
