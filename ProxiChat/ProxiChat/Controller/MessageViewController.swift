@@ -47,6 +47,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var messageView: UIView!
     @IBOutlet var typingView: UIView!
     @IBOutlet var infoView: UIView!
+    @IBOutlet var messageViewBottomConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,6 +81,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // TODO::::::::::::::::::::::::::::::: FIX THE HEIGHT RESPONSIVENESS ::::::::::::::::::::::::::::::::::
         messageTableView.separatorStyle = .none
         messageView.frame.size = CGSize(width: self.view.frame.size.width, height: self.view.frame.size.height - infoView.frame.size.height)
+//        messageView.frame = CGRect(x: 0, y: typingView.frame.height, width: self.view.frame.height, height: self.view.frame.height - infoView.frame.height)
         messageTableView.frame.size = CGSize(width: messageView.frame.size.width, height: messageView.frame.size.height - typingView.frame.size.height)
         
         // Get messages - on response, join room
@@ -332,7 +334,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // Animate
             UIView.animate(withDuration: duration) {
                 // Shift message view up
-                self.messageView.frame.offsetBy(dx: 0, dy: keyboardHeight)
+                self.messageViewBottomConstraint.constant = keyboardHeight
                 self.view.layoutIfNeeded() // If something in the view changed, then redraw/rerender
             }
         }
@@ -340,12 +342,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
         if let userInfo = aNotification.userInfo {
             let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
-            let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
+//            let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
             
             UIView.animate(withDuration: duration) {
-//                self.typingViewHeight.constant = 50
-//                self.messageTableView.frame = self.messageTableView.frame.offsetBy(dx: CGFloat(0), dy: -keyboardHeight)
-                self.messageView.frame.offsetBy(dx: 0, dy: -keyboardHeight)
+                self.messageViewBottomConstraint.constant = 0
                 self.view.layoutIfNeeded()
             }
         }

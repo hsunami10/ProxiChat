@@ -413,23 +413,19 @@
                                     <constraint firstItem="rrK-X6-rsR" firstAttribute="top" secondItem="wl2-tX-nQa" secondAttribute="bottom" id="hsZ-QA-Ww8"/>
                                     <constraint firstAttribute="bottom" secondItem="rrK-X6-rsR" secondAttribute="bottom" id="s5F-a1-puG"/>
                                     <constraint firstAttribute="trailing" secondItem="wl2-tX-nQa" secondAttribute="trailing" id="z5c-VO-Bui"/>
+                                    <constraint firstAttribute="height" constant="661" id="ztF-pY-k2n"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="ABx-JH-PiH" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="B7l-Cf-4gV"/>
-                            <constraint firstItem="6Cc-uW-389" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="Dd9-eo-hrc"/>
-                            <constraint firstAttribute="bottom" secondItem="ABx-JH-PiH" secondAttribute="bottom" id="EQ8-oh-OBv"/>
+                            <constraint firstItem="6Cc-uW-389" firstAttribute="leading" secondItem="Sk0-ar-0jc" secondAttribute="leading" id="2z5-Cr-uut"/>
+                            <constraint firstItem="ABx-JH-PiH" firstAttribute="leading" secondItem="Sk0-ar-0jc" secondAttribute="leading" id="D8n-ha-Imr"/>
                             <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="Ihp-W1-dZR"/>
-                            <constraint firstItem="6Cc-uW-389" firstAttribute="trailing" secondItem="b8s-d9-G46" secondAttribute="trailing" id="RL6-df-haf"/>
-                            <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="Tbh-Sm-khO"/>
                             <constraint firstAttribute="bottom" secondItem="ABx-JH-PiH" secondAttribute="bottom" id="XSZ-ie-q5z"/>
-                            <constraint firstItem="6Cc-uW-389" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="dsh-nb-dBm"/>
+                            <constraint firstAttribute="trailing" secondItem="ABx-JH-PiH" secondAttribute="trailing" id="ZTk-xq-0Cc"/>
+                            <constraint firstAttribute="trailing" secondItem="6Cc-uW-389" secondAttribute="trailing" id="dyb-Tn-vbG"/>
                             <constraint firstItem="ABx-JH-PiH" firstAttribute="centerX" secondItem="Sk0-ar-0jc" secondAttribute="centerX" id="eFI-L9-IXk"/>
-                            <constraint firstItem="ABx-JH-PiH" firstAttribute="trailing" secondItem="b8s-d9-G46" secondAttribute="trailing" id="wdb-SJ-l9y"/>
-                            <constraint firstItem="6Cc-uW-389" firstAttribute="trailing" secondItem="b8s-d9-G46" secondAttribute="trailing" id="xze-Sp-KaB"/>
-                            <constraint firstItem="ABx-JH-PiH" firstAttribute="top" secondItem="6Cc-uW-389" secondAttribute="bottom" id="yPm-7W-LV6"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="b8s-d9-G46"/>
                     </view>
@@ -439,6 +435,7 @@
                         <outlet property="messageTableView" destination="wl2-tX-nQa" id="Qel-7e-NzX"/>
                         <outlet property="messageTextView" destination="fVI-eD-UYN" id="hN0-G4-oBU"/>
                         <outlet property="messageView" destination="ABx-JH-PiH" id="c0I-ez-FIg"/>
+                        <outlet property="messageViewBottomConstraint" destination="XSZ-ie-q5z" id="83E-Z8-Qif"/>
                         <outlet property="sendButton" destination="Ku6-Zw-MCO" id="9bj-M7-CRG"/>
                         <outlet property="typingView" destination="rrK-X6-rsR" id="mXf-Nb-6WM"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goBackToGroups" id="OD0-pG-fXq"/>
