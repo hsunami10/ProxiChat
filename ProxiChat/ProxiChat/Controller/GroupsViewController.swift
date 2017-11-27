@@ -233,7 +233,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 groupObj.description = group["description"].stringValue
                 groupObj.id = group["id"].stringValue
                 groupObj.is_public = group["is_public"].boolValue
-                groupObj.numMembers = group["num_members"].intValue
+                groupObj.numMembers = group["number_members"].intValue
                 groupObj.password = group["password"].stringValue
                 groupObj.title = group["title"].stringValue
                 

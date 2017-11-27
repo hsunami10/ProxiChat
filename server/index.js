@@ -6,7 +6,8 @@ var shortid = require('shortid')
 const { Pool, Client } = require('pg')
 
 const pool = new Pool({
-  connectionString: 'postgres://hsunami10:ewoks4life@proxichat.csgmdrzqsp2i.us-east-2.rds.amazonaws.com:5432/proxichat'
+  // connectionString: 'postgres://hsunami10:ewoks4life@proxichat.csgmdrzqsp2i.us-east-2.rds.amazonaws.com:5432/proxichat'
+  connectionString: 'postgres://michaelhsu:ewoks4life@localhost:5432/proxichat'
 })
 
 pool.on('error', (err, client) => {
@@ -136,6 +137,7 @@ proxichat_nsp.on('connection', socket => {
       if (err) {
         // TODO: Handle so it doesn't crash
         socket.emit('get_messages_on_start_response', { success: false, error_msg: 'There was a problem getting messages. Please try again.' })
+        console.log(err);
       } else {
         // BUG: get_messages_on_start_response here is triggered multiple times???
         socket.emit('get_messages_on_start_response', { success: true, error_msg: '', messages: res.rows })

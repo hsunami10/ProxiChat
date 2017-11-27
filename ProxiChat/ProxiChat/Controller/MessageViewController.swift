@@ -15,27 +15,38 @@ import ChameleonFramework
 
 /*
  TODO / BUGS
- - BUG: Alert message won't center??? - should I show to current user or no?
+ TODO
  - find a way to display dates on messages
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
-    - when terminating app, request from database, if no results, then send - user has left the group
-    - only send "user has left" message when NOT STARRED
+ - when terminating app, request from database, if no results, then send - user has left the group
+ - only send "user has left" message when NOT STARRED
+ - save what the user wrote in textfield even when the app closes?
+ 
+ BUGS
+ - text view changing height doesn't perfectly shift, some overscrolling -- FIX THIS FIRST
+ - table view doesn't perfectly shift the same amount of points as the keyboard
+ - Alert message won't center??? - should I show to current user or no?
  */
 
-class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, JoinGroupDelegate {
+class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
 
     var groupInformation: Group!
     var socket: SocketIOClient!
     var messageArray: [Message] = [Message]()
     var username: String!
+    var lastNumOfLines: CGFloat = 1.82381823433138 // Saves the last number of line change
+    var lastTextViewHeight: CGFloat! // Keep track of different in height change to change the messageTableViewHeight constraint also
+    let maxNumOfLines: CGFloat = 5.8657937806874 // TODO: 5 lines - change this accordingly
+    let placeholder = "Enter a message..."
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var messageTableView: UITableView!
-    @IBOutlet var typingViewHeight: NSLayoutConstraint!
-    @IBOutlet var messageTextField: UITextField!
     @IBOutlet var sendButton: UIButton!
-    @IBOutlet var messageTableViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet var messageTextView: UITextView!
+    @IBOutlet var messageView: UIView!
+    @IBOutlet var typingView: UIView!
+    @IBOutlet var infoView: UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,7 +56,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         messageTableView.delegate = self
         messageTableView.dataSource = self
-        messageTextField.delegate = self
+        messageTextView.delegate = self
         
         // Set up action on keyboard show and hide
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
@@ -59,9 +70,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTableView.register(UINib(nibName: "MessageCell", bundle: nil), forCellReuseIdentifier: "messageCell")
         messageTableView.register(UINib(nibName: "AlertMessageCell", bundle: nil), forCellReuseIdentifier: "alertMessageCell")
         
-        messageTextField.keyboardType = .alphabet
+        messageTextView.keyboardType = .alphabet
+        // Make a fake placeholder
+        messageTextView.text = placeholder
+        messageTextView.textColor = UIColor.lightGray
+        lastTextViewHeight = messageTextView.contentSize.height
+        messageTextView.frame.size = CGSize(width: messageTextView.frame.size.width, height: lastTextViewHeight)
+        
+        // TODO::::::::::::::::::::::::::::::: FIX THE HEIGHT RESPONSIVENESS ::::::::::::::::::::::::::::::::::
         messageTableView.separatorStyle = .none
-        messageTableViewHeightConstraint.constant = self.view.frame.height - (75 + 50) // TODO: Change later to make it more responsive
+        messageView.frame.size = CGSize(width: self.view.frame.size.width, height: self.view.frame.size.height - infoView.frame.size.height)
+        messageTableView.frame.size = CGSize(width: messageView.frame.size.width, height: messageView.frame.size.height - typingView.frame.size.height)
         
         // Get messages - on response, join room
         // TODO: Paginate messages
@@ -95,26 +114,25 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         print("show group info")
     }
     @IBAction func sendPressed(_ sender: Any) {
-        if messageTextField.text?.split(separator: " ").count != 0 {
-            messageTextField.endEditing(true)
-            messageTextField.isEnabled = false
+        if messageTextView.text?.split(separator: " ").count != 0 && messageTextView.textColor != UIColor.lightGray {
+            messageTextView.endEditing(true)
+            messageTextView.isEditable = false
             sendButton.isEnabled = false
             
-            // TODO: ***Change Date***
-            // TODO: ***Get picture***
+            // TODO: *** Change Date ***
+            // TODO: *** Get picture ***
             socket.emit("send_message", [
                 "username": username,
-                "content": messageTextField.text!,
+                "content": messageTextView.text!,
                 "date_sent": String(describing: Date()),
                 "group_id": groupInformation.id,
                 "id": String(describing: UUID()),
                 "picture": ""
                 ])
             
-            messageTextField.isEnabled = true
+            messageTextView.isEditable = true
             sendButton.isEnabled = true
-            messageTextField.text = ""
-            scrollToBottom()
+            messageTextView.text = ""
         }
     }
     
@@ -144,6 +162,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             self.configureTableView()
             self.messageTableView.reloadData()
+            
+            // If not alert and you are the sender
+            if !isAlert && JSON(data[0])["author"].stringValue == self.username {
+                self.scrollToBottom()
+            }
         }
         
         // Get messages on join room
@@ -182,16 +205,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: UITableView Methods
+    // MARK: UITableViewDelgate Methods
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messageArray.count
     }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if messageArray[indexPath.row].isAlert {
             let alertCell = messageTableView.dequeueReusableCell(withIdentifier: "alertMessageCell", for: indexPath) as! AlertMessageCell
-//            alertCell.content.frame = CGRect(x: 0, y: 0, width: alertCell.frame.width, height: alertCell.frame.height)
-//            alertCell.content.textAlignment = .center
+            // TODO: Figure out why this isn't working
+            alertCell.content.frame = CGRect(x: 0, y: 0, width: alertCell.frame.width, height: alertCell.frame.height)
+            alertCell.content.textAlignment = .center
             alertCell.content.text = messageArray[indexPath.row].content
             return alertCell
         } else {
@@ -208,9 +231,63 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             return cell
         }
     }
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         messageTableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    // MARK: UITextViewDelegate Methods
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        // Change placeholder to actual text
+        if textView.textColor == UIColor.lightGray {
+            textView.text = ""
+            textView.textColor = UIColor.black
+        }
+    }
+    func textViewDidEndEditing(_ textView: UITextView) {
+        // Change empty text to placeholder
+        if textView.text.isEmpty {
+            textView.text = placeholder
+            textView.textColor = UIColor.lightGray
+        }
+    }
+    // TODO: Figure out scrolling text view
+    // BUG: Strange overscrolling? Maybe floor the number of lines to a whole number
+    func textViewDidChange(_ textView: UITextView) {
+        messageTextView.isScrollEnabled = true
+        let numberOfLines = textView.contentSize.height / (textView.font?.lineHeight)!
+        print(String(Int(floorf(Float(numberOfLines)))) + " lines: " + String(describing: numberOfLines))
+        print(textView.contentSize.height)
+        
+        // If more than of equal to the max number of lines AND was less than the limit
+//        if floorf(Float(numberOfLines)) >= floorf(Float(maxNumOfLines)) && floorf(Float(lastNumOfLines)) < floorf(Float(maxNumOfLines)) {
+//            if floorf(Float(numberOfLines)) != floorf(Float(lastNumOfLines)) {
+//                messageTextView.isScrollEnabled = true
+//                let maxHeightSize = (textView.font?.lineHeight)! * maxNumOfLines
+//                let diff = maxHeightSize - lastTextViewHeight // Get difference between max height and last height
+//                // If greater than max number of lines, then animate height to maxLine height
+//                UIView.animate(withDuration: 0.1, animations: {
+//                    self.textViewHeight.constant = self.textViewHeight.constant + diff
+//                    self.typingViewHeight.constant = self.typingViewHeight.constant + diff
+//                    self.messageTableViewHeightConstraint.constant = self.messageTableViewHeightConstraint.constant + diff
+//                    self.view.layoutIfNeeded()
+//                })
+//                lastNumOfLines = numberOfLines
+//                lastTextViewHeight = textView.contentSize.height
+//            }
+//        } else if floorf(Float(numberOfLines)) < floorf(Float(maxNumOfLines)) {
+//            if floorf(Float(numberOfLines)) != floorf(Float(lastNumOfLines)) {
+//                let differenceInHeight = (floorf(Float(numberOfLines)) - floorf(Float(lastNumOfLines))) * Float((textView.font?.lineHeight)!)
+////                let differenceInHeight = textView.contentSize.height - lastTextViewHeight // Get text view height change
+//                UIView.animate(withDuration: 0.1, animations: {
+//                    self.textViewHeight.constant = self.textViewHeight.constant + CGFloat(differenceInHeight)
+//                    self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(differenceInHeight)
+//                    self.messageTableViewHeightConstraint.constant = self.messageTableViewHeightConstraint.constant + CGFloat(differenceInHeight)
+//                    self.view.layoutIfNeeded()
+//                })
+//                lastNumOfLines = numberOfLines
+//                lastTextViewHeight = textView.contentSize.height
+//            }
+//        }
     }
     
     // MARK: Scrolling Methods
@@ -236,10 +313,14 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageArray = [Message]()
         groupInformation = group
         UIView.setAnimationsEnabled(true)
+        lastNumOfLines = 1
+        messageTextView.text = placeholder
+        messageTextView.textColor = UIColor.lightGray
+        lastTextViewHeight = (messageTextView.font?.lineHeight)!
         socket.emit("get_messages_on_start", group.id)
     }
     
-    // MARK: NotificationCenter Methods
+    // MARK: Keyboard (NotificationCenter) Methods
     @objc func keyboardWillShow(_ aNotification: NSNotification) {
         if let userInfo = aNotification.userInfo {
             // Get keyboard animation duration
@@ -250,8 +331,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             // Animate
             UIView.animate(withDuration: duration) {
-                self.typingViewHeight.constant = 50 + keyboardHeight // Change typing view height
-                self.messageTableView.frame = self.messageTableView.frame.offsetBy(dx: CGFloat(0), dy: keyboardHeight) // Shift table view up
+                // Shift message view up
+                self.messageView.frame.offsetBy(dx: 0, dy: keyboardHeight)
                 self.view.layoutIfNeeded() // If something in the view changed, then redraw/rerender
             }
         }
@@ -262,8 +343,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
             
             UIView.animate(withDuration: duration) {
-                self.typingViewHeight.constant = 50
-                self.messageTableView.frame = self.messageTableView.frame.offsetBy(dx: CGFloat(0), dy: -keyboardHeight)
+//                self.typingViewHeight.constant = 50
+//                self.messageTableView.frame = self.messageTableView.frame.offsetBy(dx: CGFloat(0), dy: -keyboardHeight)
+                self.messageView.frame.offsetBy(dx: 0, dy: -keyboardHeight)
                 self.view.layoutIfNeeded()
             }
         }
@@ -295,6 +377,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTableView.estimatedRowHeight = 120.0
     }
     @objc func tableViewTapped() {
-        messageTextField.endEditing(true)
+        messageTextView.endEditing(true)
     }
 }
