@@ -133,7 +133,7 @@ proxichat_nsp.on('connection', socket => {
   // NOTE: Getting messages
   // TODO: Paginate
   socket.on('get_messages_on_start', group_id => {
-    pool.query(`SELECT messages.id, messages.author, messages.group_id, messages.content, messages.date_sent, messages.is_alert, users.picture FROM messages INNER JOIN users ON messages.author = users.username WHERE group_id = '${group_id}'`, (err, res) => {
+    pool.query(`SELECT messages.id, messages.author, messages.group_id, messages.content, messages.date_sent, messages.is_alert, users.picture FROM messages INNER JOIN users ON messages.author = users.username WHERE group_id = '${group_id}' ORDER BY messages.date_sent ASC`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
         socket.emit('get_messages_on_start_response', { success: false, error_msg: 'There was a problem getting messages. Please try again.' })

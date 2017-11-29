@@ -34,6 +34,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var justStarted = false
     var delegate: JoinGroupDelegate?
 
+    // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!
     
     override func viewDidLoad() {
@@ -112,6 +113,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK: IBOutlet Actions
+    @IBAction func createGroup(_ sender: Any) {
+        UIView.setAnimationsEnabled(true)
+        performSegue(withIdentifier: "createGroup", sender: self)
     }
     
     // MARK: UITableView Methods

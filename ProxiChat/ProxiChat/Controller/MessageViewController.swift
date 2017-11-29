@@ -134,7 +134,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             messageTextView.isEditable = true
             sendButton.isEnabled = true
-            messageTextView.text = ""
+            messageTextView.text = placeholder
+            messageTextView.textColor = UIColor.lightGray
         }
     }
     
@@ -253,24 +254,22 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     // TODO: Figure out scrolling text view
-    // BUG: Strange overscrolling? Maybe floor the number of lines to a whole number
+    // TODO: Height does not change
     func textViewDidChange(_ textView: UITextView) {
         messageTextView.isScrollEnabled = true
         let numberOfLines = textView.contentSize.height / (textView.font?.lineHeight)!
-        print(String(Int(floorf(Float(numberOfLines)))) + " lines: " + String(describing: numberOfLines))
-        print(textView.contentSize.height)
+//        print(String(Int(floorf(Float(numberOfLines)))) + " lines: " + String(describing: numberOfLines))
+//        print(textView.contentSize.height)
         
         // If more than of equal to the max number of lines AND was less than the limit
 //        if floorf(Float(numberOfLines)) >= floorf(Float(maxNumOfLines)) && floorf(Float(lastNumOfLines)) < floorf(Float(maxNumOfLines)) {
 //            if floorf(Float(numberOfLines)) != floorf(Float(lastNumOfLines)) {
-//                messageTextView.isScrollEnabled = true
 //                let maxHeightSize = (textView.font?.lineHeight)! * maxNumOfLines
 //                let diff = maxHeightSize - lastTextViewHeight // Get difference between max height and last height
 //                // If greater than max number of lines, then animate height to maxLine height
 //                UIView.animate(withDuration: 0.1, animations: {
-//                    self.textViewHeight.constant = self.textViewHeight.constant + diff
-//                    self.typingViewHeight.constant = self.typingViewHeight.constant + diff
-//                    self.messageTableViewHeightConstraint.constant = self.messageTableViewHeightConstraint.constant + diff
+//                    self.typingView.frame.size = CGSize(width: self.typingView.frame.size.width, height: maxHeightSize)
+//                    self.messageViewBottomConstraint.constant = self.messageViewBottomConstraint.constant + diff
 //                    self.view.layoutIfNeeded()
 //                })
 //                lastNumOfLines = numberOfLines
@@ -278,12 +277,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
 //            }
 //        } else if floorf(Float(numberOfLines)) < floorf(Float(maxNumOfLines)) {
 //            if floorf(Float(numberOfLines)) != floorf(Float(lastNumOfLines)) {
-//                let differenceInHeight = (floorf(Float(numberOfLines)) - floorf(Float(lastNumOfLines))) * Float((textView.font?.lineHeight)!)
-////                let differenceInHeight = textView.contentSize.height - lastTextViewHeight // Get text view height change
+////                let differenceInHeight = (floorf(Float(numberOfLines)) - floorf(Float(lastNumOfLines))) * Float((textView.font?.lineHeight)!)
+//                let differenceInHeight = textView.contentSize.height - lastTextViewHeight // Get text view height change
 //                UIView.animate(withDuration: 0.1, animations: {
-//                    self.textViewHeight.constant = self.textViewHeight.constant + CGFloat(differenceInHeight)
-//                    self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(differenceInHeight)
-//                    self.messageTableViewHeightConstraint.constant = self.messageTableViewHeightConstraint.constant + CGFloat(differenceInHeight)
+//                    self.typingView.frame.size = CGSize(width: self.typingView.frame.size.width, height: self.typingView.frame.size.height + differenceInHeight)
 //                    self.view.layoutIfNeeded()
 //                })
 //                lastNumOfLines = numberOfLines
