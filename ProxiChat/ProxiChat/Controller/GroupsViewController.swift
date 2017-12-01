@@ -171,7 +171,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if let location = locations.last {
             // If the current location (timestamps are the same)
             if String(describing: Date()) == String(describing: location.timestamp) {
-                print("update location find groups")
                 socket.emit("update_location_and_get_groups", [
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
@@ -230,9 +229,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // MARK: Miscellaneous Methods
     /// Take JSON data and update UITableView
     func updateTableWithGroups(_ data: Any) {
-        print("update find groups table with data")
-//        print(data)
-        
         let success = JSON(data)["success"].boolValue
         let groups = JSON(data)["data"].arrayValue // Array of groups
         let error_msg = JSON(data)["error_msg"].stringValue
@@ -265,7 +261,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     /// Refresh groups in proximity
     @objc func refreshGroups(_ sender: AnyObject) {
-        print("refresh")
         locationManager.startUpdatingLocation()
     }
 

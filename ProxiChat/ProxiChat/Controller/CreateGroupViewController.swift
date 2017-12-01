@@ -19,7 +19,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     var username: String!
     var newGroup: Group!
     var data: Any!
-    var coordinates: String!
+    var coordinates = ""
     
     @IBOutlet var groupNameTextField: UITextField!
     @IBOutlet var groupDescriptionTextField: UITextField!
@@ -56,13 +56,12 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             let error_msg = JSON(data[0])["error_msg"].stringValue
             
             if success {
-                print("store in user defaults")
-                print(self.data)
                 // After updating location and creating group, save the new location groups
                 UserDefaults.standard.set(self.data, forKey: "proxichatLastGroupUpdate")
                 UserDefaults.standard.synchronize()
                 SVProgressHUD.dismiss()
                 
+                // TODO: Fix bug here
                 self.slideLeftTransition()
                 self.performSegue(withIdentifier: "goToMessagesAfterCreate", sender: self)
                 UIView.setAnimationsEnabled(false)
@@ -101,8 +100,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             if String(describing: Date()) == String(describing: location.timestamp) {
-                print("update location create groups")
-                coordinates = String(location.coordinate.latitude) + " " + String(location.coordinate.longitude)
+                self.coordinates = String(location.coordinate.latitude) + " " + String(location.coordinate.longitude)
                 socket.emit("update_location_and_get_groups_create", [
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
@@ -118,8 +116,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     // TOOD: Update locations here
     @IBAction func submit(_ sender: Any) {
-        let alert = UIAlertController(title: "Warning", message: "Submitting this will update your location as well", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { (action) in
+        let alert = UIAlertController(title: "Warning", message: "Submitting this will update your location as well.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Continue", style: .default, handler: { (action) in
             // If it is a private group
             if self.privateSwitch.isOn {
                 // Has to be valid text in group name and password can't have any spaces
@@ -128,15 +126,17 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 } else if self.groupPasswordTextField.text != self.confirmPasswordTextField.text { // Check for matching passwords
                     self.invalidInput("Passwords do not match.")
                 } else {
-                    self.locationManager.startUpdatingLocation()
+                    SVProgressHUD.show()
                     self.storeGroup(self.username, false, UUID(), self.groupNameTextField.text!, self.groupPasswordTextField.text!, self.groupDescriptionTextField.text!)
+                    self.locationManager.startUpdatingLocation()
                 }
             } else {
                 if self.groupNameTextField.text?.split(separator: " ").count == 0 {
                     self.invalidInput("Invalid input. Please try again.")
                 } else {
-                    self.locationManager.startUpdatingLocation()
+                    SVProgressHUD.show()
                     self.storeGroup(self.username, true, UUID(), self.groupNameTextField.text!, self.groupPasswordTextField.text!, self.groupDescriptionTextField.text!)
+                    self.locationManager.startUpdatingLocation()
                 }
             }
         }))
@@ -183,10 +183,9 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         - group_description: The description for this group (optional)
     */
     func storeGroup(_ created_by: String, _ is_public: Bool, _ group_id: UUID, _ group_name: String, _ group_password: String, _ group_description: String) {
-        SVProgressHUD.show()
         newGroup = Group()
         newGroup.creator = created_by
-        newGroup.dateCreated = String(describing: Date())
+        newGroup.dateCreated = String(describing: Date()) // TODO: Change this later according to date conversion and formatting
         newGroup.description = group_description
         newGroup.is_public = is_public
         newGroup.id = String(describing: group_id)
@@ -196,7 +195,5 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     /// Shows the label error message when given invalid UITextField values
     func invalidInput(_ message: String) {
         errorLabel.text = message
-        groupPasswordTextField.text = ""
-        confirmPasswordTextField.text = ""
     }
 }
