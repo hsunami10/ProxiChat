@@ -9,7 +9,7 @@
 // This class holds all of the group's information
 class Group {
     var title = ""
-    var numMembers = 0
+    var numMembers = 1
     var is_public = true
     var password = ""
     var description = ""

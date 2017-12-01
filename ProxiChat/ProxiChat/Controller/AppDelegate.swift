@@ -9,6 +9,13 @@
 import UIKit
 import SocketIO
 
+/*
+ Key things to remember:
+ - Even if you dismiss a viewcontroller, the socket still stays, so those events will still be run
+ */
+
+// MARK: Custom Protocols
+/// Join group
 protocol JoinGroupDelegate {
     func joinGroup(_ group: Group)
 }

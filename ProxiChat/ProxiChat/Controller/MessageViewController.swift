@@ -87,7 +87,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Get messages - on response, join room
         // TODO: Paginate messages
         socket.emit("get_messages_on_start", groupInformation.id)
-        
+        print(groupInformation.id)
         configureTableView()
         self.view.layoutIfNeeded()
     }
@@ -309,9 +309,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group: Group) {
+        UIView.setAnimationsEnabled(true)
         messageArray = [Message]()
         groupInformation = group
-        UIView.setAnimationsEnabled(true)
+        groupTitle.text = group.title
         lastNumOfLines = 1
         messageTextView.text = placeholder
         messageTextView.textColor = UIColor.lightGray
@@ -354,6 +355,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.delegate = self
             destinationVC.socket = socket
+            destinationVC.username = username
             destinationVC.justStarted = false
         }
     }

@@ -57,10 +57,31 @@ proxichat_nsp.on('connection', socket => {
       (err, res) => {
         if (err) {
           // TODO: Handle so it doesn't crash
-          socket.emit('update_location_and_get_groups_response', { success: false })
+          socket.emit('update_location_and_get_groups_response', { success: false, data: [], error_msg: 'There was a problem getting your location. Please try again.' })
           console.log(err);
         } else {
-          socket.emit('update_location_and_get_groups_response', { success: true, data: res.rows })
+          console.log(res.rows);
+          socket.emit('update_location_and_get_groups_response',  { success: true, data: res.rows, error_msg: '' })
+        }
+      })
+  })
+  // NOTE: Update location and get groups after creating group
+  socket.on('update_location_and_get_groups_create', data => {
+    let username = data.username
+    let coordinates = data.latitude + ' ' + data.longitude
+    let radius = data.radius
+
+    pool.query(`SELECT * FROM update_location_proxichat(
+      '${username}',
+      '${coordinates}',
+      ${radius})`,
+      (err, res) => {
+        if (err) {
+          // TODO: Handle so it doesn't crash
+          socket.emit('update_location_and_get_groups_create_response', { success: false, data: [], error_msg: 'There was a problem getting groups. Please try again.' })
+          console.log(err);
+        } else {
+          socket.emit('update_location_and_get_groups_create_response',  { success: true, data: res.rows, error_msg: '' })
         }
       })
   })
@@ -174,6 +195,12 @@ proxichat_nsp.on('connection', socket => {
     })
   })
 
+  // NOTE: Create a new private/public group
+  socket.on('create_group', data => {
+    console.log(data);
+    // TODO: Add group to database
+    socket.emit('create_group_response', { success: true, error_msg: '' })
+  })
 
   socket.on('disconnect', () => {
     // TODO: user USERNAME_TO_GROUPS to send "user has left the group" to room if not starred

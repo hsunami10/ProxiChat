@@ -77,6 +77,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             locationManager.startUpdatingLocation()
         } else {
             // Update last saved location here
+            print("update last saved location with user defaults")
             updateTableWithGroups(UserDefaults.standard.object(forKey: "proxichatLastGroupUpdate")!)
         }
     }
@@ -85,9 +86,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func eventHandlers() {
         // Update array of GroupCell objects to display on uitableview
         socket.on("update_location_and_get_groups_response", callback: { (data, ack) in
-            UserDefaults.standard.set(data[0], forKey: "proxichatLastGroupUpdate")
-            UserDefaults.standard.synchronize()
-            
             self.updateTableWithGroups(data[0])
         })
         // Join private group response
@@ -141,7 +139,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     "rowIndex": String(indexPath.row)
                     ])
             }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             present(alert, animated: true, completion: nil)
         }
         groupsTableView.deselectRow(at: indexPath, animated: true)
@@ -166,23 +164,26 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return cell
     }
     
-    // MARK: CLLocationManager Methods
+    // MARK: CLLocationManagerDelegate Methods
     
+    // TODO: Change radius
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             // If the current location (timestamps are the same)
             if String(describing: Date()) == String(describing: location.timestamp) {
+                print("update location find groups")
                 socket.emit("update_location_and_get_groups", [
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
                     "username": username,
                     "radius": 800000
                     ])
+                manager.stopUpdatingLocation()
             }
         }
     }
     
-    // TODO: Change this later
+    // TODO: Change location error handling later
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         SVProgressHUD.showError(withStatus: "Location unavailable. Check your internet connection.")
@@ -195,6 +196,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             destinationVC.groupInformation = selectedGroup
             destinationVC.socket = socket
             destinationVC.username = username
+        } else if segue.identifier == "createGroup" {
+            let destinationVC = segue.destination as! CreateGroupViewController
+            destinationVC.socket = socket
+            destinationVC.username = username
         }
     }
     
@@ -205,7 +210,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             slideLeftTransition()
             UIView.setAnimationsEnabled(false)
             performSegue(withIdentifier: "joinGroup", sender: self)
-        } else {
+        } else { // Change 
             delegate?.joinGroup(selectedGroup)
             slideLeftTransition()
             self.dismiss(animated: false, completion: nil)
@@ -225,12 +230,16 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // MARK: Miscellaneous Methods
     /// Take JSON data and update UITableView
     func updateTableWithGroups(_ data: Any) {
+        print("update find groups table with data")
+//        print(data)
+        
         let success = JSON(data)["success"].boolValue
         let groups = JSON(data)["data"].arrayValue // Array of groups
-        self.groupArray = [Group]()
+        let error_msg = JSON(data)["error_msg"].stringValue
         
         // If getting data was successful
         if success {
+            self.groupArray = [Group]()
             for group in groups {
                 let groupObj = Group()
                 
@@ -247,19 +256,16 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.groupArray.append(groupObj)
             }
             self.groupsTableView.reloadData() // cellforRowAt
-            self.stopEverything()
+            self.refreshControl.endRefreshing()
         } else {
-            SVProgressHUD.showError(withStatus: "There was a problem getting groups. Please try again.")
-            self.stopEverything()
+            SVProgressHUD.showError(withStatus: error_msg)
+            self.refreshControl.endRefreshing()
         }
-    }
-    func stopEverything() {
-        refreshControl.endRefreshing()
-        locationManager.stopUpdatingLocation()
     }
     
     /// Refresh groups in proximity
     @objc func refreshGroups(_ sender: AnyObject) {
+        print("refresh")
         locationManager.startUpdatingLocation()
     }
 
