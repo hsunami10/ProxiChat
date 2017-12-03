@@ -238,10 +238,11 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             self.groupArray = [Group]()
             for group in groups {
                 let groupObj = Group()
+                let cd = ConvertDate(date: group["date_created"].stringValue)
                 
                 groupObj.coordinates = group["coordinates"].stringValue
                 groupObj.creator = group["created_by"].stringValue
-                groupObj.dateCreated = group["date_created"].stringValue
+                groupObj.dateCreated = cd.convert()
                 groupObj.description = group["description"].stringValue
                 groupObj.id = group["id"].stringValue
                 groupObj.is_public = group["is_public"].boolValue

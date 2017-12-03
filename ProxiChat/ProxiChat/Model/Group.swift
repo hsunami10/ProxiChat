@@ -6,7 +6,7 @@
 //  Copyright © 2017 Michael Hsu. All rights reserved.
 //
 
-// This class holds all of the group's information
+/// This class holds all of the group's information
 class Group {
     var title = ""
     var numMembers = 1
@@ -16,5 +16,5 @@ class Group {
     var creator = ""
     var coordinates = ""
     var dateCreated = ""
-    var id = ""
+    var id = "" // Generated in node - shortid
 }

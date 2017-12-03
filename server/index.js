@@ -197,16 +197,15 @@ proxichat_nsp.on('connection', socket => {
 
   // NOTE: Create a new private/public group
   socket.on('create_group', data => {
-    console.log(data);
+    var g_id = shortid.generate()
     // TODO: Add group to database - use create_group_proxichat
-    pool.query(`SELECT * FROM create_group_proxichat('${data.group_id}', '${data.group_name}', '${data.group_password}', '${data.group_description}', '${data.created_by}', ${data.is_public}, '${data.group_coordinates}', '${shortid.generate()}')`, (err, res) => {
+    pool.query(`SELECT create_group_proxichat('${g_id}', '${data.group_name}', '${data.group_password}', '${data.group_description}', '${data.created_by}', '${data.group_date}', ${data.is_public}, '${data.group_coordinates}', '${shortid.generate()}')`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
         socket.emit('create_group_response', { success: false, error_msg: 'There was a problem creating a group. Please try again.' })
         console.log(err);
       } else {
-        console.log(res.rows[0]);
-        socket.emit('create_group_response', { success: true, error_msg: '', group: res.rows[0] })
+        socket.emit('create_group_response', { success: true, error_msg: '', group_id: g_id })
       }
     })
   })

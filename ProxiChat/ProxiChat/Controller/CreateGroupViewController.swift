@@ -12,12 +12,18 @@ import CoreLocation
 import SwiftyJSON
 import SVProgressHUD
 
+/*
+ TODO:
+    - Fix unwrapping optional bug for coordinates? - LINE 84 - possible because there are multiple view controllers?
+    - Creating multiple groups - including replicas of old ones - possibly because the view controllers are hidden - so the location event is triggering twice
+ */
+
 class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
     var socket: SocketIOClient!
-    var username: String!
-    var newGroup: Group!
+    var username = ""
+    var newGroup = Group()
     var data: Any!
     var coordinates = ""
     
@@ -54,14 +60,16 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         socket.on("create_group_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
+            let group_id = JSON(data[0])["group_id"].stringValue
             
             if success {
                 // After updating location and creating group, save the new location groups
                 UserDefaults.standard.set(self.data, forKey: "proxichatLastGroupUpdate")
                 UserDefaults.standard.synchronize()
+                self.newGroup.id = group_id
                 SVProgressHUD.dismiss()
                 
-                // TODO: Fix bug here
+                // TODO: Fix transition bug here
                 self.slideLeftTransition()
                 self.performSegue(withIdentifier: "goToMessagesAfterCreate", sender: self)
                 UIView.setAnimationsEnabled(false)
@@ -77,15 +85,15 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             
             if success {
                 self.data = data[0] // Save groups in new proximity
-                self.newGroup.coordinates = self.coordinates
+                self.newGroup.coordinates = self.coordinates // TODO: BUG HERE?
                 self.socket.emit("create_group", [
                     "created_by": self.newGroup.creator,
                     "is_public": self.newGroup.is_public,
-                    "group_id": self.newGroup.id,
                     "group_name": self.newGroup.title,
                     "group_password": self.newGroup.password,
                     "group_description": self.newGroup.description,
-                    "group_coordinates": self.newGroup.coordinates
+                    "group_coordinates": self.newGroup.coordinates,
+                    "group_date": self.newGroup.dateCreated
                     ])
             } else {
                 SVProgressHUD.dismiss()
@@ -127,7 +135,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     self.invalidInput("Passwords do not match.")
                 } else {
                     SVProgressHUD.show()
-                    self.storeGroup(self.username, false, UUID(), self.groupNameTextField.text!, self.groupPasswordTextField.text!, self.groupDescriptionTextField.text!)
+                    self.storeGroup(self.username, false, self.groupNameTextField.text!, self.groupPasswordTextField.text!, self.groupDescriptionTextField.text!)
                     self.locationManager.startUpdatingLocation()
                 }
             } else {
@@ -135,7 +143,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     self.invalidInput("Invalid input. Please try again.")
                 } else {
                     SVProgressHUD.show()
-                    self.storeGroup(self.username, true, UUID(), self.groupNameTextField.text!, self.groupPasswordTextField.text!, self.groupDescriptionTextField.text!)
+                    self.storeGroup(self.username, true, self.groupNameTextField.text!, "", self.groupDescriptionTextField.text!)
                     self.locationManager.startUpdatingLocation()
                 }
             }
@@ -148,6 +156,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         confirmPasswordTextField.isHidden = !confirmPasswordTextField.isHidden
     }
     @IBAction func cancel(_ sender: Any) {
+        locationManager.delegate = nil
         self.dismiss(animated: true, completion: nil)
     }
     
@@ -158,6 +167,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             destinationVC.groupInformation = newGroup
             destinationVC.socket = socket
             destinationVC.username = username
+            locationManager.delegate = nil
         }
     }
     /// Edit UIViewController transition right -> left
@@ -182,13 +192,16 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         - group_password: The password for this group if
         - group_description: The description for this group (optional)
     */
-    func storeGroup(_ created_by: String, _ is_public: Bool, _ group_id: UUID, _ group_name: String, _ group_password: String, _ group_description: String) {
-        newGroup = Group()
+    func storeGroup(_ created_by: String, _ is_public: Bool, _ group_name: String, _ group_password: String, _ group_description: String) {
+        let cd = ConvertDate(date: String(describing: Date()))
         newGroup.creator = created_by
-        newGroup.dateCreated = String(describing: Date()) // TODO: Change this later according to date conversion and formatting
-        newGroup.description = group_description
+        newGroup.dateCreated = cd.convert()
+        if group_description.split(separator: " ").count > 0 { // Check for valid description input
+            newGroup.description = group_description
+        } else {
+            newGroup.description = ""
+        }
         newGroup.is_public = is_public
-        newGroup.id = String(describing: group_id)
         newGroup.password = group_password
         newGroup.title = group_name
     }
