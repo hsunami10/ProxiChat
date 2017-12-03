@@ -57,7 +57,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
         // Only update location when group has been successfully created
-        socket.on("create_group_response") { (data, ack) in
+        socket?.on("create_group_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
             let group_id = JSON(data[0])["group_id"].stringValue
@@ -78,15 +78,15 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 SVProgressHUD.showError(withStatus: error_msg)
             }
         }
-        // Same as update_location_and_get_groups_response, but with data[1] added
-        socket.on("update_location_and_get_groups_create_response") { (data, ack) in
+        // Same as update_location_and_get_groups_response, but with data[1] added - socket may be nil
+        socket?.on("update_location_and_get_groups_create_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
             
             if success {
                 self.data = data[0] // Save groups in new proximity
                 self.newGroup.coordinates = self.coordinates // TODO: BUG HERE?
-                self.socket.emit("create_group", [
+                self.socket?.emit("create_group", [
                     "created_by": self.newGroup.creator,
                     "is_public": self.newGroup.is_public,
                     "group_name": self.newGroup.title,
@@ -109,7 +109,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         if let location = locations.last {
             if String(describing: Date()) == String(describing: location.timestamp) {
                 self.coordinates = String(location.coordinate.latitude) + " " + String(location.coordinate.longitude)
-                socket.emit("update_location_and_get_groups_create", [
+                socket?.emit("update_location_and_get_groups_create", [
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
                     "username": username,
@@ -156,7 +156,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         confirmPasswordTextField.isHidden = !confirmPasswordTextField.isHidden
     }
     @IBAction func cancel(_ sender: Any) {
-        locationManager.delegate = nil
+        socket = nil // Won't receive duplicate events
         self.dismiss(animated: true, completion: nil)
     }
     
@@ -167,7 +167,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             destinationVC.groupInformation = newGroup
             destinationVC.socket = socket
             destinationVC.username = username
-            locationManager.delegate = nil
+            socket = nil
         }
     }
     /// Edit UIViewController transition right -> left

@@ -198,6 +198,7 @@ proxichat_nsp.on('connection', socket => {
   // NOTE: Create a new private/public group
   socket.on('create_group', data => {
     var g_id = shortid.generate()
+    
     // TODO: Add group to database - use create_group_proxichat
     pool.query(`SELECT create_group_proxichat('${g_id}', '${data.group_name}', '${data.group_password}', '${data.group_description}', '${data.created_by}', '${data.group_date}', ${data.is_public}, '${data.group_coordinates}', '${shortid.generate()}')`, (err, res) => {
       if (err) {

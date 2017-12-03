@@ -77,7 +77,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             locationManager.startUpdatingLocation()
         } else {
             // Update last saved location here
-            print("update last saved location with user defaults")
             updateTableWithGroups(UserDefaults.standard.object(forKey: "proxichatLastGroupUpdate")!)
         }
     }
@@ -85,11 +84,11 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
         // Update array of GroupCell objects to display on uitableview
-        socket.on("update_location_and_get_groups_response", callback: { (data, ack) in
+        socket?.on("update_location_and_get_groups_response", callback: { (data, ack) in
             self.updateTableWithGroups(data[0])
         })
         // Join private group response
-        socket.on("join_private_group_response") { (data, ack) in
+        socket?.on("join_private_group_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
             
@@ -103,7 +102,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.present(alert, animated: true, completion: nil)
             }
         }
-        socket.on("join_success") { (data, ack) in
+        socket?.on("join_success") { (data, ack) in
             self.socket.emit("go_online", self.username)
         }
     }
@@ -195,6 +194,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             destinationVC.groupInformation = selectedGroup
             destinationVC.socket = socket
             destinationVC.username = username
+            socket = nil
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.socket = socket
@@ -209,9 +209,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             slideLeftTransition()
             UIView.setAnimationsEnabled(false)
             performSegue(withIdentifier: "joinGroup", sender: self)
-        } else { // Change 
+        } else { // Dismiss and pass data back to the same MessageViewController
             delegate?.joinGroup(selectedGroup)
             slideLeftTransition()
+            socket = nil
             self.dismiss(animated: false, completion: nil)
         }
     }

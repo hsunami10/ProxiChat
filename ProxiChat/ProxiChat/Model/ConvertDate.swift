@@ -34,12 +34,12 @@ class ConvertDate {
         if arr.count == 1 {
             let d = date.date(format: .custom("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"), fromRegion: Region.GMT())! // Convert string to DateRegion object
             let localDate = d.toRegion(Region.Local()) // Convert to local region
-            return localDate.string(custom: date_format) // Customize format
+            return localDate.string(custom: date_format) // Customize & add new format
         } else {
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z" // Choose original date format
             let dateObj = dateFormatter.date(from: date)! // Convert string to Date object
-            return dateObj.string(format: .custom(date_format)) // Customize format
+            return dateObj.string(format: .custom(date_format)) // Customize & add new format
         }
     }
 }

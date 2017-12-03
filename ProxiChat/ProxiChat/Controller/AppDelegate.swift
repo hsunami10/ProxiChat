@@ -11,7 +11,7 @@ import SocketIO
 
 /*
  Key things to remember:
- - Even if you dismiss a viewcontroller, the socket still stays, so those events will still be run
+ - Even if you dismiss a ViewController, it still exists, so those socket events will still be run unless socket = nil
  */
 
 // MARK: Custom Protocols
