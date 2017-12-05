@@ -12,12 +12,11 @@ import CoreLocation
 import SwiftyJSON
 import SVProgressHUD
 
-/*
- TODO:
+/**
+ - TODO:
     - Fix unwrapping optional bug for coordinates? - LINE 84 - possible because there are multiple view controllers?
-    - Creating multiple groups - including replicas of old ones - possibly because the view controllers are hidden - so the location event is triggering twice
+    - Fix transition into MessageViewController
  */
-
 class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
@@ -36,14 +35,13 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        UIView.setAnimationsEnabled(true)
         eventHandlers()
         
         privateSwitch.isOn = false
         groupPasswordTextField.isHidden = true
         confirmPasswordTextField.isHidden = true
         errorLabel.text = ""
-        
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
@@ -70,9 +68,9 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 SVProgressHUD.dismiss()
                 
                 // TODO: Fix transition bug here
+                UIView.setAnimationsEnabled(false)
                 self.slideLeftTransition()
                 self.performSegue(withIdentifier: "goToMessagesAfterCreate", sender: self)
-                UIView.setAnimationsEnabled(false)
             } else {
                 SVProgressHUD.dismiss()
                 SVProgressHUD.showError(withStatus: error_msg)
@@ -167,7 +165,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             destinationVC.groupInformation = newGroup
             destinationVC.socket = socket
             destinationVC.username = username
-            socket = nil
+            socket = nil // Won't receive duplicate events
         }
     }
     /// Edit UIViewController transition right -> left
@@ -202,7 +200,11 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             newGroup.description = ""
         }
         newGroup.is_public = is_public
-        newGroup.password = group_password
+        if is_public { // Check for whether is public
+            newGroup.password = group_password
+        } else {
+            newGroup.password = ""
+        }
         newGroup.title = group_name
     }
     /// Shows the label error message when given invalid UITextField values

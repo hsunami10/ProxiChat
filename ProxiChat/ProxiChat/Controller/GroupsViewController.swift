@@ -33,15 +33,31 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var selectedGroup = Group()
     var justStarted = false
     var delegate: JoinGroupDelegate?
-
+    let sideNavDuration: TimeInterval = 0.3 // Show and hide navigation side menu duration
+    let shiftFactor: CGFloat = 0.66 // How much of the main view the side navigation will take up
+    
     // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!
+    @IBOutlet var groupsViewWidth: NSLayoutConstraint!
+    @IBOutlet var groupsView: UIView!
+    @IBOutlet var navigationViewWidth: NSLayoutConstraint!
+    @IBOutlet var navigationLeftConstraint: NSLayoutConstraint! // Works
+    @IBOutlet var groupsLeftConstraint: NSLayoutConstraint! // Works
     
     override func viewDidLoad() {
         super.viewDidLoad()
         UIView.setAnimationsEnabled(true)
-        
         eventHandlers()
+        
+        // Initialize layout
+        groupsViewWidth.constant = self.view.frame.size.width // Set groups view width to main view width
+        groupsLeftConstraint.constant = 0 // Set groups view to normal position
+        navigationViewWidth.constant = groupsViewWidth.constant * shiftFactor // Set width to a factor of groups view
+        navigationLeftConstraint.constant = -navigationViewWidth.constant // Hide from view
+        
+        // Add a tap gesture to groups view (for navigation side menu)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeNavMenu))
+        groupsView.addGestureRecognizer(tapGesture)
         
         // UITableView initialization
         groupsTableView.delegate = self
@@ -75,10 +91,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             locationManager.requestWhenInUseAuthorization()
             locationManager.startUpdatingLocation()
+            SVProgressHUD.show()
         } else {
             // Update last saved location here
             updateTableWithGroups(UserDefaults.standard.object(forKey: "proxichatLastGroupUpdate")!)
         }
+        self.view.layoutIfNeeded()
     }
     
     // MARK: SocketIO Event Handlers
@@ -116,6 +134,14 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     @IBAction func createGroup(_ sender: Any) {
         UIView.setAnimationsEnabled(true)
         performSegue(withIdentifier: "createGroup", sender: self)
+    }
+    @IBAction func showNavMenu(_ sender: Any) {
+        // If navigation menu isn't showing
+        if navigationLeftConstraint.constant != 0 {
+            toggleSideNav(show: true)
+        } else {
+            toggleSideNav(show: false)
+        }
     }
     
     // MARK: UITableView Methods
@@ -163,6 +189,39 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return cell
     }
     
+    /// Take JSON data and update UITableView.
+    func updateTableWithGroups(_ data: Any) {
+        let success = JSON(data)["success"].boolValue
+        let groups = JSON(data)["data"].arrayValue // Array of groups
+        let error_msg = JSON(data)["error_msg"].stringValue
+        
+        // If getting data was successful
+        if success {
+            self.groupArray = [Group]()
+            for group in groups {
+                let groupObj = Group()
+                let cd = ConvertDate(date: group["date_created"].stringValue)
+                
+                groupObj.coordinates = group["coordinates"].stringValue
+                groupObj.creator = group["created_by"].stringValue
+                groupObj.dateCreated = cd.convert()
+                groupObj.description = group["description"].stringValue
+                groupObj.id = group["id"].stringValue
+                groupObj.is_public = group["is_public"].boolValue
+                groupObj.numMembers = group["number_members"].intValue
+                groupObj.password = group["password"].stringValue
+                groupObj.title = group["title"].stringValue
+                
+                self.groupArray.append(groupObj)
+            }
+            self.groupsTableView.reloadData() // cellforRowAt
+            self.stopLoading()
+        } else {
+            SVProgressHUD.showError(withStatus: error_msg)
+            self.stopLoading()
+        }
+    }
+    
     // MARK: CLLocationManagerDelegate Methods
     
     // TODO: Change radius
@@ -194,7 +253,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             destinationVC.groupInformation = selectedGroup
             destinationVC.socket = socket
             destinationVC.username = username
-            socket = nil
+            socket = nil // Won't receive duplicate events
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.socket = socket
@@ -202,22 +261,22 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
-    /// Selects group, and performs segue to MessageViewController
+    /// Selects group, and performs segue to MessageViewController.
     func joinGroup(_ row: Int) {
         selectedGroup = groupArray[row]
-        if justStarted { // If just started, create MessageViewController
+        if justStarted { // If just started, create MessageViewController - runs once
             slideLeftTransition()
             UIView.setAnimationsEnabled(false)
             performSegue(withIdentifier: "joinGroup", sender: self)
         } else { // Dismiss and pass data back to the same MessageViewController
             delegate?.joinGroup(selectedGroup)
             slideLeftTransition()
-            socket = nil
+            socket = nil // Won't receive duplicate events
             self.dismiss(animated: false, completion: nil)
         }
     }
     
-    /// Edit UIViewController transition right -> left
+    /// Edit UIViewController transition right -> left.
     func slideLeftTransition() {
         let transition = CATransition()
         transition.duration = 0.5
@@ -228,42 +287,40 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     // MARK: Miscellaneous Methods
-    /// Take JSON data and update UITableView
-    func updateTableWithGroups(_ data: Any) {
-        let success = JSON(data)["success"].boolValue
-        let groups = JSON(data)["data"].arrayValue // Array of groups
-        let error_msg = JSON(data)["error_msg"].stringValue
-        
-        // If getting data was successful
-        if success {
-            self.groupArray = [Group]()
-            for group in groups {
-                let groupObj = Group()
-                let cd = ConvertDate(date: group["date_created"].stringValue)
-                
-                groupObj.coordinates = group["coordinates"].stringValue
-                groupObj.creator = group["created_by"].stringValue
-                groupObj.dateCreated = cd.convert()
-                groupObj.description = group["description"].stringValue
-                groupObj.id = group["id"].stringValue
-                groupObj.is_public = group["is_public"].boolValue
-                groupObj.numMembers = group["number_members"].intValue
-                groupObj.password = group["password"].stringValue
-                groupObj.title = group["title"].stringValue
-                
-                self.groupArray.append(groupObj)
-            }
-            self.groupsTableView.reloadData() // cellforRowAt
-            self.refreshControl.endRefreshing()
-        } else {
-            SVProgressHUD.showError(withStatus: error_msg)
-            self.refreshControl.endRefreshing()
+    func stopLoading() {
+        refreshControl.endRefreshing()
+        if SVProgressHUD.isVisible() {
+            SVProgressHUD.dismiss()
         }
     }
     
-    /// Refresh groups in proximity
+    /// Refresh groups in proximity.
     @objc func refreshGroups(_ sender: AnyObject) {
         locationManager.startUpdatingLocation()
     }
-
+    
+    /// Close side navigation menu.
+    @objc func closeNavMenu() {
+        // If the navigation menu is seen, then shift everything to the left
+        if navigationLeftConstraint.constant == 0 {
+            toggleSideNav(show: false)
+        }
+    }
+    
+    /// Toggle side navigation menu.
+    func toggleSideNav(show: Bool) {
+        if show {
+            UIView.animate(withDuration: sideNavDuration) {
+                self.navigationLeftConstraint.constant = 0
+                self.groupsLeftConstraint.constant = self.navigationViewWidth.constant
+                self.view.layoutIfNeeded()
+            }
+        } else {
+            UIView.animate(withDuration: sideNavDuration, animations: {
+                self.navigationLeftConstraint.constant = -self.navigationViewWidth.constant
+                self.groupsLeftConstraint.constant = 0
+                self.view.layoutIfNeeded()
+            })
+        }
+    }
 }

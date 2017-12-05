@@ -60,7 +60,6 @@ proxichat_nsp.on('connection', socket => {
           socket.emit('update_location_and_get_groups_response', { success: false, data: [], error_msg: 'There was a problem getting your location. Please try again.' })
           console.log(err);
         } else {
-          console.log(res.rows);
           socket.emit('update_location_and_get_groups_response',  { success: true, data: res.rows, error_msg: '' })
         }
       })
@@ -124,7 +123,7 @@ proxichat_nsp.on('connection', socket => {
       USERNAME_TO_GROUPS[username][group_id] = group_id
     }
 
-    // QUESTION: Should the user not see this or see this?
+    // QUESTION: Should the user not see this or see this? proxichat_nsp.in
     socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
     pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
       if (err) {
@@ -198,7 +197,7 @@ proxichat_nsp.on('connection', socket => {
   // NOTE: Create a new private/public group
   socket.on('create_group', data => {
     var g_id = shortid.generate()
-    
+
     // TODO: Add group to database - use create_group_proxichat
     pool.query(`SELECT create_group_proxichat('${g_id}', '${data.group_name}', '${data.group_password}', '${data.group_description}', '${data.created_by}', '${data.group_date}', ${data.is_public}, '${data.group_coordinates}', '${shortid.generate()}')`, (err, res) => {
       if (err) {

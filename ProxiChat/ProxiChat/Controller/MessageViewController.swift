@@ -87,7 +87,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Get messages - on response, join room
         // TODO: Paginate messages
         socket.emit("get_messages_on_start", groupInformation.id)
-        print(groupInformation.id)
         configureTableView()
         self.view.layoutIfNeeded()
     }
@@ -148,7 +147,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 let messageObj = Message()
                 messageObj.isAlert = true
                 messageObj.content = JSON(data[0])["content"].stringValue
-
+                
                 self.messageArray.append(messageObj)
             } else {
                 let messageObj = Message()
