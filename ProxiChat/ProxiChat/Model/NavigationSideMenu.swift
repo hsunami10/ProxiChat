@@ -105,10 +105,59 @@ class NavigationSideMenu {
             }
             break
         case 1:
+            UIView.setAnimationsEnabled(true)
+            if show {
+                UIView.animate(withDuration: Durations.sideNavDuration) {
+                    NavigationSideMenu.starredObj.navigationLeftConstraint.constant = 0
+                    NavigationSideMenu.starredObj.starredGroupsViewLeftConstraint.constant = NavigationSideMenu.starredObj.navigationViewWidth.constant
+                    NavigationSideMenu.starredObj.view.layoutIfNeeded()
+                }
+//                NavigationSideMenu.starredObj.groupsTableView.allowsSelection = false
+            } else {
+                UIView.animate(withDuration: Durations.sideNavDuration, animations: {
+                    NavigationSideMenu.starredObj.navigationLeftConstraint.constant = -NavigationSideMenu.starredObj.navigationViewWidth.constant
+                    NavigationSideMenu.starredObj.starredGroupsViewLeftConstraint.constant = 0
+                    NavigationSideMenu.starredObj.view.layoutIfNeeded()
+                }, completion: { (complete) in
+//                    NavigationSideMenu.groupsObj.groupsTableView.allowsSelection = complete
+                })
+            }
             break
         case 2:
+            if show {
+                UIView.animate(withDuration: Durations.sideNavDuration) {
+                    NavigationSideMenu.profileObj.navigationLeftConstraint.constant = 0
+                    NavigationSideMenu.profileObj.profileViewLeftConstraint.constant = NavigationSideMenu.profileObj.navigationViewWidth.constant
+                    NavigationSideMenu.profileObj.view.layoutIfNeeded()
+                }
+                //                NavigationSideMenu.starredObj.groupsTableView.allowsSelection = false
+            } else {
+                UIView.animate(withDuration: Durations.sideNavDuration, animations: {
+                    NavigationSideMenu.profileObj.navigationLeftConstraint.constant = -NavigationSideMenu.profileObj.navigationViewWidth.constant
+                    NavigationSideMenu.profileObj.profileViewLeftConstraint.constant = 0
+                    NavigationSideMenu.profileObj.view.layoutIfNeeded()
+                }, completion: { (complete) in
+                    //                    NavigationSideMenu.groupsObj.groupsTableView.allowsSelection = complete
+                })
+            }
             break
         case 3:
+            if show {
+                UIView.animate(withDuration: Durations.sideNavDuration) {
+                    NavigationSideMenu.settingsObj.navigationLeftConstraint.constant = 0
+                    NavigationSideMenu.settingsObj.settingsViewLeftConstraint.constant = NavigationSideMenu.settingsObj.navigationViewWidth.constant
+                    NavigationSideMenu.settingsObj.view.layoutIfNeeded()
+                }
+                //                NavigationSideMenu.starredObj.groupsTableView.allowsSelection = false
+            } else {
+                UIView.animate(withDuration: Durations.sideNavDuration, animations: {
+                    NavigationSideMenu.settingsObj.navigationLeftConstraint.constant = -NavigationSideMenu.settingsObj.navigationViewWidth.constant
+                    NavigationSideMenu.settingsObj.settingsViewLeftConstraint.constant = 0
+                    NavigationSideMenu.settingsObj.view.layoutIfNeeded()
+                }, completion: { (complete) in
+                    //                    NavigationSideMenu.groupsObj.groupsTableView.allowsSelection = complete
+                })
+            }
             break
         default:
             break

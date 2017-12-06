@@ -110,7 +110,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             "group_id": groupInformation.id,
             "username": username
             ])
-//        UIView.setAnimationsEnabled(true)
     }
     @IBAction func showGroupInfo(_ sender: Any) {
         print("show group info")

@@ -41,22 +41,49 @@ class StarredGroupsViewController: UIViewController {
     }
     
     // MARK: IBOutlet Actions
+    @IBAction func showNavMenu(_ sender: Any) {
+        if navigationLeftConstraint.constant != 0 {
+            NavigationSideMenu.toggleSideNav(show: true)
+        } else {
+            NavigationSideMenu.toggleSideNav(show: false)
+        }
+    }
     @IBAction func navItemClicked(_ sender: UIButton) {
         switch sender.tag {
         case 0:
-            print("go to find groups")
+            performSegue(withIdentifier: "goToGroups", sender: self)
             break
         case 1:
-            print("go to your groups")
+            NavigationSideMenu.toggleSideNav(show: false)
             break
         case 2:
-            print("go to your profile")
+            performSegue(withIdentifier: "goToProfile", sender: self)
             break
         case 3:
-            print("go to settings")
+            performSegue(withIdentifier: "goToSettings", sender: self)
             break
         default:
             break
+        }
+    }
+    
+    // MARK: Navigation Methods
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToGroups" {
+            let destinationVC = segue.destination as! GroupsViewController
+            destinationVC.socket = socket
+            destinationVC.username = username
+            socket = nil
+        } else if segue.identifier == "goToProfile" {
+            let destinationVC = segue.destination as! ProfileViewController
+            destinationVC.socket = socket
+            destinationVC.username = username
+            socket = nil
+        } else if segue.identifier == "goToSettings" {
+            let destinationVC = segue.destination as! SettingsViewController
+            destinationVC.socket = socket
+            destinationVC.username = username
+            socket = nil
         }
     }
     

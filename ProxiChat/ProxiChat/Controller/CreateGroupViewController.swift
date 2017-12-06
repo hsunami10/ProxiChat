@@ -26,6 +26,9 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     var data: Any!
     var coordinates = ""
     
+    /// Store the groups view controller to set socket to nil if a group is created
+    var groupsObj: GroupsViewController!
+    
     @IBOutlet var groupNameTextField: UITextField!
     @IBOutlet var groupDescriptionTextField: UITextField!
     @IBOutlet var privateSwitch: UISwitch!
@@ -169,6 +172,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             destinationVC.socket = socket
             destinationVC.username = username
             socket = nil // Won't receive duplicate events
+            groupsObj.socket = nil // Won't receive duplicate events
         }
     }
     /// Edit UIViewController transition right -> left

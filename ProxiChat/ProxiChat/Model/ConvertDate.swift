@@ -35,7 +35,7 @@ class ConvertDate {
             let d = self.date.date(format: .custom("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"), fromRegion: Region.GMT())! // Convert string to DateRegion object
             let localDate = d.toRegion(Region.Local()) // Convert to local region
             return localDate.string(custom: date_format) // Customize & add new format
-        } else {
+        } else { // If realtime (swift)
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z" // Choose original date format
             let dateObj = dateFormatter.date(from: self.date)! // Convert string to Date object

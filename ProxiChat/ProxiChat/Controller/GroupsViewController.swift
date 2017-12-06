@@ -270,18 +270,22 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.socket = socket
             destinationVC.username = username
+            destinationVC.groupsObj = self // Handle socket = nil only if a group is created
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
             destinationVC.username = username
+            socket = nil
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
             destinationVC.username = username
+            socket = nil
         } else if segue.identifier == "goToSettings" {
             let destinationVC = segue.destination as! SettingsViewController
             destinationVC.socket = socket
             destinationVC.username = username
+            socket = nil
         }
     }
     
@@ -295,6 +299,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else { // Dismiss and pass data back to the same MessageViewController
             delegate?.joinGroup(selectedGroup)
             slideLeftTransition()
+            UIView.setAnimationsEnabled(false)
             socket = nil // Won't receive duplicate events
             self.dismiss(animated: false, completion: nil)
         }

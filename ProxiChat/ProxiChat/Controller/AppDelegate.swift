@@ -15,7 +15,7 @@ import SocketIO
  */
 
 // MARK: Custom Protocols
-/// Join group
+/// Delegate for joining a group. Data (group info) is passed back from the GroupsViewController to the MessageViewController.
 protocol JoinGroupDelegate {
     func joinGroup(_ group: Group)
 }
