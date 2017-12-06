@@ -61,9 +61,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             let group_id = JSON(data[0])["group_id"].stringValue
             
             if success {
-                // After updating location and creating group, save the new location groups
-                UserDefaults.standard.set(self.data, forKey: "proxichatLastGroupUpdate")
-                UserDefaults.standard.synchronize()
+                // After updating location and creating group, cache the new location groups
+                LocalGroupsData.data = self.data
                 self.newGroup.id = group_id
                 SVProgressHUD.dismiss()
                 
@@ -102,7 +101,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     // MARK: CLLocationManagerDelegate Methods
     
-    // TODO: Change radius
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             if String(describing: Date()) == String(describing: location.timestamp) {
@@ -111,11 +109,16 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
                     "username": username,
-                    "radius": 800000
+                    "radius": UserData.radius
                     ])
                 manager.stopUpdatingLocation()
             }
         }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print(error)
+        SVProgressHUD.showError(withStatus: "Location unavailable. Check your internet connection.")
     }
     
     // MARK: IBOutlet Actions
@@ -171,7 +174,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     /// Edit UIViewController transition right -> left
     func slideLeftTransition() {
         let transition = CATransition()
-        transition.duration = 0.5
+        transition.duration = Durations.sideToSideDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromRight

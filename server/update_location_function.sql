@@ -1,5 +1,5 @@
 -- Update user location and return group chats that are in the radius
-CREATE OR REPLACE FUNCTION update_location_proxichat(u_id text, u_coord text, u_rad double precision)
+CREATE OR REPLACE FUNCTION update_location_proxichat(u_id text, u_coord text, u_rad integer)
 RETURNS SETOF groups AS $BODY$
 DECLARE
 	g_id text;

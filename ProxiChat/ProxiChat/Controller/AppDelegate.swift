@@ -20,7 +20,7 @@ protocol JoinGroupDelegate {
     func joinGroup(_ group: Group)
 }
 
-// MARK: Extension String methods
+// MARK: Extensions
 extension String {
     /// Gets pixel height of a string
     func height(withConstrainedWidth width: CGFloat, font: UIFont) -> CGFloat {

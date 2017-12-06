@@ -6,7 +6,7 @@
 //  Copyright © 2017 Michael Hsu. All rights reserved.
 //
 
-/// This class holds all of the group's information
+/// Holds all of a certain group's information.
 class Group {
     var title = ""
     var numMembers = 1

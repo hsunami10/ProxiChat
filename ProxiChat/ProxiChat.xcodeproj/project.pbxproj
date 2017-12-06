@@ -27,6 +27,13 @@
 		E4CB11941FBEAE7F003B627E /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11931FBEAE7F003B627E /* Message.swift */; };
 		E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11951FC0D71D003B627E /* MessageViewController.swift */; };
 		E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DCE3511FD25E8000680BBD /* ConvertDate.swift */; };
+		E4FAB4971FD7154700D2C6E1 /* UserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB4961FD7154700D2C6E1 /* UserData.swift */; };
+		E4FAB4991FD723E600D2C6E1 /* LocalGroupsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB4981FD723E600D2C6E1 /* LocalGroupsData.swift */; };
+		E4FAB49B1FD73F0900D2C6E1 /* Durations.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB49A1FD73F0900D2C6E1 /* Durations.swift */; };
+		E4FAB49D1FD7814900D2C6E1 /* StarredGroupsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB49C1FD7814900D2C6E1 /* StarredGroupsViewController.swift */; };
+		E4FAB49F1FD7828F00D2C6E1 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB49E1FD7828F00D2C6E1 /* ProfileViewController.swift */; };
+		E4FAB4A11FD782B500D2C6E1 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB4A01FD782B500D2C6E1 /* SettingsViewController.swift */; };
+		E4FAB4A51FD7837800D2C6E1 /* NavigationSideMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB4A41FD7837800D2C6E1 /* NavigationSideMenu.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +61,13 @@
 		E4CB11931FBEAE7F003B627E /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		E4CB11951FC0D71D003B627E /* MessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewController.swift; sourceTree = "<group>"; };
 		E4DCE3511FD25E8000680BBD /* ConvertDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvertDate.swift; sourceTree = "<group>"; };
+		E4FAB4961FD7154700D2C6E1 /* UserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserData.swift; sourceTree = "<group>"; };
+		E4FAB4981FD723E600D2C6E1 /* LocalGroupsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalGroupsData.swift; sourceTree = "<group>"; };
+		E4FAB49A1FD73F0900D2C6E1 /* Durations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Durations.swift; sourceTree = "<group>"; };
+		E4FAB49C1FD7814900D2C6E1 /* StarredGroupsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarredGroupsViewController.swift; sourceTree = "<group>"; };
+		E4FAB49E1FD7828F00D2C6E1 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		E4FAB4A01FD782B500D2C6E1 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		E4FAB4A41FD7837800D2C6E1 /* NavigationSideMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationSideMenu.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +146,10 @@
 				E4CB11911FBEA58B003B627E /* Group.swift */,
 				E4CB11931FBEAE7F003B627E /* Message.swift */,
 				E4DCE3511FD25E8000680BBD /* ConvertDate.swift */,
+				E4FAB4961FD7154700D2C6E1 /* UserData.swift */,
+				E4FAB4981FD723E600D2C6E1 /* LocalGroupsData.swift */,
+				E4FAB49A1FD73F0900D2C6E1 /* Durations.swift */,
+				E4FAB4A41FD7837800D2C6E1 /* NavigationSideMenu.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -154,9 +172,12 @@
 				E4B3D75C1FBB849D00F539EA /* WelcomeViewController.swift */,
 				E4B3D75E1FBB857900F539EA /* LogInViewController.swift */,
 				E4B3D7601FBB85AF00F539EA /* SignUpViewController.swift */,
-				E4CB11841FBC10A7003B627E /* GroupsViewController.swift */,
 				E4CB11951FC0D71D003B627E /* MessageViewController.swift */,
 				E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */,
+				E4CB11841FBC10A7003B627E /* GroupsViewController.swift */,
+				E4FAB49C1FD7814900D2C6E1 /* StarredGroupsViewController.swift */,
+				E4FAB49E1FD7828F00D2C6E1 /* ProfileViewController.swift */,
+				E4FAB4A01FD782B500D2C6E1 /* SettingsViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -322,15 +343,22 @@
 			files = (
 				E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */,
 				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
+				E4FAB4971FD7154700D2C6E1 /* UserData.swift in Sources */,
+				E4FAB49B1FD73F0900D2C6E1 /* Durations.swift in Sources */,
 				E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */,
+				E4FAB4A11FD782B500D2C6E1 /* SettingsViewController.swift in Sources */,
 				E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */,
+				E4FAB49F1FD7828F00D2C6E1 /* ProfileViewController.swift in Sources */,
 				E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */,
 				E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */,
 				E4B3D75D1FBB849D00F539EA /* WelcomeViewController.swift in Sources */,
 				E4B3D75F1FBB857900F539EA /* LogInViewController.swift in Sources */,
 				E4CB118D1FBD12B9003B627E /* GroupCell.swift in Sources */,
 				E4CB11941FBEAE7F003B627E /* Message.swift in Sources */,
+				E4FAB4991FD723E600D2C6E1 /* LocalGroupsData.swift in Sources */,
 				E4B3D7611FBB85AF00F539EA /* SignUpViewController.swift in Sources */,
+				E4FAB49D1FD7814900D2C6E1 /* StarredGroupsViewController.swift in Sources */,
+				E4FAB4A51FD7837800D2C6E1 /* NavigationSideMenu.swift in Sources */,
 				E4CB11851FBC10A7003B627E /* GroupsViewController.swift in Sources */,
 				E4486DAF1FC1388D0027C756 /* AlertMessageCell.swift in Sources */,
 			);

@@ -16,7 +16,6 @@ import ChameleonFramework
 /*
  TODO / BUGS
  TODO
- - find a way to display dates on messages
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send - user has left the group
@@ -24,9 +23,10 @@ import ChameleonFramework
  - save what the user wrote in textfield even when the app closes?
  
  BUGS
- - text view changing height doesn't perfectly shift, some overscrolling -- FIX THIS FIRST
+ - text view changing height doesn't perfectly shift, some overscrolling
  - table view doesn't perfectly shift the same amount of points as the keyboard
  - Alert message won't center??? - should I show to current user or no?
+ - only display alert message if someone stars/favorites the group
  */
 
 class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
@@ -110,6 +110,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             "group_id": groupInformation.id,
             "username": username
             ])
+//        UIView.setAnimationsEnabled(true)
     }
     @IBAction func showGroupInfo(_ sender: Any) {
         print("show group info")
@@ -363,7 +364,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     /// Edit UIViewController transition left -> right
     func slideRightTransition() {
         let transition = CATransition()
-        transition.duration = 0.5
+        transition.duration = Durations.sideToSideDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromLeft

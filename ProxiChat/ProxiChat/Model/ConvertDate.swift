@@ -11,7 +11,7 @@ import SwiftDate
 
 /**
  This handles converting UTC timezone dates to local time, from database and realtime.
- For more information on date formatting, visit http://nsdateformatter.com/
+ For more information on date formatting, visit http://nsdateformatter.com/.
  */
 class ConvertDate {
     

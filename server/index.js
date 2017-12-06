@@ -124,7 +124,7 @@ proxichat_nsp.on('connection', socket => {
     }
 
     // QUESTION: Should the user not see this or see this? proxichat_nsp.in
-    socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
+    // socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
     pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
@@ -141,7 +141,7 @@ proxichat_nsp.on('connection', socket => {
     socket.leave('room-' + group_id)
 
     delete USERNAME_TO_GROUPS[username][group_id]
-    socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
+    // socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
     pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
@@ -210,6 +210,19 @@ proxichat_nsp.on('connection', socket => {
     })
   })
 
+  // NOTE: Get the user's info on startup
+  socket.on('get_user_info', username => {
+    pool.query(`SELECT picture, password, radius, is_online, coordinates, bio, username FROM users WHERE username = '${username}'`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        socket.emit('get_user_info_response', { success: false, error_msg: 'There was a problem getting your account information. Please try again.' })
+        console.log(err);
+      } else {
+        socket.emit('get_user_info_response', { success: true, error_msg: '', data: res.rows[0] })
+      }
+    })
+  })
+
   socket.on('disconnect', () => {
     // TODO: user USERNAME_TO_GROUPS to send "user has left the group" to room if not starred
     // NOTE: Check if is starred in database, if not, then use socketID to get username to get group_id (if exists) to get room
@@ -223,7 +236,7 @@ proxichat_nsp.on('connection', socket => {
 // NOTE: General Connection - Not "online" - welcome, log in, sign up
 io.on('connection', socket => {
 
-  // Sign up
+  // NOTE: Sign up
   socket.on('sign_up', (username, password) => {
     // First connect to check whether the username exists
     pool.connect()
