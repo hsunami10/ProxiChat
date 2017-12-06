@@ -22,15 +22,10 @@ class StarredGroupsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        UIView.setAnimationsEnabled(true)
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
-        
-        // Add a tap gesture to groups view (for navigation side menu)
-        // TOOD: Add drag / swipe close side navigation menu
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeNavMenu))
-        tapGesture.cancelsTouchesInView = false
-        starredGroupsView.addGestureRecognizer(tapGesture)
         
         self.view.layoutIfNeeded()
     }

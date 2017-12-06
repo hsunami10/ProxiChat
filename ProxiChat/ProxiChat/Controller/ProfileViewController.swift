@@ -22,9 +22,12 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        UIView.setAnimationsEnabled(true)
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
+        
+        self.view.layoutIfNeeded()
     }
 
     override func didReceiveMemoryWarning() {
