@@ -155,6 +155,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         performSegue(withIdentifier: "createGroup", sender: self)
     }
     @IBAction func showNavMenu(_ sender: Any) {
+        UIView.setAnimationsEnabled(true)
         // If navigation menu isn't showing
         if navigationLeftConstraint.constant != 0 {
             NavigationSideMenu.toggleSideNav(show: true)
@@ -176,12 +177,15 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             NavigationSideMenu.toggleSideNav(show: false)
             break
         case 1:
+            NavigationSideMenu.addTransition(sender: self)
             performSegue(withIdentifier: "goToStarred", sender: self)
             break
         case 2:
+            NavigationSideMenu.addTransition(sender: self)
             performSegue(withIdentifier: "goToProfile", sender: self)
             break
         case 3:
+            NavigationSideMenu.addTransition(sender: self)
             performSegue(withIdentifier: "goToSettings", sender: self)
             break
         default:
@@ -308,7 +312,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     /// Edit UIViewController transition right -> left.
     func slideLeftTransition() {
         let transition = CATransition()
-        transition.duration = Durations.sideToSideDuration
+        transition.duration = Durations.messageTransitionDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromRight

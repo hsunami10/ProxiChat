@@ -363,7 +363,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     /// Edit UIViewController transition left -> right
     func slideRightTransition() {
         let transition = CATransition()
-        transition.duration = Durations.sideToSideDuration
+        transition.duration = Durations.messageTransitionDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromLeft

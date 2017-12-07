@@ -37,6 +37,7 @@ class SettingsViewController: UIViewController {
     
     // MARK: IBOutlet Actions
     @IBAction func showNavMenu(_ sender: Any) {
+        UIView.setAnimationsEnabled(true)
         if navigationLeftConstraint.constant != 0 {
             NavigationSideMenu.toggleSideNav(show: true)
         } else {
@@ -46,12 +47,15 @@ class SettingsViewController: UIViewController {
     @IBAction func navItemClicked(_ sender: UIButton) {
         switch sender.tag {
         case 0:
+            NavigationSideMenu.addTransition(sender: self)
             performSegue(withIdentifier: "goToGroups", sender: self)
             break
         case 1:
+            NavigationSideMenu.addTransition(sender: self)
             performSegue(withIdentifier: "goToStarred", sender: self)
             break
         case 2:
+            NavigationSideMenu.addTransition(sender: self)
             performSegue(withIdentifier: "goToProfile", sender: self)
             break
         case 3:

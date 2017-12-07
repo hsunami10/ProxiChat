@@ -13,7 +13,7 @@ import UIKit
  Holds all the necessary properties of the navigation side menu
  */
 class NavigationSideMenu {
-    static let duration: TimeInterval = 0.25
+    static let duration: TimeInterval = Durations.sideNavDuration
     static let shiftFactor: CGFloat = 0.70
     /**
      Differentiates which views the user is on.
@@ -164,13 +164,26 @@ class NavigationSideMenu {
         }
     }
     
-    /// Transition from view controller to view controller once a side navigation item is clicked.
-    static func beginTransition(segueIdentifier: String, sender: Int) {
+    /**
+     Add the necessary transition from view controller to view controller once a side navigation item is clicked.
+     Also sets UIView animations to false.
+    */
+    static func addTransition(sender: Any?) {
         let transition = CATransition()
-        transition.duration = Durations.sideToSideDuration
+        transition.duration = Durations.navigationDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
-        transition.type = kCATransitionPush
+        transition.type = kCATransitionMoveIn
         transition.subtype = kCATransitionFromRight
-//        self.view.window?.layer.add(transition, forKey: nil)
+        
+        if sender is GroupsViewController {
+            groupsObj.view.window?.layer.add(transition, forKey: nil)
+        } else if sender is StarredGroupsViewController {
+            starredObj.view.window?.layer.add(transition, forKey: nil)
+        } else if sender is ProfileViewController {
+            profileObj.view.window?.layer.add(transition, forKey: nil)
+        } else if sender is SettingsViewController {
+            settingsObj.view.window?.layer.add(transition, forKey: nil)
+        }
+        UIView.setAnimationsEnabled(false)
     }
 }

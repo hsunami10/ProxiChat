@@ -178,7 +178,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     /// Edit UIViewController transition right -> left
     func slideLeftTransition() {
         let transition = CATransition()
-        transition.duration = Durations.sideToSideDuration
+        transition.duration = Durations.messageTransitionDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromRight
