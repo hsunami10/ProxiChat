@@ -33,7 +33,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var refreshControl: UIRefreshControl!
     var groupArray: [Group] = [Group]()
     var selectedGroup = Group()
-    var justStarted = false // If first time visited find groups view
     var delegate: JoinGroupDelegate?
     
     // TODO: Add label in order to change label text?
@@ -74,8 +73,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
-        // Handle what to do when visiting for the first time
-        if justStarted {
+        // If the user is not connected
+        if !UserData.connected {
             // TODO: Add reconnecting later - socket.reconnect()
             socket?.connect(timeoutAfter: 5.0, withHandler: {
                 SVProgressHUD.showError(withStatus: "Connection Failed.")
@@ -84,6 +83,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             socket?.joinNamespace("/proxichat_namespace")
             locationManager.requestWhenInUseAuthorization()
             SVProgressHUD.show()
+            UserData.connected = true
         } else {
             // Update last saved location here
             updateTableWithGroups(LocalGroupsData.data)
@@ -296,7 +296,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     /// Selects group, and performs segue to MessageViewController.
     func joinGroup(_ row: Int) {
         selectedGroup = groupArray[row]
-        if justStarted { // If just started, create MessageViewController - runs once
+        if UserData.createNewMessageViewController { // Create MessageViewController
+            // TODO: Bug here - the default animation doesn't go away
             slideLeftTransition()
             UIView.setAnimationsEnabled(false)
             performSegue(withIdentifier: "joinGroup", sender: self)

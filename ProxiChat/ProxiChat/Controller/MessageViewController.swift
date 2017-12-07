@@ -355,7 +355,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             destinationVC.delegate = self
             destinationVC.socket = socket
             destinationVC.username = username
-            destinationVC.justStarted = false
+            UserData.createNewMessageViewController = false
         }
     }
     

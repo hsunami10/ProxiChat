@@ -235,7 +235,7 @@ proxichat_nsp.on('connection', socket => {
 
 // NOTE: General Connection - Not "online" - welcome, log in, sign up
 io.on('connection', socket => {
-
+  
   // NOTE: Sign up
   socket.on('sign_up', (username, password) => {
     // First connect to check whether the username exists

@@ -55,7 +55,6 @@ class LogInViewController: UIViewController {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
             destinationVC.username = usernameTextField.text!
-            destinationVC.justStarted = true
         }
     }
     
