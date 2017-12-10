@@ -32,7 +32,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var groupArray: [Group] = [Group]()
     var selectedGroup = Group()
     var delegate: JoinGroupDelegate?
-    let locationError = "There was a problem getting your location. Please check your permissions and/or internet connection."
+    let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
     
     // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!
@@ -45,6 +45,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        UIView.setAnimationsEnabled(true)
         eventHandlers()
         
         // Initialize navigation menu layout and gestures
@@ -59,6 +60,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
         refreshControl.addTarget(self, action: #selector(refreshGroups(_:)), for: .valueChanged)
+        
+        // Initialize error alert
+        locationErrorAlert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { (action) in
+            UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
+        }))
+        locationErrorAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
         // Add Refresh Control to Table View
         if #available(iOS 10.0, *) {
@@ -91,6 +98,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func eventHandlers() {
         // Once you successfully joined the namespace, get user info
         socket?.on("join_success", callback: { (data, ack) in
+            // TODO: Get the user's profile picture
             self.socket.emit("get_user_info", self.username)
         })
         // Get user info
@@ -255,8 +263,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             UserData.connected = true
             manager.startUpdatingLocation()
         } else if status == .denied {
-            manager.requestWhenInUseAuthorization()
-            SVProgressHUD.showError(withStatus: locationError)
+            // TODO: Should I have this here, or is it too annoying?
+            present(locationErrorAlert, animated: true, completion: nil)
         }
     }
     
@@ -264,7 +272,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         stopLoading()
-        SVProgressHUD.showError(withStatus: locationError)
+        present(locationErrorAlert, animated: true, completion: nil)
     }
     
     // MARK: Navigation Methods

@@ -11,17 +11,16 @@ import SocketIO
 import AVFoundation
 import Photos
 import SVProgressHUD
+import SwiftyJSON
 
 /*
- - FIX textview editing
+ - maybe add conversions to other distance units?
  */
 
-class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     
     var socket: SocketIOClient!
     var username = ""
-    let placeholder = "Edit Bio"
-    let placeholderColor: UIColor = UIColor.lightGray
     let imagePicker = UIImagePickerController()
     
     /// Alert dialog to show when the user denies permissions.
@@ -35,42 +34,49 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     
     @IBOutlet var profilePicture: UIImageView!
-    @IBOutlet var usernameLabel: UILabel!
-    @IBOutlet var bioTextView: UITextView!
-    @IBOutlet var saveButton: UIButton!
+    @IBOutlet var radiusTextField: UITextField!
+    @IBOutlet var radiusSlider: UISlider!
     
+    @IBOutlet var profileTableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        UIView.setAnimationsEnabled(true)
         UserData.createNewMessageViewController = true
-        
-        // TODO: Figure out how to convert to string to any to UIImage and figure out how to store the user's profile picture
-        // TODO: Fix this
-        print("image: " + UserData.picture)
-        if UserData.picture.split(separator: " ").count == 0 {
-            profilePicture.image = UIImage(named: "noPicture")
-        } else {
-            profilePicture.image = (UserData.picture as Any?) as? UIImage
-        }
+        eventHandlers()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
         
-        // Add tap gesture to image view
-        let tapGesure = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
-        profilePicture.addGestureRecognizer(tapGesure)
+        // Initialize elements
+        let profileTap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+        profilePicture.addGestureRecognizer(profileTap)
         
-        usernameLabel.text = UserData.username
-        if UserData.bio.split(separator: " ").count == 0 {
-            bioTextView.text = placeholder
-            bioTextView.textColor = placeholderColor
+        // TODO: Get the user profile picture here
+        
+        // Circular image view
+        profilePicture.layer.borderWidth = 1
+        profilePicture.layer.borderColor = UIColor.lightGray.cgColor
+        profilePicture.layer.cornerRadius = profilePicture.frame.height / 2
+        profilePicture.clipsToBounds = true
+        
+        // Initialize slider
+        radiusSlider.minimumValue = 1
+        radiusSlider.maximumValue = 100
+        radiusSlider.isContinuous = true
+        radiusSlider.addTarget(self, action: #selector(endSliding(_:)), for: UIControlEvents.touchUpInside)
+        radiusSlider.addTarget(self, action: #selector(endSliding(_:)), for: UIControlEvents.touchUpOutside)
+        
+        radiusTextField.delegate = self
+        radiusTextField.keyboardType = .numberPad
+        radiusTextField.text = String(UserData.radius)
+        
+        if UserData.radius > 100 {
+            radiusSlider.value = radiusSlider.maximumValue
         } else {
-            bioTextView.text = UserData.bio
+            radiusSlider.value = Float(UserData.radius)
         }
-        bioTextView.layer.borderWidth = 2
-        bioTextView.layer.borderColor = UIColor.lightGray.cgColor
         
-        bioTextView.delegate = self
         imagePicker.delegate = self
         imagePicker.allowsEditing = false // Don't allow the user to edit images - TODO: Change this?
         
@@ -90,12 +96,17 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: SocketIO Event Handlers
+    func eventHandlers() {
+        // Only received if there's an error updating the radius
+        socket?.on("update_radius_response", callback: { (data, ack) in
+            SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
+        })
+    }
+    
     // MARK: UIImagePickerController Delegate Methods
-    // TODO: Add some way for the users to preview what their picture would look like
+    // TODO: Add some way for the users to preview what their picture would look like and edit
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let image = info[UIImagePickerControllerOriginalImage]
-        print(image)
-        UserData.picture = String(describing: image!)
         if let chosenImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
             profilePicture.contentMode = .scaleAspectFit
             profilePicture.image = chosenImage
@@ -103,29 +114,38 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
         dismiss(animated: true, completion: nil)
     }
     
-    // MARK: UITextView Delegate Methods
-    func textViewDidBeginEditing(_ textView: UITextView) {
-        // Fake placeholder
-        if textView.textColor == placeholderColor {
-            textView.text = ""
-            textView.textColor = UIColor.black
+    // MARK: UITextField Delegate Methods
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
         }
     }
-    func textViewDidEndEditing(_ textView: UITextView) {
-        // Change spaces and empty text to the placeholder
-        if textView.text.split(separator: " ").count == 0 {
-            textView.text = placeholder
-            textView.textColor = placeholderColor
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        // If not an empty string
+        if let value = Int(textField.text!) {
+            if value < 1 {
+                textField.text = "1"
+                radiusSlider.value = 1
+            } else if value >= Int(radiusSlider.maximumValue.rounded()) {
+                // If greater than the max, set the slider to the max
+                radiusSlider.value = radiusSlider.maximumValue
+            } else {
+                // If in range of min and max
+                radiusSlider.value = Float(value)
+            }
+            // Save radius and update
+            updateRadius()
+        } else {
+            textField.text = "1"
+            radiusSlider.value = 1
+            updateRadius()
         }
-    }
-    func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
-        print("should end editing")
-        return true
     }
     
     // MARK: IBOutlet Actions
-    @IBAction func saveProfile(_ sender: UIButton) {
-        // TODO: Use sockets to update in database and update realtime in UserData
+    @IBAction func radiusChanged(_ sender: UISlider) {
+        radiusTextField.text = String(Int(sender.value.rounded()))
     }
     @IBAction func showNavMenu(_ sender: Any) {
         UIView.setAnimationsEnabled(true)
@@ -178,6 +198,15 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
     }
     
     // MARK: Miscellaneous Methods
+    /// Locally saves the radius and updates in the database.
+    func updateRadius() {
+        UserData.radius = Int(radiusTextField.text!)!
+        socket?.emit("update_radius", username, UserData.radius)
+    }
+    /// Save and update the radius ONLY when the slider has finished sliding.
+    @objc func endSliding(_ aNotification: NSNotification) {
+        updateRadius()
+    }
     /// Show an action sheet to choose between "camera" and "photo library" when the image is clicked.
     @objc func imageTapped() {
         UIView.setAnimationsEnabled(true)
@@ -198,7 +227,7 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
                 break
             case AVAuthorizationStatus.denied:
                 // Diaplay error alert
-                self.deniedAlert.message = "You have not allowed this app to access the camera. Please go to Settings to update permissions."
+                self.deniedAlert.message = AlertMessages.deniedCamera
                 self.present(self.deniedAlert, animated: true, completion: nil)
                 break
             default:
@@ -221,7 +250,7 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
                 break
             case PHAuthorizationStatus.denied:
                 // Diaplay error alert
-                self.deniedAlert.message = "You have not allowed this app to access the photo library. Please go to Settings to update permissions."
+                self.deniedAlert.message = AlertMessages.deniedPhotoLibrary
                 self.present(self.deniedAlert, animated: true, completion: nil)
                 break
             default:
@@ -233,6 +262,10 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
     }
     
     @objc func closeNavMenu() {
+        // If the text field is being edited, end editing
+        if radiusTextField.isEditing {
+            radiusTextField.endEditing(true)
+        }
         if navigationLeftConstraint.constant == 0 {
             NavigationSideMenu.toggleSideNav(show: false)
         }
@@ -244,7 +277,7 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
             imagePicker.sourceType = .camera
             present(imagePicker, animated: true, completion: nil)
         } else {
-            unavailableAlert.message = "The camera is unavailable right now. It may already be in use."
+            unavailableAlert.message = AlertMessages.unavailableCamera
             present(unavailableAlert, animated: true, completion: nil)
         }
     }
@@ -255,7 +288,7 @@ class ProfileViewController: UIViewController, UITextViewDelegate, UIImagePicker
             imagePicker.sourceType = .photoLibrary
             present(imagePicker, animated: true, completion: nil)
         } else {
-            unavailableAlert.message = "The photo library is unavailable right now. It may already be in use."
+            unavailableAlert.message = AlertMessages.unavailablePhotoLibrary
             present(unavailableAlert, animated: true, completion: nil)
         }
     }

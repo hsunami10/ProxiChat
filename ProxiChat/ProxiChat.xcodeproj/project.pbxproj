@@ -27,6 +27,9 @@
 		E4CB11941FBEAE7F003B627E /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11931FBEAE7F003B627E /* Message.swift */; };
 		E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11951FC0D71D003B627E /* MessageViewController.swift */; };
 		E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DCE3511FD25E8000680BBD /* ConvertDate.swift */; };
+		E4E258FD1FDD9EF6006B807C /* ProfileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E258FB1FDD9EF6006B807C /* ProfileCell.swift */; };
+		E4E258FE1FDD9EF6006B807C /* ProfileCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4E258FC1FDD9EF6006B807C /* ProfileCell.xib */; };
+		E4E259001FDDAEA4006B807C /* AlertMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E258FF1FDDAEA4006B807C /* AlertMessages.swift */; };
 		E4FAB4971FD7154700D2C6E1 /* UserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB4961FD7154700D2C6E1 /* UserData.swift */; };
 		E4FAB4991FD723E600D2C6E1 /* LocalGroupsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB4981FD723E600D2C6E1 /* LocalGroupsData.swift */; };
 		E4FAB49B1FD73F0900D2C6E1 /* Durations.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FAB49A1FD73F0900D2C6E1 /* Durations.swift */; };
@@ -61,6 +64,9 @@
 		E4CB11931FBEAE7F003B627E /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		E4CB11951FC0D71D003B627E /* MessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewController.swift; sourceTree = "<group>"; };
 		E4DCE3511FD25E8000680BBD /* ConvertDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvertDate.swift; sourceTree = "<group>"; };
+		E4E258FB1FDD9EF6006B807C /* ProfileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCell.swift; sourceTree = "<group>"; };
+		E4E258FC1FDD9EF6006B807C /* ProfileCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileCell.xib; sourceTree = "<group>"; };
+		E4E258FF1FDDAEA4006B807C /* AlertMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessages.swift; sourceTree = "<group>"; };
 		E4FAB4961FD7154700D2C6E1 /* UserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserData.swift; sourceTree = "<group>"; };
 		E4FAB4981FD723E600D2C6E1 /* LocalGroupsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalGroupsData.swift; sourceTree = "<group>"; };
 		E4FAB49A1FD73F0900D2C6E1 /* Durations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Durations.swift; sourceTree = "<group>"; };
@@ -150,6 +156,7 @@
 				E4FAB4981FD723E600D2C6E1 /* LocalGroupsData.swift */,
 				E4FAB49A1FD73F0900D2C6E1 /* Durations.swift */,
 				E4FAB4A41FD7837800D2C6E1 /* NavigationSideMenu.swift */,
+				E4E258FF1FDDAEA4006B807C /* AlertMessages.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -157,6 +164,7 @@
 		E4B3D7591FBAADF000F539EA /* View */ = {
 			isa = PBXGroup;
 			children = (
+				E4E258FA1FDD9ED8006B807C /* Custom Profile Cell */,
 				E4486DA81FC1385F0027C756 /* Custom Message Cells */,
 				E4CB11861FBD1207003B627E /* Custom Group Cell */,
 				E4B3D74A1FBA9D2000F539EA /* Main.storyboard */,
@@ -197,6 +205,15 @@
 				E4CB118C1FBD12B9003B627E /* GroupCell.xib */,
 			);
 			path = "Custom Group Cell";
+			sourceTree = "<group>";
+		};
+		E4E258FA1FDD9ED8006B807C /* Custom Profile Cell */ = {
+			isa = PBXGroup;
+			children = (
+				E4E258FB1FDD9EF6006B807C /* ProfileCell.swift */,
+				E4E258FC1FDD9EF6006B807C /* ProfileCell.xib */,
+			);
+			path = "Custom Profile Cell";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -264,6 +281,7 @@
 				E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */,
 				E4B3D7511FBA9D2000F539EA /* LaunchScreen.storyboard in Resources */,
 				E4486DB01FC1388D0027C756 /* AlertMessageCell.xib in Resources */,
+				E4E258FE1FDD9EF6006B807C /* ProfileCell.xib in Resources */,
 				E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */,
 				E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */,
 				E4CB118E1FBD12B9003B627E /* GroupCell.xib in Resources */,
@@ -341,12 +359,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4E259001FDDAEA4006B807C /* AlertMessages.swift in Sources */,
 				E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */,
 				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
 				E4FAB4971FD7154700D2C6E1 /* UserData.swift in Sources */,
 				E4FAB49B1FD73F0900D2C6E1 /* Durations.swift in Sources */,
 				E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */,
 				E4FAB4A11FD782B500D2C6E1 /* SettingsViewController.swift in Sources */,
+				E4E258FD1FDD9EF6006B807C /* ProfileCell.swift in Sources */,
 				E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */,
 				E4FAB49F1FD7828F00D2C6E1 /* ProfileViewController.swift in Sources */,
 				E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */,

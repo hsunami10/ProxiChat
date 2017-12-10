@@ -22,6 +22,7 @@ class SettingsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        UIView.setAnimationsEnabled(true)
         UserData.createNewMessageViewController = true
 
         // Initialize navigation menu layout and gestures

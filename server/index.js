@@ -64,6 +64,18 @@ proxichat_nsp.on('connection', socket => {
         }
       })
   })
+
+  // NOTE: EDIT PROFILE EVENTS
+  socket.on('update_radius', (username, radius) => {
+    pool.query(`UPDATE users SET radius = ${radius} WHERE username = '${username}'`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        socket.emit('update_radius_response', { error_msg: 'There was a problem updating your radius. Please try again.' })
+        console.log(err);
+      }
+    })
+  })
+
   // NOTE: Update location and get groups after creating group
   socket.on('update_location_and_get_groups_create', data => {
     let username = data.username
@@ -122,32 +134,16 @@ proxichat_nsp.on('connection', socket => {
       USERNAME_TO_GROUPS[username] = {}
       USERNAME_TO_GROUPS[username][group_id] = group_id
     }
-
-    // QUESTION: Should the user not see this or see this? proxichat_nsp.in
-    // socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
-    // pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
-    //   if (err) {
-    //     // TODO: Handle so it doesn't crash
-    //     console.log(err);
-    //   }
-    // })
   })
 
   // NOTE: Only triggered when going back to groups page and not starred
   socket.on('leave_room', data => {
     var group_id = data.group_id
     var username = data.username
-    
+
     socket.leave('room-' + group_id)
 
     delete USERNAME_TO_GROUPS[username][group_id]
-    // socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
-    // pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
-    //   if (err) {
-    //     // TODO: Handle so it doesn't crash
-    //     console.log(err);
-    //   }
-    // })
   })
 
   // NOTE: Getting messages

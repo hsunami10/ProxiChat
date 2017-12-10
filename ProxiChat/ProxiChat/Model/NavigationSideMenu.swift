@@ -130,14 +130,14 @@ class NavigationSideMenu {
                     NavigationSideMenu.profileObj.profileViewLeftConstraint.constant = NavigationSideMenu.profileObj.navigationViewWidth.constant
                     NavigationSideMenu.profileObj.view.layoutIfNeeded()
                 }
-                //                NavigationSideMenu.starredObj.groupsTableView.allowsSelection = false
+                NavigationSideMenu.profileObj.profileTableView.allowsSelection = false
             } else {
                 UIView.animate(withDuration: Durations.sideNavDuration, animations: {
                     NavigationSideMenu.profileObj.navigationLeftConstraint.constant = -NavigationSideMenu.profileObj.navigationViewWidth.constant
                     NavigationSideMenu.profileObj.profileViewLeftConstraint.constant = 0
                     NavigationSideMenu.profileObj.view.layoutIfNeeded()
                 }, completion: { (complete) in
-                    //                    NavigationSideMenu.groupsObj.groupsTableView.allowsSelection = complete
+                    NavigationSideMenu.profileObj.profileTableView.allowsSelection = complete
                 })
             }
             break

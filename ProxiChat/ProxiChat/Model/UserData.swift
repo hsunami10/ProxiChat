@@ -10,7 +10,7 @@ import Foundation
 
 /// Holds all of the user data, and is globally excessible. Updated only on start up and whenever the user's profile is updated.
 struct UserData {
-    static var picture = ""
+    static var picture = "" // NOTE: This might not work - fix this later
     static var password = ""
     static var radius = 0
     static var is_online = true // TODO: Change online later
