@@ -112,7 +112,7 @@ proxichat_nsp.on('connection', socket => {
   socket.on('join_room', data => {
     var group_id = data.group_id
     var username = data.username
-    var content = username + ' has joined the group.'
+
     socket.join('room-' + group_id)
 
     // Add to object to handle leaving the room while terminating app or logging out
@@ -125,29 +125,29 @@ proxichat_nsp.on('connection', socket => {
 
     // QUESTION: Should the user not see this or see this? proxichat_nsp.in
     // socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
-    pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
-      if (err) {
-        // TODO: Handle so it doesn't crash
-        console.log(err);
-      }
-    })
+    // pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
+    //   if (err) {
+    //     // TODO: Handle so it doesn't crash
+    //     console.log(err);
+    //   }
+    // })
   })
 
   // NOTE: Only triggered when going back to groups page and not starred
   socket.on('leave_room', data => {
     var group_id = data.group_id
     var username = data.username
-    var content = username + ' has left the group.'
+    
     socket.leave('room-' + group_id)
 
     delete USERNAME_TO_GROUPS[username][group_id]
     // socket.to('room-' + group_id).emit('receive_message', { is_alert: true, content })
-    pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
-      if (err) {
-        // TODO: Handle so it doesn't crash
-        console.log(err);
-      }
-    })
+    // pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${shortid.generate()}', '${username}', '${group_id}', '${content}', true)`, (err, res) => {
+    //   if (err) {
+    //     // TODO: Handle so it doesn't crash
+    //     console.log(err);
+    //   }
+    // })
   })
 
   // NOTE: Getting messages
@@ -235,7 +235,7 @@ proxichat_nsp.on('connection', socket => {
 
 // NOTE: General Connection - Not "online" - welcome, log in, sign up
 io.on('connection', socket => {
-  
+
   // NOTE: Sign up
   socket.on('sign_up', (username, password) => {
     // First connect to check whether the username exists

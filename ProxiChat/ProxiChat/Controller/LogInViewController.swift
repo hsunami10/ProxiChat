@@ -11,7 +11,12 @@ import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 
-class LogInViewController: UIViewController {
+/*
+ TODO / BUGS:
+ - add sending email if someone forgot username and/or password
+ */
+
+class LogInViewController: UIViewController, UITextFieldDelegate {
     
     var socket: SocketIOClient?
 
@@ -23,6 +28,7 @@ class LogInViewController: UIViewController {
         super.viewDidLoad()
         errorLabel.text = " "
         eventHandlers()
+        passwordTextField.delegate = self
     }
 
     override func didReceiveMemoryWarning() {
@@ -30,6 +36,7 @@ class LogInViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: SocketIO Event Handlers
     func eventHandlers() {
         socket?.on("sign_in_response", callback: { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
@@ -50,6 +57,14 @@ class LogInViewController: UIViewController {
         })
     }
     
+    // MARK: UITextField Delegate Methods
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        validateFields(usernameTextField.text!, passwordTextField.text!)
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
@@ -58,19 +73,23 @@ class LogInViewController: UIViewController {
         }
     }
     
+    // MARK: IBOutlet Actions
     @IBAction func logIn(_ sender: Any) {
-        let username = usernameTextField.text!
-        let password = passwordTextField.text!
-        
+        validateFields(usernameTextField.text!, passwordTextField.text!)
+    }
+    
+    @IBAction func goBack(_ sender: Any) {
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: Miscellaneous Methods
+    /// Validates all inputs. If all inputs pass, then signs in the user.
+    func validateFields(_ username: String, _ password: String) {
         if username.split(separator: " ").count != 1 || password.split(separator: " ").count != 1 {
             errorLabel.text = "Invalid username and/or password."
         } else {
             SVProgressHUD.show()
             socket?.emit("sign_in", username, password)
         }
-    }
-    
-    @IBAction func goBack(_ sender: Any) {
-        self.dismiss(animated: true, completion: nil)
     }
 }

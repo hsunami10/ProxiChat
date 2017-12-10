@@ -57,7 +57,7 @@ class NavigationSideMenu {
             NavigationSideMenu.currentView = 1
         } else if object is ProfileViewController {
             NavigationSideMenu.profileObj = object as! ProfileViewController
-            NavigationSideMenu.profileObj.navigationViewWidth.constant = NavigationSideMenu.profileObj.view.frame.size.width
+            NavigationSideMenu.profileObj.profileViewWidth.constant = NavigationSideMenu.profileObj.view.frame.size.width
             NavigationSideMenu.profileObj.profileViewLeftConstraint.constant = 0
             NavigationSideMenu.profileObj.navigationViewWidth.constant = NavigationSideMenu.profileObj.profileViewWidth.constant * NavigationSideMenu.shiftFactor
             NavigationSideMenu.profileObj.navigationLeftConstraint.constant = -NavigationSideMenu.profileObj.navigationViewWidth.constant
@@ -69,7 +69,7 @@ class NavigationSideMenu {
             NavigationSideMenu.currentView = 2
         } else if object is SettingsViewController {
             NavigationSideMenu.settingsObj = object as! SettingsViewController
-            NavigationSideMenu.settingsObj.navigationViewWidth.constant = NavigationSideMenu.settingsObj.view.frame.size.width
+            NavigationSideMenu.settingsObj.settingsViewWidth.constant = NavigationSideMenu.settingsObj.view.frame.size.width
             NavigationSideMenu.settingsObj.settingsViewLeftConstraint.constant = 0
             NavigationSideMenu.settingsObj.navigationViewWidth.constant = NavigationSideMenu.settingsObj.settingsViewWidth.constant * NavigationSideMenu.shiftFactor
             NavigationSideMenu.settingsObj.navigationLeftConstraint.constant = -NavigationSideMenu.settingsObj.navigationViewWidth.constant

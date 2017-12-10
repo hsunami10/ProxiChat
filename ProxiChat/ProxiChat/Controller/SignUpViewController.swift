@@ -11,19 +11,21 @@ import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 
-class SignUpViewController: UIViewController {
+class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     var socket: SocketIOClient?
     
     @IBOutlet var usernameTextField: UITextField!
     @IBOutlet var passwordTextField: UITextField!
     @IBOutlet var repeatPasswordTextField: UITextField!
+    @IBOutlet var emailTextField: UITextField!
     @IBOutlet var errorLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         errorLabel.text = " "
         eventHandlers()
+        emailTextField.delegate = self
     }
     
     override func didReceiveMemoryWarning() {
@@ -31,6 +33,7 @@ class SignUpViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: SocketIO Event Handlers
     func eventHandlers() {
         socket?.on("sign_up_response", callback: { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
@@ -51,6 +54,14 @@ class SignUpViewController: UIViewController {
         })
     }
     
+    // MARK: UITextField Delegate Methods
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        signUp(usernameTextField.text!, passwordTextField.text!, repeatPasswordTextField.text!, emailTextField.text!)
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
@@ -59,24 +70,36 @@ class SignUpViewController: UIViewController {
         }
     }
     
+    // MARK: IBOutlet Actions
+    /// Checks for valid inputs, then sends accordingly.
     @IBAction func submitSignUp(_ sender: Any) {
-        let username = usernameTextField.text!
-        let password = passwordTextField.text!
-        let passwordRetype = repeatPasswordTextField.text!
-        
-        // TODO: Add requirements to password
-        if username.split(separator: " ").count != 1 || password.split(separator: " ").count != 1 || passwordRetype.split(separator: " ").count != 1 {
-            errorLabel.text = "Invalid username and/or password."
-        } else if password != passwordRetype {
-            errorLabel.text = "Passwords do not match."
-        } else {
-            SVProgressHUD.show()
-            socket?.emit("sign_up", username, password)
-        }
+        signUp(usernameTextField.text!, passwordTextField.text!, repeatPasswordTextField.text!, emailTextField.text!)
     }
     
     @IBAction func goBack(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
-
+    
+    // MARK: Miscellaneous Methods
+    /// Checks whether the email is valid or not using regex.
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegEx = "(?:[a-z0-9!#$%\\&'*+/=?\\^_`{|}~-]+(?:\\.[a-z0-9!#$%\\&'*+/=?\\^_`{|}"+"~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\"+"x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-"+"z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5"+"]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-"+"9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21"+"-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"
+        let emailTest = NSPredicate(format: "SELF MATCHES[c] %@", emailRegEx)
+        return emailTest.evaluate(with: email)
+    }
+    
+    /// Validates all inputs. If all pass, then registers the user.
+    func signUp(_ username: String, _ password: String, _ passwordRetype: String, _ email: String) {
+        // TODO: Optional: Add requirements to password?
+        if username.split(separator: " ").count != 1 || password.split(separator: " ").count != 1 || passwordRetype.split(separator: " ").count != 1 {
+            errorLabel.text = "Invalid username and/or password."
+        } else if password != passwordRetype {
+            errorLabel.text = "Passwords do not match."
+        } else if !isValidEmail(email) {
+            errorLabel.text = "Email address not valid."
+        } else {
+            SVProgressHUD.show()
+            socket?.emit("sign_up", username, password)
+        }
+    }
 }

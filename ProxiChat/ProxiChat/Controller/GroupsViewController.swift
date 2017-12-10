@@ -14,14 +14,12 @@ import CoreLocation
 
 /*
  TODO / BUGS
+ - DO THIS FIRST -> REMOVE ALERT CELLS
+ - FIX THIS FIRST -> default animation when creating a messageviewcontroller doesn't go away
  - add swipe/drag close to side navigation menu
  - maybe change all SVProgressHUD.showError to UIAlertControllers?
  - have an option for the user to choose when to update (maybe?)
  - only store in database when starred and delete when unstarred
- - Set a condition in viewDidLoad() to be based on "finding groups" or "personal groups"
- - for personal groups:
-    - don't include refresh or location manager - get groups from database and put those into groupArray instead
-    - have a different title label
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -34,6 +32,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var groupArray: [Group] = [Group]()
     var selectedGroup = Group()
     var delegate: JoinGroupDelegate?
+    let locationError = "There was a problem getting your location. Please check your permissions and/or internet connection."
     
     // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!
@@ -46,7 +45,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UIView.setAnimationsEnabled(true)
         eventHandlers()
         
         // Initialize navigation menu layout and gestures
@@ -73,7 +71,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
-        // If the user is not connected
+        // If the user is not connected, then connect to the server and request location usage.
         if !UserData.connected {
             // TODO: Add reconnecting later - socket.reconnect()
             socket?.connect(timeoutAfter: 5.0, withHandler: {
@@ -82,8 +80,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             })
             socket?.joinNamespace("/proxichat_namespace")
             locationManager.requestWhenInUseAuthorization()
-            SVProgressHUD.show()
-            UserData.connected = true
         } else {
             // Update last saved location here
             updateTableWithGroups(LocalGroupsData.data)
@@ -113,8 +109,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.picture = String(describing: user["picture"]!)
                 UserData.radius = user["radius"] as! Int
                 UserData.username = String(describing: user["username"]!)
-                
-                self.locationManager.startUpdatingLocation()
             } else {
                 SVProgressHUD.dismiss()
                 SVProgressHUD.showError(withStatus: error_msg)
@@ -195,7 +189,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     
     // MARK: UITableView Methods
-    
     // When a group is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // Check public or private
@@ -240,7 +233,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     // MARK: CLLocationManagerDelegate Methods
-    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             // If the current location (timestamps are the same)
@@ -256,10 +248,23 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
+    /// Start updating location if the user is not connected and if the user authorized location when in use. This happens ONLY on start up.
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse && !UserData.connected {
+            SVProgressHUD.show()
+            UserData.connected = true
+            manager.startUpdatingLocation()
+        } else if status == .denied {
+            manager.requestWhenInUseAuthorization()
+            SVProgressHUD.showError(withStatus: locationError)
+        }
+    }
+    
     // TODO: Change location error handling later
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
-        SVProgressHUD.showError(withStatus: "Location unavailable. Check your internet connection.")
+        stopLoading()
+        SVProgressHUD.showError(withStatus: locationError)
     }
     
     // MARK: Navigation Methods

@@ -39,6 +39,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var lastTextViewHeight: CGFloat! // Keep track of different in height change to change the messageTableViewHeight constraint also
     let maxNumOfLines: CGFloat = 5.8657937806874 // TODO: 5 lines - change this accordingly
     let placeholder = "Enter a message..."
+    let placeholderColor: UIColor = UIColor.lightGray
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var messageTableView: UITableView!
@@ -74,7 +75,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.keyboardType = .alphabet
         // Make a fake placeholder
         messageTextView.text = placeholder
-        messageTextView.textColor = UIColor.lightGray
+        messageTextView.textColor = placeholderColor
         lastTextViewHeight = messageTextView.contentSize.height
         messageTextView.frame.size = CGSize(width: messageTextView.frame.size.width, height: lastTextViewHeight)
         
@@ -240,16 +241,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: UITextViewDelegate Methods
     func textViewDidBeginEditing(_ textView: UITextView) {
         // Change placeholder to actual text
-        if textView.textColor == UIColor.lightGray {
+        if textView.textColor == placeholderColor {
             textView.text = ""
             textView.textColor = UIColor.black
         }
     }
     func textViewDidEndEditing(_ textView: UITextView) {
-        // Change empty text to placeholder
-        if textView.text.isEmpty {
+        // Change spaces and empty text to placeholder
+        if textView.text.split(separator: " ").count == 0 {
             textView.text = placeholder
-            textView.textColor = UIColor.lightGray
+            textView.textColor = placeholderColor
         }
     }
     // TODO: Figure out scrolling text view
