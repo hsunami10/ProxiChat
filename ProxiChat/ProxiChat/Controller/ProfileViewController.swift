@@ -36,11 +36,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     
     @IBOutlet var profilePicture: UIImageView!
-    @IBOutlet var radiusTextField: UITextField!
-    @IBOutlet var radiusSlider: UISlider!
-    
     @IBOutlet var profileTableView: UITableView!
     @IBOutlet var profileTableViewHeightConstraint: NSLayoutConstraint!
+    
+    @IBOutlet var radiusTextField: UITextField!
+    @IBOutlet var radiusSlider: UISlider!
+    @IBOutlet var radiusView: UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,8 +90,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         profileTableView.delegate = self
         profileTableView.dataSource = self
-        profileTableViewHeightConstraint.constant = 300 // TODO: Change this to be responsive later - get distance of textview to bottom of screen
-        profileTableView.rowHeight = profileTableView.frame.height / CGFloat(numOfRows) // Currenty 300/4 = 75
+        
+        // Space from bottom left corner of radius view to the bottom of the profile view
+        let leftOverSpace = (profileView.frame.height - profileView.frame.origin.y) - (radiusView.frame.origin.y + radiusView.frame.height - profileView.frame.origin.y)
+        // Subtract top constraint and bottom constraint - bottom constraint is equal to the cell labels' distance from left
+        profileTableViewHeightConstraint.constant = leftOverSpace - 8 - 16
+        profileTableView.rowHeight = profileTableViewHeightConstraint.constant / CGFloat(numOfRows)
         
         // Initialize alerts
         deniedAlert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { (action) in
@@ -119,6 +124,17 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     // MARK: UITableView Delegate Methods
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // TODO: Handle select here - go to new viewcontroller
+        switch indexPath.row {
+        case 1:
+            break
+        case 2:
+            break
+        case 3:
+            break
+        default:
+            break
+        }
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return numOfRows

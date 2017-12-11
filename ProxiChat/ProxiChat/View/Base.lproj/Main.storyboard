@@ -592,10 +592,10 @@
                                         </constraints>
                                     </imageView>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="xEi-pY-MeK">
-                                        <rect key="frame" x="0.0" y="376" width="414" height="300"/>
+                                        <rect key="frame" x="0.0" y="376" width="414" height="320"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="300" id="VPc-7j-8a2"/>
+                                            <constraint firstAttribute="height" constant="320" id="VPc-7j-8a2"/>
                                         </constraints>
                                     </tableView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3zc-zD-3un" userLabel="Radius View">
@@ -662,10 +662,10 @@
                                     <constraint firstItem="3zc-zD-3un" firstAttribute="top" secondItem="bbe-y3-C19" secondAttribute="bottom" constant="8" id="Ho3-Pl-MLQ"/>
                                     <constraint firstAttribute="width" constant="414" id="Izj-fJ-6ML"/>
                                     <constraint firstItem="H3z-qm-y7K" firstAttribute="centerX" secondItem="eqZ-ch-Kfg" secondAttribute="centerX" id="Kti-0k-cls"/>
+                                    <constraint firstItem="3zc-zD-3un" firstAttribute="top" secondItem="H3z-qm-y7K" secondAttribute="bottom" constant="59" id="L9N-sY-jem"/>
                                     <constraint firstItem="3zc-zD-3un" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" constant="16" id="LAO-C2-3oQ"/>
                                     <constraint firstItem="hSC-c1-N3T" firstAttribute="top" secondItem="eqZ-ch-Kfg" secondAttribute="top" id="LDm-d3-nnc"/>
                                     <constraint firstItem="bbe-y3-C19" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" constant="16" id="MuP-nH-9u5"/>
-                                    <constraint firstAttribute="bottom" secondItem="xEi-pY-MeK" secondAttribute="bottom" constant="40" id="R1l-OM-cq9"/>
                                     <constraint firstItem="H3z-qm-y7K" firstAttribute="top" secondItem="hSC-c1-N3T" secondAttribute="bottom" constant="8" id="SSe-Tg-IAh"/>
                                     <constraint firstAttribute="trailing" secondItem="xEi-pY-MeK" secondAttribute="trailing" id="W0o-Mc-KBj"/>
                                     <constraint firstItem="xEi-pY-MeK" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" id="bJp-nh-aQp"/>
@@ -695,6 +695,7 @@
                         <outlet property="profileViewWidth" destination="Izj-fJ-6ML" id="FgW-vi-2Ff"/>
                         <outlet property="radiusSlider" destination="k5S-oC-Ua7" id="Lau-EH-BCN"/>
                         <outlet property="radiusTextField" destination="SZs-RV-sQU" id="nYu-5f-Nx3"/>
+                        <outlet property="radiusView" destination="3zc-zD-3un" id="dut-Nz-EdJ"/>
                         <segue destination="hE2-Tj-l73" kind="show" identifier="goToStarred" id="GOK-JU-5Z0"/>
                         <segue destination="PhU-jY-AdF" kind="show" identifier="goToSettings" id="N6I-j8-8OR"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goToGroups" id="ZXB-nB-nwm"/>
