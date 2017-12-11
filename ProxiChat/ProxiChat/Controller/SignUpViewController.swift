@@ -99,7 +99,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             errorLabel.text = "Email address not valid."
         } else {
             SVProgressHUD.show()
-            socket?.emit("sign_up", username, password)
+            socket?.emit("sign_up", username, password, email)
         }
     }
 }

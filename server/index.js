@@ -208,7 +208,7 @@ proxichat_nsp.on('connection', socket => {
 
   // NOTE: Get the user's info on startup
   socket.on('get_user_info', username => {
-    pool.query(`SELECT picture, password, radius, is_online, coordinates, bio, username FROM users WHERE username = '${username}'`, (err, res) => {
+    pool.query(`SELECT picture, password, radius, is_online, coordinates, bio, username, email FROM users WHERE username = '${username}'`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
         socket.emit('get_user_info_response', { success: false, error_msg: 'There was a problem getting your account information. Please try again.' })
@@ -233,17 +233,17 @@ proxichat_nsp.on('connection', socket => {
 io.on('connection', socket => {
 
   // NOTE: Sign up
-  socket.on('sign_up', (username, password) => {
+  socket.on('sign_up', (username, password, email) => {
     // First connect to check whether the username exists
     pool.connect()
       .then(client => {
-        return client.query(`SELECT * FROM users WHERE username = '${username}'`)
+        return client.query(`SELECT * FROM users WHERE username = '${username}' OR email = '${email}'`)
           .then(users => {
             if (users.rows.length === 0) {
-              client.query(`INSERT INTO users (username, password) VALUES ('${username}', '${password}')`)
+              client.query(`INSERT INTO users (username, password, email) VALUES ('${username}', '${password}', '${email}')`)
               socket.emit('sign_up_response', { success: true, error_msg: '' })
             } else {
-              socket.emit('sign_up_response', { success: false, error_msg: 'Username already taken.' })
+              socket.emit('sign_up_response', { success: false, error_msg: 'Username/email already taken.' })
             }
             client.release()
           })

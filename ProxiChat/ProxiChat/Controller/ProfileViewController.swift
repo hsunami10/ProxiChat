@@ -17,11 +17,13 @@ import SwiftyJSON
  - maybe add conversions to other distance units?
  */
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
     var socket: SocketIOClient!
     var username = ""
     let imagePicker = UIImagePickerController()
+    /// TableView number of rows
+    let numOfRows = 4
     
     /// Alert dialog to show when the user denies permissions.
     let deniedAlert = UIAlertController(title: "Oops!", message: "", preferredStyle: UIAlertControllerStyle.alert)
@@ -38,6 +40,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet var radiusSlider: UISlider!
     
     @IBOutlet var profileTableView: UITableView!
+    @IBOutlet var profileTableViewHeightConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,6 +54,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         // Initialize elements
         let profileTap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
         profilePicture.addGestureRecognizer(profileTap)
+        
+        // Add custom cell to table view
+        profileTableView.register(UINib(nibName: "ProfileCell", bundle: nil), forCellReuseIdentifier: "profileCell")
+        profileTableView.isScrollEnabled = false
         
         // TODO: Get the user profile picture here
         
@@ -80,6 +87,11 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         imagePicker.delegate = self
         imagePicker.allowsEditing = false // Don't allow the user to edit images - TODO: Change this?
         
+        profileTableView.delegate = self
+        profileTableView.dataSource = self
+        profileTableViewHeightConstraint.constant = 300 // TODO: Change this to be responsive later - get distance of textview to bottom of screen
+        profileTableView.rowHeight = profileTableView.frame.height / CGFloat(numOfRows) // Currenty 300/4 = 75
+        
         // Initialize alerts
         deniedAlert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { (action) in
             // Open Settings app
@@ -102,6 +114,56 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         socket?.on("update_radius_response", callback: { (data, ack) in
             SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
         })
+    }
+    
+    // MARK: UITableView Delegate Methods
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // TODO: Handle select here - go to new viewcontroller
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return numOfRows
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "profileCell", for: indexPath) as! ProfileCell
+        cell.titleLabel.isEnabled = false // Always gray title label
+        
+        switch indexPath.row {
+        case 0:
+            cell.titleLabel.text = "Username"
+            cell.contentLabel.text = UserData.username
+            cell.contentLabel.isEnabled = false
+            cell.accessoryType = .none
+            cell.isUserInteractionEnabled = false
+            break
+        case 1:
+            cell.titleLabel.text = "Password"
+            // Make fake password
+            var i = UserData.password.count
+            var pwd = ""
+            while(i > 0) {
+                pwd.append("●")
+                i = i - 1
+            }
+            cell.contentLabel.text = pwd
+            break
+        case 2:
+            cell.titleLabel.text = "Bio"
+            if UserData.bio.split(separator: " ").count == 0 {
+                cell.contentLabel.text = "Edit Bio"
+            } else {
+                cell.contentLabel.text = UserData.bio
+            }
+            break
+        case 3:
+            cell.titleLabel.text = "Email"
+            cell.contentLabel.text = UserData.email
+            break
+        default:
+            break
+        }
+        
+        return cell
     }
     
     // MARK: UIImagePickerController Delegate Methods

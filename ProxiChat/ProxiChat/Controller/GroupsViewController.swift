@@ -112,6 +112,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 // Cache user data in global struct
                 UserData.bio = String(describing: user["bio"]!)
                 UserData.coordinates = String(describing: user["coordinates"]!)
+                UserData.email = String(describing: user["email"]!)
                 UserData.is_online = user["is_online"] as! Bool
                 UserData.password = String(describing: user["password"]!)
                 UserData.picture = String(describing: user["picture"]!)

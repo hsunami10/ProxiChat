@@ -17,6 +17,7 @@ struct UserData {
     static var coordinates = ""
     static var username = ""
     static var bio = ""
+    static var email = ""
     
     /**
      Shows whether or not the user visited the "find groups" view controller for the first time, without visiting "messages" before.
