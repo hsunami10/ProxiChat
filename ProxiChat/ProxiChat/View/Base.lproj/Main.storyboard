@@ -728,7 +728,7 @@
                                             <constraint firstAttribute="height" constant="30" id="Yna-Ra-oHJ"/>
                                             <constraint firstAttribute="width" constant="30" id="nMP-kI-jZJ"/>
                                         </constraints>
-                                        <state key="normal" title="Button" image="cancelIcon"/>
+                                        <state key="normal" title="Back" image="cancelIcon"/>
                                         <connections>
                                             <action selector="close:" destination="Y61-PD-gJS" eventType="touchUpInside" id="kKe-rx-VqA"/>
                                         </connections>
@@ -742,11 +742,19 @@
                                     <constraint firstAttribute="height" constant="50" id="oUg-4i-hpF"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aL6-ee-7J0" userLabel="Content View">
+                                <rect key="frame" x="0.0" y="70" width="414" height="666"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="aL6-ee-7J0" firstAttribute="bottom" secondItem="K1O-Xa-PtV" secondAttribute="bottom" id="7v1-sE-BUX"/>
                             <constraint firstItem="elb-DL-bIL" firstAttribute="leading" secondItem="K1O-Xa-PtV" secondAttribute="leading" id="Exl-Sd-ttZ"/>
+                            <constraint firstItem="aL6-ee-7J0" firstAttribute="trailing" secondItem="K1O-Xa-PtV" secondAttribute="trailing" id="Lyb-jc-orw"/>
                             <constraint firstItem="elb-DL-bIL" firstAttribute="top" secondItem="K1O-Xa-PtV" secondAttribute="top" id="bLH-m2-3jl"/>
+                            <constraint firstItem="aL6-ee-7J0" firstAttribute="top" secondItem="elb-DL-bIL" secondAttribute="bottom" id="euP-eh-XWX"/>
+                            <constraint firstItem="aL6-ee-7J0" firstAttribute="leading" secondItem="K1O-Xa-PtV" secondAttribute="leading" id="ewk-Bv-bKV"/>
                             <constraint firstItem="elb-DL-bIL" firstAttribute="trailing" secondItem="K1O-Xa-PtV" secondAttribute="trailing" id="fhv-VH-PPE"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="K1O-Xa-PtV"/>
@@ -757,7 +765,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="azi-Fl-d9C" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="7688" y="-973"/>
+            <point key="canvasLocation" x="7686.9565217391309" y="-973.36956521739137"/>
         </scene>
         <!--CreateGroupViewController-->
         <scene sceneID="1oB-yE-NFZ">
