@@ -11,7 +11,7 @@ import SocketIO
 
 class StarredGroupsViewController: UIViewController {
     
-    var socket: SocketIOClient!
+    var socket: SocketIOClient?
     var username = ""
 
     @IBOutlet var starredGroupsViewLeftConstraint: NSLayoutConstraint!

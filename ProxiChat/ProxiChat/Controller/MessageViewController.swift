@@ -32,7 +32,7 @@ import ChameleonFramework
 class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
 
     var groupInformation: Group!
-    var socket: SocketIOClient!
+    var socket: SocketIOClient?
     var messageArray: [Message] = [Message]()
     var username: String!
     var lastNumOfLines: CGFloat = 1.82381823433138 // Saves the last number of line change
@@ -87,7 +87,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         // Get messages - on response, join room
         // TODO: Paginate messages
-        socket.emit("get_messages_on_start", groupInformation.id)
+        socket?.emit("get_messages_on_start", groupInformation.id)
         configureTableView()
         self.view.layoutIfNeeded()
     }
@@ -107,7 +107,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         slideRightTransition()
         UIView.setAnimationsEnabled(false)
         performSegue(withIdentifier: "goBackToGroups", sender: self)
-        socket.emit("leave_room", [
+        socket?.emit("leave_room", [
             "group_id": groupInformation.id,
             "username": username
             ])
@@ -116,14 +116,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         print("show group info")
     }
     @IBAction func sendPressed(_ sender: Any) {
-        if messageTextView.text?.split(separator: " ").count != 0 && messageTextView.textColor != UIColor.lightGray {
+        if !Validate.isInvalidInput(messageTextView.text!) && messageTextView.textColor != UIColor.lightGray {
             messageTextView.endEditing(true)
             messageTextView.isEditable = false
             sendButton.isEnabled = false
             
-            // TODO: *** Change Date ***
             // TODO: *** Get picture ***
-            socket.emit("send_message", [
+            socket?.emit("send_message", [
                 "username": username,
                 "content": messageTextView.text!,
                 "date_sent": String(describing: Date()),
@@ -142,7 +141,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
         // Realtime receiving messages
-        socket.on("receive_message") { (data, ack) in
+        socket?.on("receive_message") { (data, ack) in
             let isAlert = JSON(data[0])["is_alert"].boolValue
             if isAlert {
                 let messageObj = Message()
@@ -173,7 +172,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         // Get messages on join room
-        socket.on("get_messages_on_start_response") { (data, ack) in
+        socket?.on("get_messages_on_start_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
             let messages = JSON(data[0])["messages"].arrayValue
@@ -197,7 +196,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.messageTableView.reloadData()
                 
                 // Join room after you get messages
-                self.socket.emit("join_room", [
+                self.socket?.emit("join_room", [
                     "group_id": self.groupInformation.id,
                     "username": self.username
                     ])
@@ -317,7 +316,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.text = placeholder
         messageTextView.textColor = UIColor.lightGray
         lastTextViewHeight = (messageTextView.font?.lineHeight)!
-        socket.emit("get_messages_on_start", group.id)
+        socket?.emit("get_messages_on_start", group.id)
     }
     
     // MARK: Keyboard (NotificationCenter) Methods
@@ -340,7 +339,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
         if let userInfo = aNotification.userInfo {
             let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
-//            let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
             
             UIView.animate(withDuration: duration) {
                 self.messageViewBottomConstraint.constant = 0
@@ -356,6 +354,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             destinationVC.delegate = self
             destinationVC.socket = socket
             destinationVC.username = username
+            destinationVC.messageObj = self // If the user navigates to any other view controller, then set the socket = nil
             UserData.createNewMessageViewController = false
         }
     }

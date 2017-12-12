@@ -85,7 +85,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     // MARK: Miscellaneous Methods
     /// Validates all inputs. If all inputs pass, then signs in the user.
     func validateFields(_ username: String, _ password: String) {
-        if username.split(separator: " ").count != 1 || password.split(separator: " ").count != 1 {
+        if !Validate.isOneWord(username) || !Validate.isOneWord(password) {
             errorLabel.text = "Invalid username and/or password."
         } else {
             SVProgressHUD.show()

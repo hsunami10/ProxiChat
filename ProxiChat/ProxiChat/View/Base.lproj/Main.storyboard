@@ -267,7 +267,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iHk-Fi-P3E">
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iHk-Fi-P3E" userLabel="Menu Button">
                                                 <rect key="frame" x="8" y="10" width="30" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="30" id="N50-0P-SWD"/>
@@ -278,7 +278,7 @@
                                                     <action selector="showNavMenu:" destination="G5J-Lj-dvA" eventType="touchUpInside" id="OwT-Tz-Wmh"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BGH-36-WQQ">
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BGH-36-WQQ" userLabel="Create Button">
                                                 <rect key="frame" x="376" y="10" width="30" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="30" id="eQb-ss-0S5"/>
@@ -338,7 +338,7 @@
                         <outlet property="groupsViewWidth" destination="FCO-KD-OTE" id="cX4-ui-TTL"/>
                         <outlet property="navigationLeftConstraint" destination="Hvb-ae-wXU" id="WxZ-Y3-DC3"/>
                         <outlet property="navigationViewWidth" destination="UQ1-9N-A0W" id="KXV-fr-8aI"/>
-                        <segue destination="bNj-gu-XBO" kind="show" identifier="joinGroup" id="38h-l6-3Or"/>
+                        <segue destination="bNj-gu-XBO" kind="show" identifier="joinGroup" animates="NO" id="38h-l6-3Or"/>
                         <segue destination="vQY-sM-udf" kind="show" identifier="createGroup" id="mxj-Sx-jCE"/>
                         <segue destination="hE2-Tj-l73" kind="show" identifier="goToStarred" id="3O4-fG-PY9"/>
                         <segue destination="rqU-je-oq9" kind="show" identifier="goToProfile" id="Uez-De-SON"/>
@@ -571,7 +571,6 @@
                                                 </constraints>
                                                 <state key="normal" title="Button" image="menuIcon"/>
                                                 <connections>
-                                                    <action selector="showNavMenu:" destination="hE2-Tj-l73" eventType="touchUpInside" id="Cc8-5m-D9e"/>
                                                     <action selector="showNavMenu:" destination="rqU-je-oq9" eventType="touchUpInside" id="FEj-gL-1qp"/>
                                                 </connections>
                                             </button>
@@ -699,11 +698,66 @@
                         <segue destination="hE2-Tj-l73" kind="show" identifier="goToStarred" id="GOK-JU-5Z0"/>
                         <segue destination="PhU-jY-AdF" kind="show" identifier="goToSettings" id="N6I-j8-8OR"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goToGroups" id="ZXB-nB-nwm"/>
+                        <segue destination="Y61-PD-gJS" kind="show" identifier="goToEditProfile" animates="NO" id="W4f-bs-fVO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2DK-Aq-gq2" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="6444.9275362318849" y="-973.36956521739137"/>
+        </scene>
+        <!--EditProfileViewController-->
+        <scene sceneID="UDg-eg-ZNo">
+            <objects>
+                <viewController title="EditProfileViewController" id="Y61-PD-gJS" customClass="EditProfileViewController" customModule="ProxiChat" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="1Ma-YL-TiF" userLabel="Main View">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="elb-DL-bIL" userLabel="Info View">
+                                <rect key="frame" x="0.0" y="20" width="414" height="50"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Edit Profile" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Sbq-C6-OEg" userLabel="Title">
+                                        <rect key="frame" x="160.66666666666666" y="13" width="93" height="24"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="50s-ni-F0X" userLabel="Menu Button">
+                                        <rect key="frame" x="8" y="10" width="30" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="Yna-Ra-oHJ"/>
+                                            <constraint firstAttribute="width" constant="30" id="nMP-kI-jZJ"/>
+                                        </constraints>
+                                        <state key="normal" title="Button" image="cancelIcon"/>
+                                        <connections>
+                                            <action selector="close:" destination="Y61-PD-gJS" eventType="touchUpInside" id="kKe-rx-VqA"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="Sbq-C6-OEg" firstAttribute="centerX" secondItem="elb-DL-bIL" secondAttribute="centerX" id="0LM-si-LNV"/>
+                                    <constraint firstItem="50s-ni-F0X" firstAttribute="leading" secondItem="elb-DL-bIL" secondAttribute="leading" constant="8" id="4ir-xN-Q8d"/>
+                                    <constraint firstItem="Sbq-C6-OEg" firstAttribute="centerY" secondItem="elb-DL-bIL" secondAttribute="centerY" id="E58-J0-dDZ"/>
+                                    <constraint firstItem="50s-ni-F0X" firstAttribute="centerY" secondItem="elb-DL-bIL" secondAttribute="centerY" id="Xxl-6a-Zxp"/>
+                                    <constraint firstAttribute="height" constant="50" id="oUg-4i-hpF"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="elb-DL-bIL" firstAttribute="leading" secondItem="K1O-Xa-PtV" secondAttribute="leading" id="Exl-Sd-ttZ"/>
+                            <constraint firstItem="elb-DL-bIL" firstAttribute="top" secondItem="K1O-Xa-PtV" secondAttribute="top" id="bLH-m2-3jl"/>
+                            <constraint firstItem="elb-DL-bIL" firstAttribute="trailing" secondItem="K1O-Xa-PtV" secondAttribute="trailing" id="fhv-VH-PPE"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="K1O-Xa-PtV"/>
+                    </view>
+                    <connections>
+                        <outlet property="titleLabel" destination="Sbq-C6-OEg" id="3GU-Ku-OBj"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="azi-Fl-d9C" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7688" y="-973"/>
         </scene>
         <!--CreateGroupViewController-->
         <scene sceneID="1oB-yE-NFZ">
@@ -1105,7 +1159,6 @@
                                                 <state key="normal" title="Button" image="menuIcon"/>
                                                 <connections>
                                                     <action selector="showNavMenu:" destination="PhU-jY-AdF" eventType="touchUpInside" id="3EH-A3-ESq"/>
-                                                    <action selector="showNavMenu:" destination="hE2-Tj-l73" eventType="touchUpInside" id="7Cq-ew-4wg"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -1240,10 +1293,10 @@
         <image name="noPicture" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="N6I-j8-8OR"/>
+        <segue reference="itQ-Lz-83Q"/>
         <segue reference="38h-l6-3Or"/>
         <segue reference="Uez-De-SON"/>
-        <segue reference="GOK-JU-5Z0"/>
-        <segue reference="ZXB-nB-nwm"/>
+        <segue reference="3O4-fG-PY9"/>
+        <segue reference="FVf-rN-Wko"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -14,13 +14,13 @@ import SVProgressHUD
 
 /**
  - TODO:
-    - Fix unwrapping optional bug for coordinates? - LINE 84 - possible because there are multiple view controllers?
+    - Fix unwrapping optional bug for coordinates? - LINE 87 - possible because there are multiple view controllers?
     - Fix transition into MessageViewController
  */
 class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
-    var socket: SocketIOClient!
+    var socket: SocketIOClient?
     var username = ""
     var newGroup = Group()
     var data: Any!
@@ -38,7 +38,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UIView.setAnimationsEnabled(true)
         eventHandlers()
         
         privateSwitch.isOn = false
@@ -133,7 +132,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             // If it is a private group
             if self.privateSwitch.isOn {
                 // Has to be valid text in group name and password can't have any spaces
-                if self.groupNameTextField.text?.split(separator: " ").count == 0 || self.groupPasswordTextField.text?.split(separator: " ").count != 1 || self.confirmPasswordTextField.text?.split(separator: " ").count != 1 {
+                if !Validate.isInvalidInput(self.groupNameTextField.text!) || !Validate.isOneWord(self.groupPasswordTextField.text!) || !Validate.isOneWord(self.confirmPasswordTextField.text!) {
                     self.invalidInput("Invalid input. Please try again.")
                 } else if self.groupPasswordTextField.text != self.confirmPasswordTextField.text { // Check for matching passwords
                     self.invalidInput("Passwords do not match.")
@@ -143,7 +142,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     self.locationManager.startUpdatingLocation()
                 }
             } else {
-                if self.groupNameTextField.text?.split(separator: " ").count == 0 {
+                if Validate.isInvalidInput(self.groupNameTextField.text!) {
                     self.invalidInput("Invalid input. Please try again.")
                 } else {
                     SVProgressHUD.show()
@@ -155,10 +154,12 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
+    
     @IBAction func switchChange(_ sender: Any) {
         groupPasswordTextField.isHidden = !groupPasswordTextField.isHidden
         confirmPasswordTextField.isHidden = !confirmPasswordTextField.isHidden
     }
+    
     @IBAction func cancel(_ sender: Any) {
         socket = nil // Won't receive duplicate events
         self.dismiss(animated: true, completion: nil)
@@ -175,6 +176,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             groupsObj.socket = nil // Won't receive duplicate events
         }
     }
+    
     /// Edit UIViewController transition right -> left
     func slideLeftTransition() {
         let transition = CATransition()
@@ -214,6 +216,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         }
         newGroup.title = group_name
     }
+    
     /// Shows the label error message when given invalid UITextField values
     func invalidInput(_ message: String) {
         errorLabel.text = message

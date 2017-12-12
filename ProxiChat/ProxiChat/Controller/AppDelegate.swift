@@ -12,6 +12,9 @@ import SocketIO
 /*
  Key things to remember:
  - Even if you dismiss a ViewController, it still exists, so those socket events will still be run unless socket = nil
+ - To fully customize segue animations:
+    - Uncheck "Animates" in Main.storyboard
+    - Dismiss without animation
  */
 
 // MARK: Custom Protocols

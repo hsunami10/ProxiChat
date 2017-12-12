@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		62B2CB57F5955BEB62EEEF6B /* Pods_ProxiChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */; };
+		E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40A948D1FDF76FC006097B1 /* Validate.swift */; };
 		E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DA91FC1387B0027C756 /* MessageCell.swift */; };
 		E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4486DAA1FC1387B0027C756 /* MessageCell.xib */; };
 		E4486DAF1FC1388D0027C756 /* AlertMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */; };
@@ -26,6 +27,7 @@
 		E4CB11921FBEA58B003B627E /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11911FBEA58B003B627E /* Group.swift */; };
 		E4CB11941FBEAE7F003B627E /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11931FBEAE7F003B627E /* Message.swift */; };
 		E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CB11951FC0D71D003B627E /* MessageViewController.swift */; };
+		E4D23C6B1FDF1A080059ED54 /* EditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D23C6A1FDF1A080059ED54 /* EditProfileViewController.swift */; };
 		E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DCE3511FD25E8000680BBD /* ConvertDate.swift */; };
 		E4E258FD1FDD9EF6006B807C /* ProfileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E258FB1FDD9EF6006B807C /* ProfileCell.swift */; };
 		E4E258FE1FDD9EF6006B807C /* ProfileCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4E258FC1FDD9EF6006B807C /* ProfileCell.xib */; };
@@ -43,6 +45,7 @@
 		2CC0C6E83D7922C71F0368E2 /* Pods-ProxiChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProxiChat.release.xcconfig"; path = "Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat.release.xcconfig"; sourceTree = "<group>"; };
 		5F8E292D05CB9C559164906A /* Pods-ProxiChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProxiChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat.debug.xcconfig"; sourceTree = "<group>"; };
 		ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProxiChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E40A948D1FDF76FC006097B1 /* Validate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validate.swift; sourceTree = "<group>"; };
 		E4486DA91FC1387B0027C756 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
 		E4486DAA1FC1387B0027C756 /* MessageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MessageCell.xib; sourceTree = "<group>"; };
 		E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageCell.swift; sourceTree = "<group>"; };
@@ -63,6 +66,7 @@
 		E4CB11911FBEA58B003B627E /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		E4CB11931FBEAE7F003B627E /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		E4CB11951FC0D71D003B627E /* MessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewController.swift; sourceTree = "<group>"; };
+		E4D23C6A1FDF1A080059ED54 /* EditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileViewController.swift; sourceTree = "<group>"; };
 		E4DCE3511FD25E8000680BBD /* ConvertDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvertDate.swift; sourceTree = "<group>"; };
 		E4E258FB1FDD9EF6006B807C /* ProfileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCell.swift; sourceTree = "<group>"; };
 		E4E258FC1FDD9EF6006B807C /* ProfileCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileCell.xib; sourceTree = "<group>"; };
@@ -157,6 +161,7 @@
 				E4FAB49A1FD73F0900D2C6E1 /* Durations.swift */,
 				E4FAB4A41FD7837800D2C6E1 /* NavigationSideMenu.swift */,
 				E4E258FF1FDDAEA4006B807C /* AlertMessages.swift */,
+				E40A948D1FDF76FC006097B1 /* Validate.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -186,6 +191,7 @@
 				E4FAB49C1FD7814900D2C6E1 /* StarredGroupsViewController.swift */,
 				E4FAB49E1FD7828F00D2C6E1 /* ProfileViewController.swift */,
 				E4FAB4A01FD782B500D2C6E1 /* SettingsViewController.swift */,
+				E4D23C6A1FDF1A080059ED54 /* EditProfileViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -362,6 +368,7 @@
 				E4E259001FDDAEA4006B807C /* AlertMessages.swift in Sources */,
 				E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */,
 				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
+				E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */,
 				E4FAB4971FD7154700D2C6E1 /* UserData.swift in Sources */,
 				E4FAB49B1FD73F0900D2C6E1 /* Durations.swift in Sources */,
 				E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */,
@@ -369,6 +376,7 @@
 				E4E258FD1FDD9EF6006B807C /* ProfileCell.swift in Sources */,
 				E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */,
 				E4FAB49F1FD7828F00D2C6E1 /* ProfileViewController.swift in Sources */,
+				E4D23C6B1FDF1A080059ED54 /* EditProfileViewController.swift in Sources */,
 				E4CB11961FC0D71D003B627E /* MessageViewController.swift in Sources */,
 				E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */,
 				E4B3D75D1FBB849D00F539EA /* WelcomeViewController.swift in Sources */,

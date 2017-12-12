@@ -15,7 +15,6 @@ import CoreLocation
 /*
  TODO / BUGS
  - DO THIS FIRST -> REMOVE ALERT CELLS
- - FIX THIS FIRST -> default animation when creating a messageviewcontroller doesn't go away
  - add swipe/drag close to side navigation menu
  - maybe change all SVProgressHUD.showError to UIAlertControllers?
  - have an option for the user to choose when to update (maybe?)
@@ -26,12 +25,14 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     /// Instance variables
     var locationManager = CLLocationManager()
-    var socket: SocketIOClient!
+    var socket: SocketIOClient?
     var username: String = ""
     var refreshControl: UIRefreshControl!
     var groupArray: [Group] = [Group]()
     var selectedGroup = Group()
     var delegate: JoinGroupDelegate?
+    /// Stores the last visited message view controller. Set the socket of this object to "nil" if the user navigates to another view that's not messages.
+    var messageObj: MessageViewController?
     let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
     
     // TODO: Add label in order to change label text?
@@ -99,7 +100,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // Once you successfully joined the namespace, get user info
         socket?.on("join_success", callback: { (data, ack) in
             // TODO: Get the user's profile picture
-            self.socket.emit("get_user_info", self.username)
+            self.socket?.emit("get_user_info", self.username)
         })
         // Get user info
         socket?.on("get_user_info_response", callback: { (data, ack) in
@@ -118,7 +119,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.picture = String(describing: user["picture"]!)
                 UserData.radius = user["radius"] as! Int
                 UserData.username = String(describing: user["username"]!)
-                print(UserData.radius)
             } else {
                 SVProgressHUD.dismiss()
                 SVProgressHUD.showError(withStatus: error_msg)
@@ -144,7 +144,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             }
         }
         socket?.on("join_success") { (data, ack) in
-            self.socket.emit("go_online", self.username)
+            self.socket?.emit("go_online", self.username)
         }
     }
     
@@ -158,6 +158,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         UIView.setAnimationsEnabled(true)
         performSegue(withIdentifier: "createGroup", sender: self)
     }
+    
     @IBAction func showNavMenu(_ sender: Any) {
         UIView.setAnimationsEnabled(true)
         // If navigation menu isn't showing
@@ -167,6 +168,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             NavigationSideMenu.toggleSideNav(show: false)
         }
     }
+    
     /**
      IBAction for all of the side navigation menu buttons
      - TAGS:
@@ -199,6 +201,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     
     // MARK: UITableView Methods
+    
     // When a group is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // Check public or private
@@ -211,7 +214,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 textField.isSecureTextEntry = true
             })
             alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
-                self.socket.emit("join_private_group", [
+                self.socket?.emit("join_private_group", [
                     "id": self.groupArray[indexPath.row].id,
                     "passwordEntered": alert.textFields?.first?.text!,
                     "rowIndex": String(indexPath.row)
@@ -247,7 +250,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if let location = locations.last {
             // If the current location (timestamps are the same)
             if String(describing: Date()) == String(describing: location.timestamp) {
-                socket.emit("update_location_and_get_groups", [
+                socket?.emit("update_location_and_get_groups", [
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
                     "username": username,
@@ -279,6 +282,13 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Set MessageViewController socket to nil
+        if segue.identifier != "joinGroup" {
+            if let mObj = messageObj {
+                mObj.socket = nil
+            }
+        }
+        
         if segue.identifier == "joinGroup" {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
@@ -312,18 +322,17 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func joinGroup(_ row: Int) {
         selectedGroup = groupArray[row]
         if UserData.createNewMessageViewController { // Create MessageViewController
-            // TODO: Bug here - the default animation doesn't go away
             slideLeftTransition()
-            UIView.setAnimationsEnabled(false)
             performSegue(withIdentifier: "joinGroup", sender: self)
-        } else { // Dismiss and pass data back to the same MessageViewController
+        } else { // Pass chosen group data back to the same MessageViewController and dismiss
             delegate?.joinGroup(selectedGroup)
             slideLeftTransition()
-            UIView.setAnimationsEnabled(false)
             socket = nil // Won't receive duplicate events
             self.dismiss(animated: false, completion: nil)
         }
     }
+    
+    // MARK: Miscellaneous Methods
     
     /// Edit UIViewController transition right -> left.
     func slideLeftTransition() {
@@ -334,8 +343,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         transition.subtype = kCATransitionFromRight
         self.view.window?.layer.add(transition, forKey: nil)
     }
-    
-    // MARK: Miscellaneous Methods
     
     /// Take JSON data and update UITableView.
     func updateTableWithGroups(_ data: Any) {

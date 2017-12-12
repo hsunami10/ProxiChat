@@ -81,21 +81,15 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     }
     
     // MARK: Miscellaneous Methods
-    /// Checks whether the email is valid or not using regex.
-    func isValidEmail(_ email: String) -> Bool {
-        let emailRegEx = "(?:[a-z0-9!#$%\\&'*+/=?\\^_`{|}~-]+(?:\\.[a-z0-9!#$%\\&'*+/=?\\^_`{|}"+"~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\"+"x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-"+"z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5"+"]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-"+"9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21"+"-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"
-        let emailTest = NSPredicate(format: "SELF MATCHES[c] %@", emailRegEx)
-        return emailTest.evaluate(with: email)
-    }
     
     /// Validates all inputs. If all pass, then registers the user.
     func signUp(_ username: String, _ password: String, _ passwordRetype: String, _ email: String) {
         // TODO: Optional: Add requirements to password?
-        if username.split(separator: " ").count != 1 || password.split(separator: " ").count != 1 || passwordRetype.split(separator: " ").count != 1 {
+        if !Validate.isOneWord(username) || !Validate.isOneWord(password) || !Validate.isOneWord(passwordRetype) {
             errorLabel.text = "Invalid username and/or password."
         } else if password != passwordRetype {
             errorLabel.text = "Passwords do not match."
-        } else if !isValidEmail(email) {
+        } else if !Validate.isValidEmail(email) {
             errorLabel.text = "Email address not valid."
         } else {
             SVProgressHUD.show()

@@ -19,11 +19,12 @@ import SwiftyJSON
 
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
-    var socket: SocketIOClient!
+    var socket: SocketIOClient?
     var username = ""
     let imagePicker = UIImagePickerController()
     /// TableView number of rows
     let numOfRows = 4
+    var rowSelected = -1
     
     /// Alert dialog to show when the user denies permissions.
     let deniedAlert = UIAlertController(title: "Oops!", message: "", preferredStyle: UIAlertControllerStyle.alert)
@@ -45,7 +46,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UIView.setAnimationsEnabled(true)
         UserData.createNewMessageViewController = true
         eventHandlers()
         
@@ -123,17 +123,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     // MARK: UITableView Delegate Methods
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // TODO: Handle select here - go to new viewcontroller
-        switch indexPath.row {
-        case 1:
-            break
-        case 2:
-            break
-        case 3:
-            break
-        default:
-            break
-        }
+        rowSelected = indexPath.row
+        UIView.setAnimationsEnabled(true)
+        slideLeftTransition()
+        performSegue(withIdentifier: "goToEditProfile", sender: self)
         tableView.deselectRow(at: indexPath, animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -225,6 +218,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBAction func radiusChanged(_ sender: UISlider) {
         radiusTextField.text = String(Int(sender.value.rounded()))
     }
+    
     @IBAction func showNavMenu(_ sender: Any) {
         UIView.setAnimationsEnabled(true)
         if navigationLeftConstraint.constant != 0 {
@@ -233,6 +227,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             NavigationSideMenu.toggleSideNav(show: false)
         }
     }
+    
     @IBAction func navItemClicked(_ sender: UIButton) {
         switch sender.tag {
         case 0:
@@ -272,19 +267,36 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             destinationVC.socket = socket
             destinationVC.username = username
             socket = nil
+        } else if segue.identifier == "goToEditProfile" {
+            let destinationVC = segue.destination as! EditProfileViewController
+            destinationVC.socket = socket
+            destinationVC.username = username
+            destinationVC.row = rowSelected
         }
     }
     
     // MARK: Miscellaneous Methods
+    
+    func slideLeftTransition() {
+        let transition = CATransition()
+        transition.duration = Durations.messageTransitionDuration
+        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
+        transition.type = kCATransitionPush
+        transition.subtype = kCATransitionFromRight
+        self.view.window?.layer.add(transition, forKey: nil)
+    }
+    
     /// Locally saves the radius and updates in the database.
     func updateRadius() {
         UserData.radius = Int(radiusTextField.text!)!
         socket?.emit("update_radius", username, UserData.radius)
     }
+    
     /// Save and update the radius ONLY when the slider has finished sliding.
     @objc func endSliding(_ aNotification: NSNotification) {
         updateRadius()
     }
+    
     /// Show an action sheet to choose between "camera" and "photo library" when the image is clicked.
     @objc func imageTapped() {
         UIView.setAnimationsEnabled(true)
