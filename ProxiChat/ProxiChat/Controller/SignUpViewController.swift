@@ -26,6 +26,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         errorLabel.text = " "
         eventHandlers()
         emailTextField.delegate = self
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
     }
     
     override func didReceiveMemoryWarning() {
@@ -80,8 +81,16 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         self.dismiss(animated: true, completion: nil)
     }
     
-    // MARK: Miscellaneous Methods
+    // MARK: Notification Center Methods
+    @objc func keyboardWillShow(_ aNotification: NSNotification) {
+        if let userInfo = aNotification.userInfo {
+            let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
+            UserDefaults.standard.set(keyboardHeight, forKey: "proxiChatKeyboardHeight")
+            UserDefaults.standard.synchronize()
+        }
+    }
     
+    // MARK: Miscellaneous Methods
     /// Validates all inputs. If all pass, then registers the user.
     func signUp(_ username: String, _ password: String, _ passwordRetype: String, _ email: String) {
         // TODO: Optional: Add requirements to password?

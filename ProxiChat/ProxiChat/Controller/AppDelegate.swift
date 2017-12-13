@@ -18,9 +18,14 @@ import SocketIO
  */
 
 // MARK: Custom Protocols
-/// Delegate for joining a group. Data (group info) is passed back from the GroupsViewController to the MessageViewController.
+/// Protocol for joining a group. Data (group info) is passed back from the GroupsViewController to the MessageViewController.
 protocol JoinGroupDelegate {
     func joinGroup(_ group: Group)
+}
+/// Protocol for updating / editing the user's profile. Data (field info) is passed back from the EditProfileViewController to the ProfileViewController.
+protocol UpdateProfileDelegate {
+    /// Realtime and saves the user's updated field.
+    func updateProfile(_ type: Int, _ content: String)
 }
 
 // MARK: Extensions

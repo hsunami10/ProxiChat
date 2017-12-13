@@ -29,6 +29,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         errorLabel.text = " "
         eventHandlers()
         passwordTextField.delegate = self
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -80,6 +81,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func goBack(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: Notification Center Methods
+    @objc func keyboardWillShow(_ aNotification: NSNotification) {
+        if let userInfo = aNotification.userInfo {
+            let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
+            UserDefaults.standard.set(keyboardHeight, forKey: "proxiChatKeyboardHeight")
+            UserDefaults.standard.synchronize()
+        }
     }
     
     // MARK: Miscellaneous Methods

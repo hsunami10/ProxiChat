@@ -17,14 +17,16 @@ import SwiftyJSON
  - maybe add conversions to other distance units?
  */
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate {
     
     var socket: SocketIOClient?
     var username = ""
+    var rowSelected = -1
+    /// This string is nil if a profile field is not edited
+    var editedContent: String?
     let imagePicker = UIImagePickerController()
     /// TableView number of rows
     let numOfRows = 4
-    var rowSelected = -1
     
     /// Alert dialog to show when the user denies permissions.
     let deniedAlert = UIAlertController(title: "Oops!", message: "", preferredStyle: UIAlertControllerStyle.alert)
@@ -114,11 +116,43 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     // MARK: SocketIO Event Handlers
+    /// These are only received when an error has occurred.
     func eventHandlers() {
-        // Only received if there's an error updating the radius
         socket?.on("update_radius_response", callback: { (data, ack) in
             SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
         })
+        socket?.on("update_profile_response", callback: { (data, ack) in
+            SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
+        })
+    }
+    
+    // MARK: UpdateProfileDelegate Methods
+    func updateProfile(_ type: Int, _ content: String) {
+        switch type {
+        case 1:
+            UserData.password = content
+            var i = content.count
+            var pwd = ""
+            while(i > 0) {
+                pwd.append("●")
+                i = i - 1
+            }
+            editedContent = pwd
+            break
+        case 2:
+            UserData.bio = content
+            editedContent = content
+            break
+        case 3:
+            UserData.email = content
+            editedContent = content
+            break
+        default:
+            break
+        }
+        socket?.emit("update_profile", username, type, content)
+        let indexPath = IndexPath(row: type, section: 0)
+        profileTableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
     // MARK: UITableView Delegate Methods
@@ -149,6 +183,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             cell.titleLabel.text = "Password"
             // Make fake password
             var i = UserData.password.count
+            if let content = editedContent { // Account for change in password
+                i = content.count
+            }
             var pwd = ""
             while(i > 0) {
                 pwd.append("●")
@@ -158,15 +195,27 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             break
         case 2:
             cell.titleLabel.text = "Bio"
-            if UserData.bio.split(separator: " ").count == 0 {
-                cell.contentLabel.text = "Edit Bio"
+            if let content = editedContent {
+                if content.split(separator: " ").count == 0 {
+                    cell.contentLabel.text = "Edit Bio"
+                } else {
+                    cell.contentLabel.text = content
+                }
             } else {
-                cell.contentLabel.text = UserData.bio
+                if UserData.bio.split(separator: " ").count == 0 {
+                    cell.contentLabel.text = "Edit Bio"
+                } else {
+                    cell.contentLabel.text = UserData.bio
+                }
             }
             break
         case 3:
             cell.titleLabel.text = "Email"
-            cell.contentLabel.text = UserData.email
+            if let content = editedContent {
+                cell.contentLabel.text = content
+            } else {
+                cell.contentLabel.text = UserData.email
+            }
             break
         default:
             break
@@ -269,9 +318,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             socket = nil
         } else if segue.identifier == "goToEditProfile" {
             let destinationVC = segue.destination as! EditProfileViewController
-            destinationVC.socket = socket
-            destinationVC.username = username
             destinationVC.row = rowSelected
+            destinationVC.delegate = self // UpdateProfileDelegate
+            editedContent = nil // Set to nil every time to track whether or not a profile field was changed
         }
     }
     

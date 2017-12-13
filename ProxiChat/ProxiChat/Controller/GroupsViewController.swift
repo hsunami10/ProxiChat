@@ -119,6 +119,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.picture = String(describing: user["picture"]!)
                 UserData.radius = user["radius"] as! Int
                 UserData.username = String(describing: user["username"]!)
+                
+                print(UserData.radius)
             } else {
                 SVProgressHUD.dismiss()
                 SVProgressHUD.showError(withStatus: error_msg)
@@ -160,12 +162,14 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     @IBAction func showNavMenu(_ sender: Any) {
-        UIView.setAnimationsEnabled(true)
-        // If navigation menu isn't showing
-        if navigationLeftConstraint.constant != 0 {
-            NavigationSideMenu.toggleSideNav(show: true)
-        } else {
-            NavigationSideMenu.toggleSideNav(show: false)
+        if UserData.username.count > 0 {
+            UIView.setAnimationsEnabled(true)
+            // If navigation menu isn't showing
+            if navigationLeftConstraint.constant != 0 {
+                NavigationSideMenu.toggleSideNav(show: true)
+            } else {
+                NavigationSideMenu.toggleSideNav(show: false)
+            }
         }
     }
     
