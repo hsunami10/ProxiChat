@@ -657,6 +657,7 @@
                                 <constraints>
                                     <constraint firstItem="hSC-c1-N3T" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" id="64u-eP-uOJ"/>
                                     <constraint firstItem="xEi-pY-MeK" firstAttribute="top" secondItem="3zc-zD-3un" secondAttribute="bottom" constant="8" id="AHA-Jc-hux"/>
+                                    <constraint firstAttribute="height" constant="716" id="Ak5-oQ-P2c"/>
                                     <constraint firstAttribute="trailing" secondItem="3zc-zD-3un" secondAttribute="trailing" constant="16" id="C4V-xD-oxV"/>
                                     <constraint firstItem="3zc-zD-3un" firstAttribute="top" secondItem="bbe-y3-C19" secondAttribute="bottom" constant="8" id="Ho3-Pl-MLQ"/>
                                     <constraint firstAttribute="width" constant="414" id="Izj-fJ-6ML"/>
@@ -675,7 +676,6 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="eqZ-ch-Kfg" firstAttribute="top" secondItem="dEl-HY-Ef1" secondAttribute="top" id="CJa-Cn-1xJ"/>
-                            <constraint firstAttribute="bottom" secondItem="eqZ-ch-Kfg" secondAttribute="bottom" id="KnR-ue-7Tq"/>
                             <constraint firstAttribute="bottom" secondItem="8Dg-Fp-2HP" secondAttribute="bottom" id="WUE-tS-Nbg"/>
                             <constraint firstItem="8Dg-Fp-2HP" firstAttribute="top" secondItem="dEl-HY-Ef1" secondAttribute="top" id="jLD-xM-WLI"/>
                             <constraint firstItem="8Dg-Fp-2HP" firstAttribute="leading" secondItem="b3f-O0-dcz" secondAttribute="leading" id="kmo-mv-d07"/>
@@ -690,6 +690,7 @@
                         <outlet property="profileTableView" destination="xEi-pY-MeK" id="PBd-kC-6yb"/>
                         <outlet property="profileTableViewHeightConstraint" destination="VPc-7j-8a2" id="L2D-tP-nWS"/>
                         <outlet property="profileView" destination="eqZ-ch-Kfg" id="Ed7-cG-Que"/>
+                        <outlet property="profileViewHeight" destination="Ak5-oQ-P2c" id="jRC-dM-cql"/>
                         <outlet property="profileViewLeftConstraint" destination="yYF-Hg-9eP" id="uQp-no-8Wv"/>
                         <outlet property="profileViewWidth" destination="Izj-fJ-6ML" id="FgW-vi-2Ff"/>
                         <outlet property="radiusSlider" destination="k5S-oC-Ua7" id="Lau-EH-BCN"/>
@@ -1467,6 +1468,6 @@
         <segue reference="38h-l6-3Or"/>
         <segue reference="Uez-De-SON"/>
         <segue reference="GOK-JU-5Z0"/>
-        <segue reference="OD0-pG-fXq"/>
+        <segue reference="ZXB-nB-nwm"/>
     </inferredMetricsTieBreakers>
 </document>

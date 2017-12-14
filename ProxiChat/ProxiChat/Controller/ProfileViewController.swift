@@ -13,8 +13,10 @@ import Photos
 import SVProgressHUD
 import SwiftyJSON
 
-/*
+/* TODO / BUGS
+ - make sure the picture is actually cut - can still click on the rectangular part, even thought it's circular
  - maybe add conversions to other distance units?
+ TODO: Have a way to edit the profile picture after choosing one - into a "circular" frame
  */
 
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate {
@@ -36,6 +38,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet var profileViewLeftConstraint: NSLayoutConstraint!
     @IBOutlet var profileView: UIView!
     @IBOutlet var profileViewWidth: NSLayoutConstraint!
+    @IBOutlet var profileViewHeight: NSLayoutConstraint!
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     
     @IBOutlet var profilePicture: UIImageView!
@@ -54,10 +57,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
         
-        // Initialize elements
-        let profileTap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
-        profilePicture.addGestureRecognizer(profileTap)
-        
         // Add custom cell to table view
         profileTableView.register(UINib(nibName: "ProfileCell", bundle: nil), forCellReuseIdentifier: "profileCell")
         profileTableView.isScrollEnabled = false
@@ -69,6 +68,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profilePicture.layer.borderColor = UIColor.lightGray.cgColor
         profilePicture.layer.cornerRadius = profilePicture.frame.height / 2
         profilePicture.clipsToBounds = true
+        
+        // Initialize elements
+        let profileTap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+        profilePicture.addGestureRecognizer(profileTap)
+        
+        profileViewWidth.constant = self.view.frame.width
+        profileViewHeight.constant = self.view.frame.height - UIApplication.shared.statusBarFrame.height
         
         // Initialize slider
         radiusSlider.minimumValue = 1
@@ -94,7 +100,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profileTableView.dataSource = self
         
         // Space from bottom left corner of radius view to the bottom of the profile view
-        let leftOverSpace = (profileView.frame.height - profileView.frame.origin.y) - (radiusView.frame.origin.y + radiusView.frame.height - profileView.frame.origin.y)
+        let leftOverSpace = (profileViewHeight.constant - profileView.frame.origin.y) - (radiusView.frame.origin.y + radiusView.frame.height - profileView.frame.origin.y)
         // Subtract top constraint and bottom constraint - bottom constraint is equal to the cell labels' distance from left
         profileTableViewHeightConstraint.constant = leftOverSpace - 8 - 16
         profileTableView.rowHeight = profileTableViewHeightConstraint.constant / CGFloat(numOfRows)
@@ -350,7 +356,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @objc func imageTapped() {
         UIView.setAnimationsEnabled(true)
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        actionSheet.addAction(UIAlertAction(title: "From Camera", style: .default, handler: { (action) in
+        actionSheet.addAction(UIAlertAction(title: "Take a Photo", style: .default, handler: { (action) in
             // Camera
             switch AVCaptureDevice.authorizationStatus(for: AVMediaType.video) {
             case AVAuthorizationStatus.authorized:
@@ -373,7 +379,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 break
             }
         }))
-        actionSheet.addAction(UIAlertAction(title: "From Photo Library", style: .default, handler: { (action) in
+        actionSheet.addAction(UIAlertAction(title: "Choose from Library", style: .default, handler: { (action) in
             // Photo Library
             switch PHPhotoLibrary.authorizationStatus() {
             case PHAuthorizationStatus.authorized:

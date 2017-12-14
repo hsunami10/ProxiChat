@@ -8,6 +8,10 @@
 
 import UIKit
 
+/* TODO / BUGS
+ - fix layout for editing bio page
+ */
+
 class EditProfileViewController: UIViewController {
     
     var row = -1
