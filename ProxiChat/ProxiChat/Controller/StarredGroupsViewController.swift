@@ -85,24 +85,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // MARK: UITableView Delegate Methods
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if groupArray[indexPath.row].is_public {
-            joinGroup(indexPath.row)
-        } else {
-            let alert = UIAlertController(title: groupArray[indexPath.row].title + " is private!", message: "Please enter a password:", preferredStyle: .alert)
-            alert.addTextField(configurationHandler: { (textField) in
-                textField.placeholder = "Enter a password"
-                textField.isSecureTextEntry = true
-            })
-            alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
-                self.socket?.emit("join_private_group", [
-                    "id": self.groupArray[indexPath.row].id,
-                    "passwordEntered": alert.textFields?.first?.text!,
-                    "rowIndex": String(indexPath.row)
-                    ])
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-            present(alert, animated: true, completion: nil)
-        }
+        joinGroup(indexPath.row)
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
