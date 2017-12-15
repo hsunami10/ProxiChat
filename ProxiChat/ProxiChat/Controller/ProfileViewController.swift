@@ -14,6 +14,7 @@ import SVProgressHUD
 import SwiftyJSON
 
 /* TODO / BUGS
+ - TODO: MAKE EVERYTHING RESPONSIVE
  - make sure the picture is actually cut - can still click on the rectangular part, even thought it's circular
  - maybe add conversions to other distance units?
  TODO: Have a way to edit the profile picture after choosing one - into a "circular" frame
@@ -21,8 +22,8 @@ import SwiftyJSON
 
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate {
     
+    // MARK: Instance variables
     var socket: SocketIOClient?
-    var username = ""
     var rowSelected = -1
     /// This string is nil if a profile field is not edited
     var editedContent: String?
@@ -51,7 +52,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UserData.createNewMessageViewController = true
         eventHandlers()
         
         // Initialize navigation menu layout and gestures
@@ -72,9 +72,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         // Initialize elements
         let profileTap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
         profilePicture.addGestureRecognizer(profileTap)
-        
-        profileViewWidth.constant = self.view.frame.width
-        profileViewHeight.constant = self.view.frame.height - UIApplication.shared.statusBarFrame.height
         
         // Initialize slider
         radiusSlider.minimumValue = 1
@@ -156,7 +153,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         default:
             break
         }
-        socket?.emit("update_profile", username, type, content)
+        socket?.emit("update_profile", UserData.username, type, content)
         let indexPath = IndexPath(row: type, section: 0)
         profileTableView.reloadRows(at: [indexPath], with: .automatic)
     }
@@ -310,17 +307,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
         } else if segue.identifier == "goToSettings" {
             let destinationVC = segue.destination as! SettingsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
         } else if segue.identifier == "goToEditProfile" {
             let destinationVC = segue.destination as! EditProfileViewController
@@ -344,7 +338,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     /// Locally saves the radius and updates in the database.
     func updateRadius() {
         UserData.radius = Int(radiusTextField.text!)!
-        socket?.emit("update_radius", username, UserData.radius)
+        socket?.emit("update_radius", UserData.username, UserData.radius)
     }
     
     /// Save and update the radius ONLY when the slider has finished sliding.
@@ -356,6 +350,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @objc func imageTapped() {
         UIView.setAnimationsEnabled(true)
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        // TODO: Maybe have an "edit picture" action?
         actionSheet.addAction(UIAlertAction(title: "Take a Photo", style: .default, handler: { (action) in
             // Camera
             switch AVCaptureDevice.authorizationStatus(for: AVMediaType.video) {

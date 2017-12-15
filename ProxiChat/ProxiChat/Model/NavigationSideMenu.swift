@@ -34,6 +34,7 @@ class NavigationSideMenu {
         if object is GroupsViewController {
             NavigationSideMenu.groupsObj = object as! GroupsViewController
             NavigationSideMenu.groupsObj.groupsViewWidth.constant = NavigationSideMenu.groupsObj.view.frame.size.width // Set groups view width to main view width
+            NavigationSideMenu.groupsObj.groupsViewHeight.constant = NavigationSideMenu.groupsObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.groupsObj.groupsLeftConstraint.constant = 0 // Set groups view to normal position
             NavigationSideMenu.groupsObj.navigationViewWidth.constant = NavigationSideMenu.groupsObj.groupsViewWidth.constant * NavigationSideMenu.shiftFactor // Set width to a factor of groups view
             NavigationSideMenu.groupsObj.navigationLeftConstraint.constant = -NavigationSideMenu.groupsObj.navigationViewWidth.constant // Hide from view
@@ -46,6 +47,7 @@ class NavigationSideMenu {
         } else if object is StarredGroupsViewController {
             NavigationSideMenu.starredObj = object as! StarredGroupsViewController
             NavigationSideMenu.starredObj.starredGroupsViewWidth.constant = NavigationSideMenu.starredObj.view.frame.size.width
+            NavigationSideMenu.starredObj.starredGroupsViewHeight.constant = NavigationSideMenu.starredObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.starredObj.starredGroupsViewLeftConstraint.constant = 0
             NavigationSideMenu.starredObj.navigationViewWidth.constant = NavigationSideMenu.starredObj.starredGroupsViewWidth.constant * NavigationSideMenu.shiftFactor
             NavigationSideMenu.starredObj.navigationLeftConstraint.constant = -NavigationSideMenu.starredObj.navigationViewWidth.constant
@@ -58,6 +60,7 @@ class NavigationSideMenu {
         } else if object is ProfileViewController {
             NavigationSideMenu.profileObj = object as! ProfileViewController
             NavigationSideMenu.profileObj.profileViewWidth.constant = NavigationSideMenu.profileObj.view.frame.size.width
+            NavigationSideMenu.profileObj.profileViewHeight.constant = NavigationSideMenu.profileObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.profileObj.profileViewLeftConstraint.constant = 0
             NavigationSideMenu.profileObj.navigationViewWidth.constant = NavigationSideMenu.profileObj.profileViewWidth.constant * NavigationSideMenu.shiftFactor
             NavigationSideMenu.profileObj.navigationLeftConstraint.constant = -NavigationSideMenu.profileObj.navigationViewWidth.constant
@@ -70,6 +73,7 @@ class NavigationSideMenu {
         } else if object is SettingsViewController {
             NavigationSideMenu.settingsObj = object as! SettingsViewController
             NavigationSideMenu.settingsObj.settingsViewWidth.constant = NavigationSideMenu.settingsObj.view.frame.size.width
+            NavigationSideMenu.settingsObj.settingsViewHeight.constant = NavigationSideMenu.settingsObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.settingsObj.settingsViewLeftConstraint.constant = 0
             NavigationSideMenu.settingsObj.navigationViewWidth.constant = NavigationSideMenu.settingsObj.settingsViewWidth.constant * NavigationSideMenu.shiftFactor
             NavigationSideMenu.settingsObj.navigationLeftConstraint.constant = -NavigationSideMenu.settingsObj.navigationViewWidth.constant

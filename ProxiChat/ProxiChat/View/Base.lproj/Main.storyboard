@@ -311,6 +311,7 @@
                                     <constraint firstItem="FYd-dc-5C5" firstAttribute="leading" secondItem="VL8-QZ-H1T" secondAttribute="leading" id="2Y7-es-yNJ"/>
                                     <constraint firstItem="FYd-dc-5C5" firstAttribute="top" secondItem="VL8-QZ-H1T" secondAttribute="top" id="EgH-dt-Ebp"/>
                                     <constraint firstAttribute="width" constant="414" id="FCO-KD-OTE"/>
+                                    <constraint firstAttribute="height" constant="736" id="GmP-ub-x7E"/>
                                     <constraint firstAttribute="trailing" secondItem="hed-5i-ndz" secondAttribute="trailing" id="Mx1-33-EJF"/>
                                     <constraint firstItem="FYd-dc-5C5" firstAttribute="trailing" secondItem="VL8-QZ-H1T" secondAttribute="trailing" id="OJf-Eg-lOR"/>
                                     <constraint firstItem="hed-5i-ndz" firstAttribute="leading" secondItem="veJ-a3-zjQ" secondAttribute="leading" id="QUh-vZ-Y41"/>
@@ -322,7 +323,6 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="veJ-a3-zjQ" secondAttribute="bottom" id="5ET-oa-x7R"/>
                             <constraint firstItem="2f1-sT-PBY" firstAttribute="leading" secondItem="NXz-hl-jLS" secondAttribute="leading" id="Hvb-ae-wXU"/>
                             <constraint firstItem="2f1-sT-PBY" firstAttribute="top" secondItem="NXz-hl-jLS" secondAttribute="topMargin" id="iGw-cS-TKR"/>
                             <constraint firstItem="veJ-a3-zjQ" firstAttribute="top" secondItem="NXz-hl-jLS" secondAttribute="top" id="u98-fi-wp7"/>
@@ -335,6 +335,7 @@
                         <outlet property="groupsLeftConstraint" destination="wTl-13-GFk" id="d2S-Tc-B1w"/>
                         <outlet property="groupsTableView" destination="hed-5i-ndz" id="wNH-yp-qbQ"/>
                         <outlet property="groupsView" destination="veJ-a3-zjQ" id="BZu-Vi-owi"/>
+                        <outlet property="groupsViewHeight" destination="GmP-ub-x7E" id="ipV-bB-HSy"/>
                         <outlet property="groupsViewWidth" destination="FCO-KD-OTE" id="cX4-ui-TTL"/>
                         <outlet property="navigationLeftConstraint" destination="Hvb-ae-wXU" id="WxZ-Y3-DC3"/>
                         <outlet property="navigationViewWidth" destination="UQ1-9N-A0W" id="KXV-fr-8aI"/>
@@ -448,13 +449,22 @@
                                             <constraint firstItem="MKq-iS-JM8" firstAttribute="centerY" secondItem="gmw-Jf-EQ2" secondAttribute="centerY" id="zE3-Od-L4D"/>
                                         </constraints>
                                     </view>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="wpA-cB-DGo">
+                                        <rect key="frame" x="0.0" y="50" width="414" height="666"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </tableView>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="gmw-Jf-EQ2" firstAttribute="leading" secondItem="DFm-KB-yTp" secondAttribute="leading" id="2ba-un-8pB"/>
+                                    <constraint firstAttribute="bottom" secondItem="wpA-cB-DGo" secondAttribute="bottom" id="6Dn-WY-iDd"/>
                                     <constraint firstAttribute="width" constant="414" id="DSC-gV-fCZ"/>
+                                    <constraint firstItem="wpA-cB-DGo" firstAttribute="top" secondItem="gmw-Jf-EQ2" secondAttribute="bottom" id="PIC-5w-Gag"/>
+                                    <constraint firstAttribute="trailing" secondItem="wpA-cB-DGo" secondAttribute="trailing" id="Qwv-6n-BIl"/>
+                                    <constraint firstAttribute="height" constant="716" id="Tb1-zx-MLw"/>
                                     <constraint firstAttribute="trailing" secondItem="gmw-Jf-EQ2" secondAttribute="trailing" id="eGg-Ur-icW"/>
                                     <constraint firstItem="gmw-Jf-EQ2" firstAttribute="top" secondItem="DFm-KB-yTp" secondAttribute="top" id="p1v-g8-qMd"/>
+                                    <constraint firstItem="wpA-cB-DGo" firstAttribute="leading" secondItem="DFm-KB-yTp" secondAttribute="leading" id="yUC-C6-Ht0"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -463,7 +473,6 @@
                             <constraint firstItem="DFm-KB-yTp" firstAttribute="top" secondItem="N9c-bB-Nnl" secondAttribute="top" id="Bae-Uh-u7R"/>
                             <constraint firstItem="QQs-fH-cfo" firstAttribute="top" secondItem="N9c-bB-Nnl" secondAttribute="top" id="JFZ-nR-Xdb"/>
                             <constraint firstAttribute="bottom" secondItem="QQs-fH-cfo" secondAttribute="bottom" id="NAl-ES-Y85"/>
-                            <constraint firstAttribute="bottom" secondItem="DFm-KB-yTp" secondAttribute="bottom" id="OXz-Hj-TUF"/>
                             <constraint firstItem="QQs-fH-cfo" firstAttribute="leading" secondItem="DIX-0q-a27" secondAttribute="leading" id="cAC-ZP-1UZ"/>
                             <constraint firstItem="DFm-KB-yTp" firstAttribute="leading" secondItem="DIX-0q-a27" secondAttribute="leading" id="f4H-2U-nOV"/>
                         </constraints>
@@ -472,17 +481,20 @@
                     <connections>
                         <outlet property="navigationLeftConstraint" destination="cAC-ZP-1UZ" id="Pbh-mp-cAO"/>
                         <outlet property="navigationViewWidth" destination="3QS-su-aE6" id="Tw8-4i-X0h"/>
+                        <outlet property="starredGroupsTableView" destination="wpA-cB-DGo" id="L0d-yQ-GIM"/>
                         <outlet property="starredGroupsView" destination="DFm-KB-yTp" id="4z2-ia-cqB"/>
+                        <outlet property="starredGroupsViewHeight" destination="Tb1-zx-MLw" id="cSy-vt-4CI"/>
                         <outlet property="starredGroupsViewLeftConstraint" destination="f4H-2U-nOV" id="UQT-Ir-cxX"/>
                         <outlet property="starredGroupsViewWidth" destination="DSC-gV-fCZ" id="tNg-CN-OuI"/>
                         <segue destination="rqU-je-oq9" kind="show" identifier="goToProfile" id="CND-Ga-KUU"/>
                         <segue destination="PhU-jY-AdF" kind="show" identifier="goToSettings" id="2HM-oE-YUK"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goToGroups" id="gsf-M0-Dbn"/>
+                        <segue destination="bNj-gu-XBO" kind="show" identifier="joinGroupStarred" animates="NO" id="r7C-v9-2H0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aSn-8o-1E7" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4957.971014492754" y="-1824.4565217391305"/>
+            <point key="canvasLocation" x="4970" y="-64"/>
         </scene>
         <!--ProfileViewController-->
         <scene sceneID="Cp7-hX-uMT">
@@ -1236,6 +1248,7 @@
                         <outlet property="sendButton" destination="Ku6-Zw-MCO" id="9bj-M7-CRG"/>
                         <outlet property="typingView" destination="rrK-X6-rsR" id="mXf-Nb-6WM"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goBackToGroups" id="OD0-pG-fXq"/>
+                        <segue destination="hE2-Tj-l73" kind="show" identifier="goBackToStarredGroups" id="Q67-rq-eHC"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fkA-EB-BVw" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1341,13 +1354,21 @@
                                             <constraint firstItem="rHC-nk-sLR" firstAttribute="leading" secondItem="Agn-VO-Vyy" secondAttribute="leading" constant="8" id="gCW-C6-Eo4"/>
                                         </constraints>
                                     </view>
+                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VkP-sM-YsH">
+                                        <rect key="frame" x="0.0" y="50" width="414" height="666"/>
+                                    </scrollView>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="Agn-VO-Vyy" secondAttribute="trailing" id="1NP-hQ-Azf"/>
+                                    <constraint firstAttribute="height" constant="716" id="6dM-64-JX4"/>
                                     <constraint firstItem="Agn-VO-Vyy" firstAttribute="leading" secondItem="DbI-74-7g8" secondAttribute="leading" id="7qi-03-yuh"/>
+                                    <constraint firstItem="VkP-sM-YsH" firstAttribute="leading" secondItem="DbI-74-7g8" secondAttribute="leading" id="NEy-i7-NR2"/>
+                                    <constraint firstAttribute="trailing" secondItem="VkP-sM-YsH" secondAttribute="trailing" id="Sgt-vT-UA2"/>
                                     <constraint firstAttribute="width" constant="414" id="dw3-Ff-bt3"/>
                                     <constraint firstItem="Agn-VO-Vyy" firstAttribute="top" secondItem="DbI-74-7g8" secondAttribute="top" id="fM2-E5-KIF"/>
+                                    <constraint firstAttribute="bottom" secondItem="VkP-sM-YsH" secondAttribute="bottom" id="hhX-gS-WGy"/>
+                                    <constraint firstItem="VkP-sM-YsH" firstAttribute="top" secondItem="Agn-VO-Vyy" secondAttribute="bottom" id="sze-zr-oEI"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -1358,7 +1379,6 @@
                             <constraint firstAttribute="bottom" secondItem="tB7-Qn-Gxe" secondAttribute="bottom" id="TWi-ob-3jw"/>
                             <constraint firstItem="DbI-74-7g8" firstAttribute="leading" secondItem="2HB-70-QTZ" secondAttribute="leading" id="VTm-H4-vYd"/>
                             <constraint firstItem="tB7-Qn-Gxe" firstAttribute="leading" secondItem="2HB-70-QTZ" secondAttribute="leading" id="feh-j3-bRr"/>
-                            <constraint firstAttribute="bottom" secondItem="DbI-74-7g8" secondAttribute="bottom" id="yVy-h5-x6a"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Oee-RS-zc2"/>
                     </view>
@@ -1366,6 +1386,7 @@
                         <outlet property="navigationLeftConstraint" destination="feh-j3-bRr" id="g1N-2v-1Lh"/>
                         <outlet property="navigationViewWidth" destination="trP-N7-whD" id="WHr-6e-hGt"/>
                         <outlet property="settingsView" destination="DbI-74-7g8" id="k7s-qs-u7I"/>
+                        <outlet property="settingsViewHeight" destination="6dM-64-JX4" id="vrZ-hR-T2y"/>
                         <outlet property="settingsViewLeftConstraint" destination="VTm-H4-vYd" id="Qmz-h4-Yao"/>
                         <outlet property="settingsViewWidth" destination="dw3-Ff-bt3" id="eFz-bj-v5Q"/>
                         <segue destination="rqU-je-oq9" kind="show" identifier="goToProfile" id="jVh-gv-aL5"/>
@@ -1375,7 +1396,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dg6-2Y-Tik" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4958" y="-166"/>
+            <point key="canvasLocation" x="4928" y="-1787"/>
         </scene>
         <!--LogInViewController-->
         <scene sceneID="BE5-dz-NAY">
@@ -1464,10 +1485,10 @@
         <image name="noPicture" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="N6I-j8-8OR"/>
-        <segue reference="38h-l6-3Or"/>
-        <segue reference="Uez-De-SON"/>
-        <segue reference="GOK-JU-5Z0"/>
-        <segue reference="ZXB-nB-nwm"/>
+        <segue reference="2HM-oE-YUK"/>
+        <segue reference="r7C-v9-2H0"/>
+        <segue reference="CND-Ga-KUU"/>
+        <segue reference="Q67-rq-eHC"/>
+        <segue reference="gsf-M0-Dbn"/>
     </inferredMetricsTieBreakers>
 </document>

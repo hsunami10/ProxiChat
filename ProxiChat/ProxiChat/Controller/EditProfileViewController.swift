@@ -14,6 +14,7 @@ import UIKit
 
 class EditProfileViewController: UIViewController {
     
+    // MARK: Instance variables
     var row = -1
     var delegate: UpdateProfileDelegate?
     // Change these accordingly

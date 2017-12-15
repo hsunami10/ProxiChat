@@ -31,10 +31,11 @@ import ChameleonFramework
 
 class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
 
+    /// 0 - GroupsViewController, 1 - StarredGroupsViewController
+    var fromViewController = -1
     var groupInformation: Group!
     var socket: SocketIOClient?
     var messageArray: [Message] = [Message]()
-    var username: String!
     var lastNumOfLines: CGFloat = 1.82381823433138 // Saves the last number of line change
     var lastTextViewHeight: CGFloat! // Keep track of different in height change to change the messageTableViewHeight constraint also
     let maxNumOfLines: CGFloat = 5.8657937806874 // TODO: 5 lines - change this accordingly
@@ -103,13 +104,24 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: IBOutlet Actions
     @IBAction func goBack(_ sender: Any) {
-        // TODO: Check whether it's starred or not
         slideRightTransition()
         UIView.setAnimationsEnabled(false)
-        performSegue(withIdentifier: "goBackToGroups", sender: self)
+        
+        // Check which view controller it came from
+        switch fromViewController {
+        case 0:
+            performSegue(withIdentifier: "goBackToGroups", sender: self)
+            break
+        case 1:
+            performSegue(withIdentifier: "goBackToStarredGroups", sender: self)
+            break
+        default:
+            break
+        }
+        
         socket?.emit("leave_room", [
             "group_id": groupInformation.id,
-            "username": username
+            "username": UserData.username
             ])
     }
     @IBAction func showGroupInfo(_ sender: Any) {
@@ -123,7 +135,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             // TODO: *** Get picture ***
             socket?.emit("send_message", [
-                "username": username,
+                "username": UserData.username,
                 "content": messageTextView.text!,
                 "date_sent": String(describing: Date()),
                 "group_id": groupInformation.id,
@@ -166,7 +178,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.messageTableView.reloadData()
             
             // If not alert and you are the sender
-            if !isAlert && JSON(data[0])["author"].stringValue == self.username {
+            if !isAlert && JSON(data[0])["author"].stringValue == UserData.username {
                 self.scrollToBottom()
             }
         }
@@ -198,7 +210,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 // Join room after you get messages
                 self.socket?.emit("join_room", [
                     "group_id": self.groupInformation.id,
-                    "username": self.username
+                    "username": UserData.username
                     ])
                 self.scrollToBottom()
             } else {
@@ -353,7 +365,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.delegate = self
             destinationVC.socket = socket
-            destinationVC.username = username
+            destinationVC.username = UserData.username
+            destinationVC.messageObj = self // If the user navigates to any other view controller, then set the socket = nil
+            UserData.createNewMessageViewController = false
+        } else if segue.identifier == "goBackToStarredGroups" {
+            let destinationVC = segue.destination as! StarredGroupsViewController
+            destinationVC.delegate = self
+            destinationVC.socket = socket
             destinationVC.messageObj = self // If the user navigates to any other view controller, then set the socket = nil
             UserData.createNewMessageViewController = false
         }

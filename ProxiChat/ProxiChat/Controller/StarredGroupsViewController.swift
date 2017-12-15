@@ -8,32 +8,121 @@
 
 import UIKit
 import SocketIO
+import SwiftyJSON
+import SVProgressHUD
 
-class StarredGroupsViewController: UIViewController {
+class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
+    // MARK: Instance variables
     var socket: SocketIOClient?
-    var username = ""
-
+    var groupArray: [Group] = [Group]()
+    var selectedGroup = Group()
+    var delegate: JoinGroupDelegate?
+    var messageObj: MessageViewController?
+    
     @IBOutlet var starredGroupsViewLeftConstraint: NSLayoutConstraint!
     @IBOutlet var starredGroupsViewWidth: NSLayoutConstraint!
+    @IBOutlet var starredGroupsViewHeight: NSLayoutConstraint!
     @IBOutlet var starredGroupsView: UIView!
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     
+    @IBOutlet var starredGroupsTableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         UIView.setAnimationsEnabled(true)
-        UserData.createNewMessageViewController = true
+        eventHandlers()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
         
+        // Initialize table view
+        starredGroupsTableView.delegate = self
+        starredGroupsTableView.dataSource = self
+        starredGroupsTableView.register(UINib.init(nibName: "GroupCell", bundle: nil), forCellReuseIdentifier: "groupCell")
+        
+        SVProgressHUD.show()
+        socket?.emit("get_starred_groups", UserData.username)
         self.view.layoutIfNeeded()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK: SocketIO Event Handlers
+    func eventHandlers() {
+        socket?.on("get_starred_groups_response", callback: { (data, ack) in
+            if JSON(data[0])["success"].boolValue {
+                let groups = JSON(data[0])["groups"].arrayValue
+                self.groupArray = [Group]()
+                for group in groups {
+                    let groupObj = Group()
+                    let cd = ConvertDate(date: group["date_created"].stringValue)
+                    
+                    groupObj.coordinates = group["coordinates"].stringValue
+                    groupObj.creator = group["created_by"].stringValue
+                    groupObj.dateCreated = cd.convert()
+                    groupObj.description = group["description"].stringValue
+                    groupObj.id = group["id"].stringValue
+                    groupObj.is_public = group["is_public"].boolValue
+                    groupObj.numMembers = group["number_members"].intValue
+                    groupObj.password = group["password"].stringValue
+                    groupObj.title = group["title"].stringValue
+                    
+                    self.groupArray.append(groupObj)
+                }
+                self.starredGroupsTableView.reloadData()
+                SVProgressHUD.dismiss()
+            } else {
+                SVProgressHUD.dismiss()
+                SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
+            }
+        })
+    }
+    
+    // MARK: UITableView Delegate Methods
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if groupArray[indexPath.row].is_public {
+            joinGroup(indexPath.row)
+        } else {
+            let alert = UIAlertController(title: groupArray[indexPath.row].title + " is private!", message: "Please enter a password:", preferredStyle: .alert)
+            alert.addTextField(configurationHandler: { (textField) in
+                textField.placeholder = "Enter a password"
+                textField.isSecureTextEntry = true
+            })
+            alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
+                self.socket?.emit("join_private_group", [
+                    "id": self.groupArray[indexPath.row].id,
+                    "passwordEntered": alert.textFields?.first?.text!,
+                    "rowIndex": String(indexPath.row)
+                    ])
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return groupArray.count
+    }
+    
+    // Exactly the same as "find groups" table view
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "groupCell", for: indexPath) as! GroupCell
+        
+        cell.groupName.text = groupArray[indexPath.row].title
+        if groupArray[indexPath.row].is_public {
+            cell.lockIcon.image = UIImage()
+        } else {
+            cell.lockIcon.image = UIImage(named: "locked")
+        }
+        cell.numberOfMembers.text = String(groupArray[indexPath.row].numMembers)
+        
+        return cell
     }
     
     // MARK: IBOutlet Actions
@@ -69,25 +158,59 @@ class StarredGroupsViewController: UIViewController {
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "goToGroups" {
+        if segue.identifier != "joinGroupStarred" {
+            if let mObj = messageObj {
+                mObj.socket = nil
+            }
+        }
+        if segue.identifier == "joinGroupStarred" {
+            let destinationVC = segue.destination as! MessageViewController
+            destinationVC.groupInformation = selectedGroup
+            destinationVC.socket = socket
+            destinationVC.fromViewController = 1
+            socket = nil // Won't receive duplicate events
+        } else if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
+            destinationVC.username = UserData.username
             socket = nil
+            UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
+            UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToSettings" {
             let destinationVC = segue.destination as! SettingsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
+            UserData.createNewMessageViewController = true
+        }
+    }
+    
+    func joinGroup(_ row: Int) {
+        selectedGroup = groupArray[row]
+        if UserData.createNewMessageViewController { // Create MessageViewController
+            slideLeftTransition()
+            performSegue(withIdentifier: "joinGroupStarred", sender: self)
+        } else { // Pass chosen group data back to the same MessageViewController and dismiss
+            delegate?.joinGroup(selectedGroup)
+            slideLeftTransition()
+            socket = nil // Won't receive duplicate events
+            self.dismiss(animated: false, completion: nil)
         }
     }
     
     // MARK: Miscellaneous Methods
+    func slideLeftTransition() {
+        let transition = CATransition()
+        transition.duration = Durations.messageTransitionDuration
+        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
+        transition.type = kCATransitionPush
+        transition.subtype = kCATransitionFromRight
+        self.view.window?.layer.add(transition, forKey: nil)
+    }
+    
     @objc func closeNavMenu() {
         if navigationLeftConstraint.constant == 0 {
             NavigationSideMenu.toggleSideNav(show: false)

@@ -47,6 +47,7 @@ extension String {
     }
 }
 
+// TODO: background app refresh -> most apps use this - figure out how to use this
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 

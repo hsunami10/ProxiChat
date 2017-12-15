@@ -23,7 +23,7 @@ import CoreLocation
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
-    /// Instance variables
+    // MARK: Instance variables
     var locationManager = CLLocationManager()
     var socket: SocketIOClient?
     var username: String = ""
@@ -39,6 +39,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     @IBOutlet var groupsTableView: UITableView!
     
     @IBOutlet var groupsViewWidth: NSLayoutConstraint!
+    @IBOutlet var groupsViewHeight: NSLayoutConstraint!
     @IBOutlet var groupsView: UIView!
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
@@ -55,7 +56,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // UITableView initialization
         groupsTableView.delegate = self
         groupsTableView.dataSource = self
-        groupsTableView.register(UINib(nibName: "GroupCell", bundle: nil), forCellReuseIdentifier: "groupCell")
+        groupsTableView.register(UINib.init(nibName: "GroupCell", bundle: nil), forCellReuseIdentifier: "groupCell")
         
         // Implement pull to refresh
         refreshControl = UIRefreshControl()
@@ -297,7 +298,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
             destinationVC.socket = socket
-            destinationVC.username = username
+            destinationVC.fromViewController = 0
             socket = nil // Won't receive duplicate events
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
@@ -307,18 +308,18 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
+            UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
+            UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToSettings" {
             let destinationVC = segue.destination as! SettingsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
+            UserData.createNewMessageViewController = true
         }
     }
     
@@ -351,7 +352,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     /// Take JSON data and update UITableView.
     func updateTableWithGroups(_ data: Any) {
         let success = JSON(data)["success"].boolValue
-        let groups = JSON(data)["data"].arrayValue // Array of groups
+        let groups = JSON(data)["groups"].arrayValue // Array of groups
         let error_msg = JSON(data)["error_msg"].stringValue
         
         // If getting data was successful

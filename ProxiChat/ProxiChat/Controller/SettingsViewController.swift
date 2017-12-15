@@ -9,20 +9,29 @@
 import UIKit
 import SocketIO
 
+/*
+ Sections: Theme, Notifications & Sounds, Support - then logout/signout & delete account
+ - Theme: daytime/light, nighttime/dark, automatic
+ - Notifications & Sounds: maybe find a way to enable/disable in app? with a switch like whatsapp - ask for permissions on start up
+    - if enabled, allow the user to choose sounds and/or vibrations (if possible)
+    - pause notifications for a certain period of time
+ - Support: FAQ, Feedback, Report
+ */
+
 class SettingsViewController: UIViewController {
     
+    // MARK: Instance variables
     var socket: SocketIOClient?
-    var username = ""
     
     @IBOutlet var settingsView: UIView!
     @IBOutlet var settingsViewLeftConstraint: NSLayoutConstraint!
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     @IBOutlet var settingsViewWidth: NSLayoutConstraint!
+    @IBOutlet var settingsViewHeight: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UserData.createNewMessageViewController = true
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
@@ -71,17 +80,14 @@ class SettingsViewController: UIViewController {
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             socket = nil
         }
     }

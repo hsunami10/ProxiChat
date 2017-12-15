@@ -171,7 +171,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = newGroup
             destinationVC.socket = socket
-            destinationVC.username = username
+            destinationVC.fromViewController = 0
             socket = nil // Won't receive duplicate events
             groupsObj.socket = nil // Won't receive duplicate events
         }
