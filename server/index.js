@@ -44,6 +44,65 @@ proxichat_nsp.on('connection', socket => {
     USERNAME_TO_SOCKET[username] = socket
   })
 
+  // NOTE: Get starred groups
+  socket.on('get_starred_groups', username => {
+    pool.query(`SELECT groups.id, groups.title, groups.password, groups.description, groups.created_by, groups.is_public, groups.coordinates, groups.number_members, groups.date_created FROM groups INNER JOIN users_groups ON users_groups.group_id = groups.id WHERE users_groups.username = '${username}'`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        socket.emit('get_starred_groups_response', { success: false, error_msg: 'There was a problem getting your groups. Please try again.' })
+        console.log(err);
+      } else {
+        socket.emit('get_starred_groups_response', { success: true, groups: res.rows })
+      }
+    })
+  })
+
+  // =================== EDIT PROFILE EVENTS START ===================
+  socket.on('update_radius', (username, radius) => {
+    pool.query(`UPDATE users SET radius = ${radius} WHERE username = '${username}'`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        socket.emit('update_radius_response', { error_msg: 'There was a problem updating your radius. Please try again.' })
+        console.log(err);
+      }
+    })
+  })
+  socket.on('update_profile', (username, type, content) => {
+    // NOTE: 1 - password, 2 - bio, 3 - email
+    switch (type) {
+      case 1:
+        pool.query(`UPDATE users SET password = '${content}' WHERE username = '${username}'`, (err, res) => {
+          if (err) {
+            // TODO: Handle so it doesn't crash
+            socket.emit('update_profile_response', { error_msg: 'There was a problem updating your password. Please try again.' })
+            console.log(err);
+          }
+        })
+        break
+      case 2:
+        pool.query(`UPDATE users SET bio = '${content}' WHERE username = '${username}'`, (err, res) => {
+          if (err) {
+            // TODO: Handle so it doesn't crash
+            socket.emit('update_profile_response', { error_msg: 'There was a problem updating your bio. Please try again.' })
+            console.log(err);
+          }
+        })
+        break
+      case 3:
+        pool.query(`UPDATE users SET email = '${content}' WHERE username = '${username}'`, (err, res) => {
+          if (err) {
+            // TODO: Handle so it doesn't crash
+            socket.emit('update_profile_response', { error_msg: 'There was a problem updating your email. Please try again.' })
+            console.log(err);
+          }
+        })
+        break
+      default:
+
+    }
+  })
+  // =================== EDIT PROFILE EVENTS END ===================
+
   // NOTE: Update location and groups
   socket.on('update_location_and_get_groups', data => {
     let username = data.username
@@ -60,20 +119,9 @@ proxichat_nsp.on('connection', socket => {
           socket.emit('update_location_and_get_groups_response', { success: false, data: [], error_msg: 'There was a problem getting your location. Please try again.' })
           console.log(err);
         } else {
-          socket.emit('update_location_and_get_groups_response',  { success: true, data: res.rows, error_msg: '' })
+          socket.emit('update_location_and_get_groups_response',  { success: true, groups: res.rows, error_msg: '' })
         }
       })
-  })
-
-  // NOTE: EDIT PROFILE EVENTS
-  socket.on('update_radius', (username, radius) => {
-    pool.query(`UPDATE users SET radius = ${radius} WHERE username = '${username}'`, (err, res) => {
-      if (err) {
-        // TODO: Handle so it doesn't crash
-        socket.emit('update_radius_response', { error_msg: 'There was a problem updating your radius. Please try again.' })
-        console.log(err);
-      }
-    })
   })
 
   // NOTE: Update location and get groups after creating group

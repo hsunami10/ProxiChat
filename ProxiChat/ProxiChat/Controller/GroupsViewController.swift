@@ -303,7 +303,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.socket = socket
-            destinationVC.username = username
             destinationVC.groupsObj = self // Handle socket = nil only if a group is created
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController

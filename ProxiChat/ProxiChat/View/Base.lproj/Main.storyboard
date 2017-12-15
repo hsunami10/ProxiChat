@@ -440,12 +440,25 @@
                                                     <action selector="showNavMenu:" destination="hE2-Tj-l73" eventType="touchUpInside" id="kqz-g6-Rll"/>
                                                 </connections>
                                             </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gSi-vr-ssu" userLabel="Create Button">
+                                                <rect key="frame" x="376" y="10" width="30" height="30"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="30" id="D6v-Pt-BbR"/>
+                                                    <constraint firstAttribute="height" constant="30" id="t2e-Pv-gRd"/>
+                                                </constraints>
+                                                <state key="normal" title="Button" image="addGroupIcon"/>
+                                                <connections>
+                                                    <action selector="createGroup:" destination="hE2-Tj-l73" eventType="touchUpInside" id="rBs-0O-ZpR"/>
+                                                </connections>
+                                            </button>
                                         </subviews>
                                         <constraints>
                                             <constraint firstItem="MKq-iS-JM8" firstAttribute="centerX" secondItem="gmw-Jf-EQ2" secondAttribute="centerX" id="8ec-IR-gel"/>
+                                            <constraint firstItem="gSi-vr-ssu" firstAttribute="centerY" secondItem="gmw-Jf-EQ2" secondAttribute="centerY" id="WDh-6s-95D"/>
                                             <constraint firstItem="VC9-AJ-f9v" firstAttribute="leading" secondItem="gmw-Jf-EQ2" secondAttribute="leading" constant="8" id="YEQ-Yh-xtD"/>
                                             <constraint firstAttribute="height" constant="50" id="o6G-6r-KGc"/>
                                             <constraint firstItem="VC9-AJ-f9v" firstAttribute="centerY" secondItem="gmw-Jf-EQ2" secondAttribute="centerY" id="otx-op-17a"/>
+                                            <constraint firstAttribute="trailing" secondItem="gSi-vr-ssu" secondAttribute="trailing" constant="8" id="qjt-Xa-nxt"/>
                                             <constraint firstItem="MKq-iS-JM8" firstAttribute="centerY" secondItem="gmw-Jf-EQ2" secondAttribute="centerY" id="zE3-Od-L4D"/>
                                         </constraints>
                                     </view>
@@ -490,6 +503,7 @@
                         <segue destination="PhU-jY-AdF" kind="show" identifier="goToSettings" id="2HM-oE-YUK"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goToGroups" id="gsf-M0-Dbn"/>
                         <segue destination="bNj-gu-XBO" kind="show" identifier="joinGroupStarred" animates="NO" id="r7C-v9-2H0"/>
+                        <segue destination="vQY-sM-udf" kind="show" identifier="createGroupStarred" id="8KX-Q8-jJl"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aSn-8o-1E7" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1487,8 +1501,9 @@
     <inferredMetricsTieBreakers>
         <segue reference="2HM-oE-YUK"/>
         <segue reference="r7C-v9-2H0"/>
+        <segue reference="8KX-Q8-jJl"/>
         <segue reference="CND-Ga-KUU"/>
-        <segue reference="Q67-rq-eHC"/>
+        <segue reference="3O4-fG-PY9"/>
         <segue reference="gsf-M0-Dbn"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -21,13 +21,13 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
     var socket: SocketIOClient?
-    var username = ""
     var newGroup = Group()
     var data: Any!
     var coordinates = ""
     
     /// Store the groups view controller to set socket to nil if a group is created
-    var groupsObj: GroupsViewController!
+    var groupsObj: GroupsViewController?
+    var starredGroupsObj: StarredGroupsViewController?
     
     @IBOutlet var groupNameTextField: UITextField!
     @IBOutlet var groupDescriptionTextField: UITextField!
@@ -110,7 +110,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 socket?.emit("update_location_and_get_groups_create", [
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
-                    "username": username,
+                    "username": UserData.username,
                     "radius": UserData.radius
                     ])
                 manager.stopUpdatingLocation()
@@ -138,7 +138,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     self.invalidInput("Passwords do not match.")
                 } else {
                     SVProgressHUD.show()
-                    self.storeGroup(self.username, false, self.groupNameTextField.text!, self.groupPasswordTextField.text!, self.groupDescriptionTextField.text!)
+                    self.storeGroup(UserData.username, false, self.groupNameTextField.text!, self.groupPasswordTextField.text!, self.groupDescriptionTextField.text!)
                     self.locationManager.startUpdatingLocation()
                 }
             } else {
@@ -146,7 +146,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     self.invalidInput("Invalid input. Please try again.")
                 } else {
                     SVProgressHUD.show()
-                    self.storeGroup(self.username, true, self.groupNameTextField.text!, "", self.groupDescriptionTextField.text!)
+                    self.storeGroup(UserData.username, true, self.groupNameTextField.text!, "", self.groupDescriptionTextField.text!)
                     self.locationManager.startUpdatingLocation()
                 }
             }
@@ -173,7 +173,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             destinationVC.socket = socket
             destinationVC.fromViewController = 0
             socket = nil // Won't receive duplicate events
-            groupsObj.socket = nil // Won't receive duplicate events
+            groupsObj?.socket = nil // Won't receive duplicate events
+            starredGroupsObj?.socket = nil
         }
     }
     

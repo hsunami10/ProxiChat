@@ -109,6 +109,10 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     // MARK: IBOutlet Actions
+    @IBAction func createGroup(_ sender: Any) {
+        UIView.setAnimationsEnabled(true)
+        performSegue(withIdentifier: "createGroupStarred", sender: self)
+    }
     @IBAction func showNavMenu(_ sender: Any) {
         UIView.setAnimationsEnabled(true)
         if navigationLeftConstraint.constant != 0 {
@@ -152,6 +156,10 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
             destinationVC.socket = socket
             destinationVC.fromViewController = 1
             socket = nil // Won't receive duplicate events
+        } else if segue.identifier == "createGroupStarred" {
+            let destinationVC = segue.destination as! CreateGroupViewController
+            destinationVC.socket = socket
+            destinationVC.starredGroupsObj = self // Handle socket = nil only if a group is created
         } else if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
