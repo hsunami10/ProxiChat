@@ -60,6 +60,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        UserDefaults.standard.removeObject(forKey: "isUserLoggedInProxiChat")
 //        UserDefaults.standard.removeObject(forKey: "proxiChatUsername")
         
+        Dimensions.safeAreaHeight = (window?.frame.height)! - UIApplication.shared.statusBarFrame.height
+        Dimensions.safeAreaWidth = (window?.frame.width)!
+        
         // Go to groups page if already logged in
         let logInStatus = UserDefaults.standard.bool(forKey: "isUserLoggedInProxiChat") // Can be nil
         if logInStatus {

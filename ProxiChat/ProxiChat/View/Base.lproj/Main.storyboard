@@ -682,20 +682,20 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="hSC-c1-N3T" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" id="64u-eP-uOJ"/>
-                                    <constraint firstItem="xEi-pY-MeK" firstAttribute="top" secondItem="3zc-zD-3un" secondAttribute="bottom" constant="8" id="AHA-Jc-hux"/>
                                     <constraint firstAttribute="height" constant="716" id="Ak5-oQ-P2c"/>
                                     <constraint firstAttribute="trailing" secondItem="3zc-zD-3un" secondAttribute="trailing" constant="16" id="C4V-xD-oxV"/>
-                                    <constraint firstItem="3zc-zD-3un" firstAttribute="top" secondItem="bbe-y3-C19" secondAttribute="bottom" constant="8" id="Ho3-Pl-MLQ"/>
+                                    <constraint firstItem="3zc-zD-3un" firstAttribute="top" secondItem="hSC-c1-N3T" secondAttribute="bottom" constant="237" id="H8l-bI-rK4"/>
                                     <constraint firstAttribute="width" constant="414" id="Izj-fJ-6ML"/>
                                     <constraint firstItem="H3z-qm-y7K" firstAttribute="centerX" secondItem="eqZ-ch-Kfg" secondAttribute="centerX" id="Kti-0k-cls"/>
-                                    <constraint firstItem="3zc-zD-3un" firstAttribute="top" secondItem="H3z-qm-y7K" secondAttribute="bottom" constant="59" id="L9N-sY-jem"/>
                                     <constraint firstItem="3zc-zD-3un" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" constant="16" id="LAO-C2-3oQ"/>
                                     <constraint firstItem="hSC-c1-N3T" firstAttribute="top" secondItem="eqZ-ch-Kfg" secondAttribute="top" id="LDm-d3-nnc"/>
                                     <constraint firstItem="bbe-y3-C19" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" constant="16" id="MuP-nH-9u5"/>
                                     <constraint firstItem="H3z-qm-y7K" firstAttribute="top" secondItem="hSC-c1-N3T" secondAttribute="bottom" constant="8" id="SSe-Tg-IAh"/>
                                     <constraint firstAttribute="trailing" secondItem="xEi-pY-MeK" secondAttribute="trailing" id="W0o-Mc-KBj"/>
+                                    <constraint firstItem="bbe-y3-C19" firstAttribute="top" secondItem="hSC-c1-N3T" secondAttribute="bottom" constant="205" id="Z1T-uL-ZMf"/>
                                     <constraint firstItem="xEi-pY-MeK" firstAttribute="leading" secondItem="eqZ-ch-Kfg" secondAttribute="leading" id="bJp-nh-aQp"/>
                                     <constraint firstAttribute="trailing" secondItem="hSC-c1-N3T" secondAttribute="trailing" id="pAr-zC-oPW"/>
+                                    <constraint firstItem="xEi-pY-MeK" firstAttribute="top" secondItem="hSC-c1-N3T" secondAttribute="bottom" constant="326" id="qqm-UD-Ceg"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -710,18 +710,24 @@
                         <viewLayoutGuide key="safeArea" id="dEl-HY-Ef1"/>
                     </view>
                     <connections>
+                        <outlet property="infoViewHeight" destination="Y77-7D-mlc" id="8XB-so-cCl"/>
                         <outlet property="navigationLeftConstraint" destination="kmo-mv-d07" id="vhr-H9-3W2"/>
                         <outlet property="navigationViewWidth" destination="hgM-6j-a7o" id="YQq-TR-Nh4"/>
                         <outlet property="profilePicture" destination="H3z-qm-y7K" id="kiZ-DY-K3G"/>
+                        <outlet property="profilePictureHeight" destination="8pF-PT-2ag" id="Cpp-EY-CAq"/>
+                        <outlet property="profilePictureWidth" destination="9v3-Il-18b" id="3zu-dn-v0L"/>
                         <outlet property="profileTableView" destination="xEi-pY-MeK" id="PBd-kC-6yb"/>
                         <outlet property="profileTableViewHeightConstraint" destination="VPc-7j-8a2" id="L2D-tP-nWS"/>
                         <outlet property="profileView" destination="eqZ-ch-Kfg" id="Ed7-cG-Que"/>
                         <outlet property="profileViewHeight" destination="Ak5-oQ-P2c" id="jRC-dM-cql"/>
                         <outlet property="profileViewLeftConstraint" destination="yYF-Hg-9eP" id="uQp-no-8Wv"/>
                         <outlet property="profileViewWidth" destination="Izj-fJ-6ML" id="FgW-vi-2Ff"/>
+                        <outlet property="radiusLabelTopConstraint" destination="Z1T-uL-ZMf" id="si0-ZC-gcb"/>
                         <outlet property="radiusSlider" destination="k5S-oC-Ua7" id="Lau-EH-BCN"/>
                         <outlet property="radiusTextField" destination="SZs-RV-sQU" id="nYu-5f-Nx3"/>
                         <outlet property="radiusView" destination="3zc-zD-3un" id="dut-Nz-EdJ"/>
+                        <outlet property="radiusViewTopConstraint" destination="H8l-bI-rK4" id="s2X-Ob-fOq"/>
+                        <outlet property="tableViewTopConstraint" destination="qqm-UD-Ceg" id="tzX-fK-XOh"/>
                         <segue destination="hE2-Tj-l73" kind="show" identifier="goToStarred" id="GOK-JU-5Z0"/>
                         <segue destination="PhU-jY-AdF" kind="show" identifier="goToSettings" id="N6I-j8-8OR"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goToGroups" id="ZXB-nB-nwm"/>
@@ -1499,11 +1505,11 @@
         <image name="noPicture" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="2HM-oE-YUK"/>
+        <segue reference="N6I-j8-8OR"/>
         <segue reference="r7C-v9-2H0"/>
         <segue reference="8KX-Q8-jJl"/>
         <segue reference="CND-Ga-KUU"/>
-        <segue reference="3O4-fG-PY9"/>
-        <segue reference="gsf-M0-Dbn"/>
+        <segue reference="GOK-JU-5Z0"/>
+        <segue reference="ZXB-nB-nwm"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -25,9 +25,11 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     // MARK: Instance variables
     var socket: SocketIOClient?
     var rowSelected = -1
+    let imagePicker = UIImagePickerController()
+    
     /// This string is nil if a profile field is not edited
     var editedContent: String?
-    let imagePicker = UIImagePickerController()
+    
     /// TableView number of rows
     let numOfRows = 4
     
@@ -43,6 +45,15 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     
     @IBOutlet var profilePicture: UIImageView!
+    
+    // Responsive layout
+    @IBOutlet var infoViewHeight: NSLayoutConstraint!
+    @IBOutlet var profilePictureHeight: NSLayoutConstraint!
+    @IBOutlet var profilePictureWidth: NSLayoutConstraint!
+    @IBOutlet var radiusLabelTopConstraint: NSLayoutConstraint!
+    @IBOutlet var radiusViewTopConstraint: NSLayoutConstraint!
+    @IBOutlet var tableViewTopConstraint: NSLayoutConstraint!
+    
     @IBOutlet var profileTableView: UITableView!
     @IBOutlet var profileTableViewHeightConstraint: NSLayoutConstraint!
     
@@ -63,10 +74,19 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         // TODO: Get the user profile picture here
         
+        
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
+        profilePictureHeight.constant = Dimensions.pictureDimension
+        profilePictureWidth.constant = profilePictureHeight.constant
+        radiusLabelTopConstraint.constant = Dimensions.getPixels(radiusLabelTopConstraint.constant)
+        radiusViewTopConstraint.constant = Dimensions.getPixels(radiusViewTopConstraint.constant)
+        tableViewTopConstraint.constant = Dimensions.getPixels(tableViewTopConstraint.constant)
+        
         // Circular image view
         profilePicture.layer.borderWidth = 1
         profilePicture.layer.borderColor = UIColor.lightGray.cgColor
-        profilePicture.layer.cornerRadius = profilePicture.frame.height / 2
+        profilePicture.layer.cornerRadius = profilePictureHeight.constant / 2
         profilePicture.clipsToBounds = true
         
         // Initialize elements
@@ -97,9 +117,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profileTableView.dataSource = self
         
         // Space from bottom left corner of radius view to the bottom of the profile view
-        let leftOverSpace = (profileViewHeight.constant - profileView.frame.origin.y) - (radiusView.frame.origin.y + radiusView.frame.height - profileView.frame.origin.y)
+        let leftOverSpace = Dimensions.safeAreaHeight - (infoViewHeight.constant + tableViewTopConstraint.constant)
         // Subtract top constraint and bottom constraint - bottom constraint is equal to the cell labels' distance from left
-        profileTableViewHeightConstraint.constant = leftOverSpace - 8 - 16
+        profileTableViewHeightConstraint.constant = leftOverSpace - Dimensions.getPixels(8) - Dimensions.getPixels(16)
         profileTableView.rowHeight = profileTableViewHeightConstraint.constant / CGFloat(numOfRows)
         
         // Initialize alerts
