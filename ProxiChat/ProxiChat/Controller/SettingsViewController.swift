@@ -29,12 +29,16 @@ class SettingsViewController: UIViewController {
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     @IBOutlet var settingsViewWidth: NSLayoutConstraint!
     @IBOutlet var settingsViewHeight: NSLayoutConstraint!
+    @IBOutlet var infoViewHeight: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
+        
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
         
         self.view.layoutIfNeeded()
     }

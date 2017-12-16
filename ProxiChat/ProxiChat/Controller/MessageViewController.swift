@@ -49,11 +49,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var messageView: UIView!
     @IBOutlet var typingView: UIView!
     @IBOutlet var infoView: UIView!
+    @IBOutlet var infoViewHeight: NSLayoutConstraint!
     @IBOutlet var messageViewBottomConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         groupTitle.text = groupInformation.title
+        
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
         
         eventHandlers()
         

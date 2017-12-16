@@ -44,6 +44,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var groupsLeftConstraint: NSLayoutConstraint!
+    @IBOutlet var infoViewHeight: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,6 +53,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
+        
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
         
         // UITableView initialization
         groupsTableView.delegate = self

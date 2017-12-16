@@ -27,6 +27,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     
+    @IBOutlet var infoViewHeight: NSLayoutConstraint!
     @IBOutlet var starredGroupsTableView: UITableView!
     
     override func viewDidLoad() {
@@ -36,6 +37,9 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
+        
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
         
         // Initialize table view
         starredGroupsTableView.delegate = self

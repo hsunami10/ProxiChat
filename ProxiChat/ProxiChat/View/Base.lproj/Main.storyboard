@@ -337,6 +337,7 @@
                         <outlet property="groupsView" destination="veJ-a3-zjQ" id="BZu-Vi-owi"/>
                         <outlet property="groupsViewHeight" destination="GmP-ub-x7E" id="ipV-bB-HSy"/>
                         <outlet property="groupsViewWidth" destination="FCO-KD-OTE" id="cX4-ui-TTL"/>
+                        <outlet property="infoViewHeight" destination="tAz-gB-bKh" id="a9R-Ui-epS"/>
                         <outlet property="navigationLeftConstraint" destination="Hvb-ae-wXU" id="WxZ-Y3-DC3"/>
                         <outlet property="navigationViewWidth" destination="UQ1-9N-A0W" id="KXV-fr-8aI"/>
                         <segue destination="bNj-gu-XBO" kind="show" identifier="joinGroup" animates="NO" id="38h-l6-3Or"/>
@@ -492,6 +493,7 @@
                         <viewLayoutGuide key="safeArea" id="N9c-bB-Nnl"/>
                     </view>
                     <connections>
+                        <outlet property="infoViewHeight" destination="o6G-6r-KGc" id="kkb-um-0hT"/>
                         <outlet property="navigationLeftConstraint" destination="cAC-ZP-1UZ" id="Pbh-mp-cAO"/>
                         <outlet property="navigationViewWidth" destination="3QS-su-aE6" id="Tw8-4i-X0h"/>
                         <outlet property="starredGroupsTableView" destination="wpA-cB-DGo" id="L0d-yQ-GIM"/>
@@ -944,6 +946,7 @@
                         <outlet property="doubleTextFieldTwo" destination="6ee-OD-b2Z" id="kBk-QV-H0T"/>
                         <outlet property="doubleTextFieldTwoHeightConstraint" destination="l7s-hC-put" id="TbH-Yh-Cg2"/>
                         <outlet property="fieldViewHeightConstraint" destination="t6D-Tz-fbz" id="KOY-Kq-JDG"/>
+                        <outlet property="infoViewHeight" destination="oUg-4i-hpF" id="L9T-nx-CDz"/>
                         <outlet property="singleErrorLabel" destination="Jeb-Xw-UWh" id="YOH-D9-8TN"/>
                         <outlet property="singleFieldTitleLabel" destination="Vzx-fk-TYq" id="ukM-uO-mfj"/>
                         <outlet property="singleTextField" destination="LiX-bg-3Ti" id="364-2C-8ZW"/>
@@ -974,7 +977,7 @@
                                 <rect key="frame" x="0.0" y="20" width="414" height="60"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xBA-Cj-cww">
-                                        <rect key="frame" x="8" y="8" width="29" height="29"/>
+                                        <rect key="frame" x="8" y="15.666666666666664" width="29" height="29"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="29" id="Hps-08-9o0"/>
                                             <constraint firstAttribute="width" constant="29" id="pKS-hI-3pu"/>
@@ -985,7 +988,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create a Group" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2cs-Kf-bsE">
-                                        <rect key="frame" x="141.66666666666666" y="8" width="130.99999999999997" height="24"/>
+                                        <rect key="frame" x="141.66666666666666" y="18" width="130.99999999999997" height="24"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="24" id="Gx2-Dx-Dub"/>
                                             <constraint firstAttribute="width" constant="131" id="shb-1f-giL"/>
@@ -995,7 +998,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wnE-Mq-3Ec">
-                                        <rect key="frame" x="334" y="4" width="72" height="37"/>
+                                        <rect key="frame" x="334" y="11.666666666666668" width="72" height="37"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="72" id="hfB-WJ-lx5"/>
                                             <constraint firstAttribute="height" constant="37" id="peT-EU-vGN"/>
@@ -1009,13 +1012,13 @@
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="2cs-Kf-bsE" firstAttribute="top" secondItem="Ipq-WC-6Y0" secondAttribute="top" constant="8" id="0Y2-VT-cDY"/>
+                                    <constraint firstItem="2cs-Kf-bsE" firstAttribute="centerY" secondItem="Ipq-WC-6Y0" secondAttribute="centerY" id="2se-ab-OCI"/>
                                     <constraint firstAttribute="height" constant="60" id="O6S-hY-PXh"/>
                                     <constraint firstItem="2cs-Kf-bsE" firstAttribute="centerX" secondItem="Ipq-WC-6Y0" secondAttribute="centerX" id="cJ3-M6-tNJ"/>
-                                    <constraint firstItem="xBA-Cj-cww" firstAttribute="top" secondItem="Ipq-WC-6Y0" secondAttribute="top" constant="8" id="dqA-M0-4Ov"/>
-                                    <constraint firstItem="wnE-Mq-3Ec" firstAttribute="top" secondItem="Ipq-WC-6Y0" secondAttribute="top" constant="4" id="hdc-5B-ftS"/>
-                                    <constraint firstItem="xBA-Cj-cww" firstAttribute="leading" secondItem="Ipq-WC-6Y0" secondAttribute="leading" constant="8" id="mnI-pt-Trs"/>
+                                    <constraint firstItem="xBA-Cj-cww" firstAttribute="centerY" secondItem="Ipq-WC-6Y0" secondAttribute="centerY" id="fMB-jj-qIU"/>
+                                    <constraint firstItem="xBA-Cj-cww" firstAttribute="leading" secondItem="Ipq-WC-6Y0" secondAttribute="leading" constant="8" id="hvE-ou-UFX"/>
                                     <constraint firstAttribute="trailing" secondItem="wnE-Mq-3Ec" secondAttribute="trailing" constant="8" id="reE-mF-3er"/>
+                                    <constraint firstItem="wnE-Mq-3Ec" firstAttribute="centerY" secondItem="Ipq-WC-6Y0" secondAttribute="centerY" id="wF1-dg-94f"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wal-v6-6CK" userLabel="Content View">
@@ -1126,6 +1129,7 @@
                         <outlet property="groupDescriptionTextField" destination="a57-Ns-cHT" id="aBV-8s-zcd"/>
                         <outlet property="groupNameTextField" destination="U6y-l5-KWc" id="G4V-n1-qnQ"/>
                         <outlet property="groupPasswordTextField" destination="sga-jV-shc" id="D5v-rA-X0d"/>
+                        <outlet property="infoViewHeight" destination="O6S-hY-PXh" id="3nR-An-KpX"/>
                         <outlet property="privateSwitch" destination="m84-De-ZbG" id="fAd-Ax-Jq9"/>
                         <segue destination="bNj-gu-XBO" kind="show" identifier="goToMessagesAfterCreate" id="seX-dU-mTJ"/>
                     </connections>
@@ -1198,10 +1202,10 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Cc-uW-389" userLabel="Info View">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="75"/>
+                                <rect key="frame" x="0.0" y="20" width="414" height="50"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="q3l-1s-3Mj">
-                                        <rect key="frame" x="0.0" y="0.0" width="75" height="75"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="75" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="75" id="bQM-bF-Ygu"/>
                                         </constraints>
@@ -1212,7 +1216,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="poG-Ov-25h">
-                                        <rect key="frame" x="102.66666666666669" y="0.0" width="210" height="75"/>
+                                        <rect key="frame" x="102.66666666666669" y="0.0" width="210" height="50"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="210" id="0Fr-jg-bVn"/>
                                         </constraints>
@@ -1221,7 +1225,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vkx-70-Dpf">
-                                        <rect key="frame" x="362" y="23" width="29" height="29"/>
+                                        <rect key="frame" x="362" y="10.666666666666668" width="29" height="29.000000000000004"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="29" id="AfC-Q9-VmA"/>
                                             <constraint firstAttribute="width" constant="29" id="yHe-fK-cWl"/>
@@ -1234,7 +1238,7 @@
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="75" id="2AJ-Eq-59s"/>
+                                    <constraint firstAttribute="height" constant="50" id="2AJ-Eq-59s"/>
                                     <constraint firstAttribute="trailing" secondItem="vkx-70-Dpf" secondAttribute="trailing" constant="23" id="59x-e0-X8k"/>
                                     <constraint firstItem="vkx-70-Dpf" firstAttribute="centerY" secondItem="6Cc-uW-389" secondAttribute="centerY" id="MuZ-cn-M6e"/>
                                     <constraint firstItem="poG-Ov-25h" firstAttribute="top" secondItem="6Cc-uW-389" secondAttribute="top" id="QaQ-Fw-1Uf"/>
@@ -1250,7 +1254,7 @@
                         <constraints>
                             <constraint firstItem="6Cc-uW-389" firstAttribute="leading" secondItem="Sk0-ar-0jc" secondAttribute="leading" id="2z5-Cr-uut"/>
                             <constraint firstItem="ABx-JH-PiH" firstAttribute="leading" secondItem="Sk0-ar-0jc" secondAttribute="leading" id="D8n-ha-Imr"/>
-                            <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="Ihp-W1-dZR"/>
+                            <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="b8s-d9-G46" secondAttribute="top" id="Ihp-W1-dZR"/>
                             <constraint firstAttribute="bottom" secondItem="ABx-JH-PiH" secondAttribute="bottom" id="XSZ-ie-q5z"/>
                             <constraint firstAttribute="trailing" secondItem="ABx-JH-PiH" secondAttribute="trailing" id="ZTk-xq-0Cc"/>
                             <constraint firstAttribute="trailing" secondItem="6Cc-uW-389" secondAttribute="trailing" id="dyb-Tn-vbG"/>
@@ -1261,6 +1265,7 @@
                     <connections>
                         <outlet property="groupTitle" destination="poG-Ov-25h" id="TJn-pA-EEk"/>
                         <outlet property="infoView" destination="6Cc-uW-389" id="6kW-oa-Ee8"/>
+                        <outlet property="infoViewHeight" destination="2AJ-Eq-59s" id="zKY-hX-Uxh"/>
                         <outlet property="messageTableView" destination="wl2-tX-nQa" id="Qel-7e-NzX"/>
                         <outlet property="messageTextView" destination="fVI-eD-UYN" id="hN0-G4-oBU"/>
                         <outlet property="messageView" destination="ABx-JH-PiH" id="c0I-ez-FIg"/>
@@ -1403,6 +1408,7 @@
                         <viewLayoutGuide key="safeArea" id="Oee-RS-zc2"/>
                     </view>
                     <connections>
+                        <outlet property="infoViewHeight" destination="1ui-fw-fl7" id="Jlo-gq-G8n"/>
                         <outlet property="navigationLeftConstraint" destination="feh-j3-bRr" id="g1N-2v-1Lh"/>
                         <outlet property="navigationViewWidth" destination="trP-N7-whD" id="WHr-6e-hGt"/>
                         <outlet property="settingsView" destination="DbI-74-7g8" id="k7s-qs-u7I"/>
@@ -1505,11 +1511,11 @@
         <image name="noPicture" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="N6I-j8-8OR"/>
-        <segue reference="r7C-v9-2H0"/>
-        <segue reference="8KX-Q8-jJl"/>
-        <segue reference="CND-Ga-KUU"/>
-        <segue reference="GOK-JU-5Z0"/>
-        <segue reference="ZXB-nB-nwm"/>
+        <segue reference="itQ-Lz-83Q"/>
+        <segue reference="seX-dU-mTJ"/>
+        <segue reference="mxj-Sx-jCE"/>
+        <segue reference="Uez-De-SON"/>
+        <segue reference="Q67-rq-eHC"/>
+        <segue reference="OD0-pG-fXq"/>
     </inferredMetricsTieBreakers>
 </document>

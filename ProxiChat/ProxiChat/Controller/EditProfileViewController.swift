@@ -24,6 +24,7 @@ class EditProfileViewController: UIViewController {
     // Height of button for calculating field view height constraint. Top & bottom constraints are 16 each
     @IBOutlet var updateButton: UIButton!
     @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var infoViewHeight: NSLayoutConstraint!
     
     // Single field view: bio, email (2,3)
     @IBOutlet var subSingleView: UIView!
@@ -53,6 +54,9 @@ class EditProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)

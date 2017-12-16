@@ -35,10 +35,14 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet var groupPasswordTextField: UITextField!
     @IBOutlet var confirmPasswordTextField: UITextField!
     @IBOutlet var errorLabel: UILabel!
+    @IBOutlet var infoViewHeight: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         eventHandlers()
+        
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
         
         privateSwitch.isOn = false
         groupPasswordTextField.isHidden = true
