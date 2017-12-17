@@ -734,6 +734,7 @@
                         <segue destination="PhU-jY-AdF" kind="show" identifier="goToSettings" id="N6I-j8-8OR"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goToGroups" id="ZXB-nB-nwm"/>
                         <segue destination="Y61-PD-gJS" kind="show" identifier="goToEditProfile" animates="NO" id="W4f-bs-fVO"/>
+                        <segue destination="OlL-W0-ypt" kind="show" identifier="goToEditPicture" id="vgt-du-i7j"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2DK-Aq-gq2" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -964,6 +965,78 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="azi-Fl-d9C" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="7686.9565217391309" y="-973.36956521739137"/>
+        </scene>
+        <!--EditPictureViewController-->
+        <scene sceneID="vdS-Ee-vUt">
+            <objects>
+                <viewController title="EditPictureViewController" id="OlL-W0-ypt" customClass="EditPictureViewController" customModule="ProxiChat" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="aK5-3O-Uce">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" alpha="0.55000000000000004" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pwU-0x-Hoo">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </scrollView>
+                            <view alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SUH-jw-e2C">
+                                <rect key="frame" x="0.0" y="666" width="414" height="70"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WPF-e5-dJZ">
+                                        <rect key="frame" x="339" y="18.666666666666629" width="59" height="33"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="33" id="KZ3-BB-tNz"/>
+                                            <constraint firstAttribute="width" constant="59" id="eOS-q8-upx"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="17"/>
+                                        <state key="normal" title="Choose">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="chooseImage:" destination="OlL-W0-ypt" eventType="touchUpInside" id="LAk-D2-mOh"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6vC-zM-ZUm">
+                                        <rect key="frame" x="16" y="18.666666666666629" width="53" height="33"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="53" id="fu4-o0-ze5"/>
+                                            <constraint firstAttribute="height" constant="33" id="pdR-Fh-J0A"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title="Cancel">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="cancelEdit:" destination="OlL-W0-ypt" eventType="touchUpInside" id="g3u-ag-FnW"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="6vC-zM-ZUm" firstAttribute="leading" secondItem="SUH-jw-e2C" secondAttribute="leading" constant="16" id="HEd-np-l0B"/>
+                                    <constraint firstItem="6vC-zM-ZUm" firstAttribute="centerY" secondItem="SUH-jw-e2C" secondAttribute="centerY" id="Twj-9n-QMp"/>
+                                    <constraint firstAttribute="height" constant="70" id="fel-JP-evs"/>
+                                    <constraint firstItem="WPF-e5-dJZ" firstAttribute="centerY" secondItem="SUH-jw-e2C" secondAttribute="centerY" id="hKG-MN-7ir"/>
+                                    <constraint firstAttribute="trailing" secondItem="WPF-e5-dJZ" secondAttribute="trailing" constant="16" id="xrs-CF-bdA"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="SUH-jw-e2C" firstAttribute="leading" secondItem="rTs-oI-1eP" secondAttribute="leading" id="Nrr-gV-1m5"/>
+                            <constraint firstItem="SUH-jw-e2C" firstAttribute="trailing" secondItem="rTs-oI-1eP" secondAttribute="trailing" id="XnR-As-UoY"/>
+                            <constraint firstItem="SUH-jw-e2C" firstAttribute="bottom" secondItem="rTs-oI-1eP" secondAttribute="bottom" id="kKG-2Y-mAq"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="rTs-oI-1eP"/>
+                    </view>
+                    <connections>
+                        <outlet property="blackView" destination="SUH-jw-e2C" id="uCW-G5-y2v"/>
+                        <outlet property="blackViewHeight" destination="fel-JP-evs" id="5FZ-Ms-ki2"/>
+                        <outlet property="scrollView" destination="pwU-0x-Hoo" id="jID-yV-cEP"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="H2K-Ri-pZ6" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6444.9275362318849" y="-1892.1195652173915"/>
         </scene>
         <!--CreateGroupViewController-->
         <scene sceneID="1oB-yE-NFZ">
@@ -1511,11 +1584,11 @@
         <image name="noPicture" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="itQ-Lz-83Q"/>
+        <segue reference="N6I-j8-8OR"/>
         <segue reference="seX-dU-mTJ"/>
         <segue reference="mxj-Sx-jCE"/>
         <segue reference="Uez-De-SON"/>
-        <segue reference="Q67-rq-eHC"/>
-        <segue reference="OD0-pG-fXq"/>
+        <segue reference="GOK-JU-5Z0"/>
+        <segue reference="ZXB-nB-nwm"/>
     </inferredMetricsTieBreakers>
 </document>

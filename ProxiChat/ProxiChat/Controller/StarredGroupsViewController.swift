@@ -39,7 +39,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         _ = NavigationSideMenu.init(self)
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         
         // Initialize table view
         starredGroupsTableView.delegate = self

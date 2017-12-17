@@ -57,7 +57,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         groupTitle.text = groupInformation.title
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         
         eventHandlers()
         

@@ -24,11 +24,11 @@ struct Dimensions {
     static let infoViewHeight: CGFloat = 50
     
     // MARK: Profile Factors
-    static let pictureDimension: CGFloat = Dimensions.getPixels(170)
-    static let infoViewDimension: CGFloat = Dimensions.getPixels(50)
+    static let pictureDimension: CGFloat = Dimensions.getPoints(170)
+    static let infoViewDimension: CGFloat = Dimensions.getPoints(50)
     
-    /// Get the factor. The number of pixels is relative to the iPhone 8 Plus resolution.
-    static func getFactor(_ num: CGFloat, _ isHeight: Bool) -> CGFloat {
+    /// Get the factor. The number of points is relative to the iPhone 8 Plus resolution.
+    static func getFactor(_ num: CGFloat, _ isHeight: Bool = true) -> CGFloat {
         if isHeight {
             return num / Dimensions.iPhone8PlusSafeAreaHeight
         } else {
@@ -37,14 +37,14 @@ struct Dimensions {
     }
     
     /**
-     Get the pixels.
-     This takes in the number of pixels (in iPhone 8 Plus) and returns the number of pixels relative to the current device's safe area dimension.
+     Get the points.
+     This takes in the number of points (in iPhone 8 Plus) and returns the number of points relative to the current device's safe area dimension.
     */
-    static func getPixels(_ numberOfPixels: CGFloat, _ isHeight: Bool = true) -> CGFloat {
+    static func getPoints(_ numberOfPoints: CGFloat, _ isHeight: Bool = true) -> CGFloat {
         if isHeight {
-            return Dimensions.safeAreaHeight * Dimensions.getFactor(numberOfPixels, isHeight)
+            return Dimensions.safeAreaHeight * Dimensions.getFactor(numberOfPoints)
         } else {
-            return Dimensions.safeAreaWidth * Dimensions.getFactor(numberOfPixels, isHeight)
+            return Dimensions.safeAreaWidth * Dimensions.getFactor(numberOfPoints, false)
         }
     }
 }

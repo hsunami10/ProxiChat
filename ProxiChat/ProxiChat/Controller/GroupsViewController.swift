@@ -55,7 +55,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         _ = NavigationSideMenu.init(self)
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         
         // UITableView initialization
         groupsTableView.delegate = self

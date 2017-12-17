@@ -26,6 +26,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     var socket: SocketIOClient?
     var rowSelected = -1
     let imagePicker = UIImagePickerController()
+    var image: UIImage?
     
     /// This string is nil if a profile field is not edited
     var editedContent: String?
@@ -76,12 +77,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         profilePictureHeight.constant = Dimensions.pictureDimension
         profilePictureWidth.constant = profilePictureHeight.constant
-        radiusLabelTopConstraint.constant = Dimensions.getPixels(radiusLabelTopConstraint.constant)
-        radiusViewTopConstraint.constant = Dimensions.getPixels(radiusViewTopConstraint.constant)
-        tableViewTopConstraint.constant = Dimensions.getPixels(tableViewTopConstraint.constant)
+        radiusLabelTopConstraint.constant = Dimensions.getPoints(radiusLabelTopConstraint.constant)
+        radiusViewTopConstraint.constant = Dimensions.getPoints(radiusViewTopConstraint.constant)
+        tableViewTopConstraint.constant = Dimensions.getPoints(tableViewTopConstraint.constant)
         
         // Circular image view
         profilePicture.layer.borderWidth = 1
@@ -119,7 +120,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         // Space from bottom left corner of radius view to the bottom of the profile view
         let leftOverSpace = Dimensions.safeAreaHeight - (infoViewHeight.constant + tableViewTopConstraint.constant)
         // Subtract top constraint and bottom constraint - bottom constraint is equal to the cell labels' distance from left
-        profileTableViewHeightConstraint.constant = leftOverSpace - Dimensions.getPixels(8) - Dimensions.getPixels(16)
+        profileTableViewHeightConstraint.constant = leftOverSpace - Dimensions.getPoints(8) - Dimensions.getPoints(16)
         profileTableView.rowHeight = profileTableViewHeightConstraint.constant / CGFloat(numOfRows)
         
         // Initialize alerts
@@ -251,10 +252,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     // TODO: Add some way for the users to preview what their picture would look like and edit
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         if let chosenImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            profilePicture.contentMode = .scaleAspectFit
-            profilePicture.image = chosenImage
+            self.image = chosenImage
+            dismiss(animated: true) {
+                self.performSegue(withIdentifier: "goToEditPicture", sender: self)
+            }
+        } else {
+            SVProgressHUD.showError(withStatus: "There was a problem choosing an image. Please try again.")
+            dismiss(animated: true, completion: nil)
         }
-        dismiss(animated: true, completion: nil)
     }
     
     // MARK: UITextField Delegate Methods
@@ -341,6 +346,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             destinationVC.row = rowSelected
             destinationVC.delegate = self // UpdateProfileDelegate
             editedContent = nil // Set to nil every time to track whether or not a profile field was changed
+        } else if segue.identifier == "goToEditPicture" {
+            let destinationVC = segue.destination as! EditPictureViewController
+            destinationVC.image = image
         }
     }
     

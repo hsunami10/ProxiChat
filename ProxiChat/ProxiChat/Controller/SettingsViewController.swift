@@ -38,7 +38,7 @@ class SettingsViewController: UIViewController {
         _ = NavigationSideMenu.init(self)
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         
         self.view.layoutIfNeeded()
     }

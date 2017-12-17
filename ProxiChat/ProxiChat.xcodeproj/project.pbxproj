@@ -10,6 +10,7 @@
 		62B2CB57F5955BEB62EEEF6B /* Pods_ProxiChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */; };
 		E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40A948D1FDF76FC006097B1 /* Validate.swift */; };
 		E434EDDE1FE5CC9300B26F22 /* Dimensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */; };
+		E434EDE01FE6051C00B26F22 /* EditPictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */; };
 		E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DA91FC1387B0027C756 /* MessageCell.swift */; };
 		E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4486DAA1FC1387B0027C756 /* MessageCell.xib */; };
 		E4486DAF1FC1388D0027C756 /* AlertMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */; };
@@ -48,6 +49,7 @@
 		ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProxiChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E40A948D1FDF76FC006097B1 /* Validate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validate.swift; sourceTree = "<group>"; };
 		E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dimensions.swift; sourceTree = "<group>"; };
+		E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPictureViewController.swift; sourceTree = "<group>"; };
 		E4486DA91FC1387B0027C756 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
 		E4486DAA1FC1387B0027C756 /* MessageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MessageCell.xib; sourceTree = "<group>"; };
 		E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageCell.swift; sourceTree = "<group>"; };
@@ -195,6 +197,7 @@
 				E4FAB49E1FD7828F00D2C6E1 /* ProfileViewController.swift */,
 				E4FAB4A01FD782B500D2C6E1 /* SettingsViewController.swift */,
 				E4D23C6A1FDF1A080059ED54 /* EditProfileViewController.swift */,
+				E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -377,6 +380,7 @@
 				E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */,
 				E4FAB4A11FD782B500D2C6E1 /* SettingsViewController.swift in Sources */,
 				E434EDDE1FE5CC9300B26F22 /* Dimensions.swift in Sources */,
+				E434EDE01FE6051C00B26F22 /* EditPictureViewController.swift in Sources */,
 				E4E258FD1FDD9EF6006B807C /* ProfileCell.swift in Sources */,
 				E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */,
 				E4FAB49F1FD7828F00D2C6E1 /* ProfileViewController.swift in Sources */,

@@ -42,7 +42,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         eventHandlers()
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPixels(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         
         privateSwitch.isOn = false
         groupPasswordTextField.isHidden = true
