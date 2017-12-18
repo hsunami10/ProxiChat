@@ -15,14 +15,22 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     var image: UIImage?
     var renderedImageView: UIImageView?
 
-    @IBOutlet var blackView: UIView!
     @IBOutlet var scrollView: UIScrollView!
+    @IBOutlet var scrollViewWidth: NSLayoutConstraint!
+    @IBOutlet var scrollViewHeight: NSLayoutConstraint!
+    
+    // TODO: Add black views around the circle?
+    @IBOutlet var blackView: UIView!
     @IBOutlet var blackViewHeight: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        var overlapDiff: CGFloat = -1
+        let lineThickness: CGFloat = Dimensions.getPoints(2) // Width of circle outline
+        let circleLeftMargin = Dimensions.getPoints(32)
+        let radius = (self.view.frame.width - circleLeftMargin * 2) / 2 // Radius of circle
+        let circleTopMargin = self.view.center.y - radius - lineThickness
+        let diameter = radius * 2
         
         // Full view, not safe area
         blackViewHeight.constant = (70 / 736) * self.view.frame.height
@@ -30,33 +38,39 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         // Initialize scroll view properties
         scrollView.alwaysBounceVertical = true
         scrollView.alwaysBounceHorizontal = true
-        scrollView.showsVerticalScrollIndicator = true
-        scrollView.showsHorizontalScrollIndicator = true
-        scrollView.flashScrollIndicators()
-        scrollView.minimumZoomScale = 1
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.minimumZoomScale = 0.5
         scrollView.maximumZoomScale = 10
-        scrollView.isScrollEnabled = true
+        scrollView.clipsToBounds = false
         scrollView.delegate = self
         
+//        scrollView.backgroundColor = UIColor.green
+        
+        scrollViewWidth.constant = diameter + lineThickness
+        scrollViewHeight.constant = scrollViewWidth.constant
+        
+        // TODO: Fix this later - test with multiple image sizes first
         // Create image
         let imageView = UIImageView()
         if let chosenImage = image {
-            let imageViewHeight = self.view.frame.width * (chosenImage.size.height / chosenImage.size.width)
-            let yImagePos = self.view.center.y - (imageViewHeight / 2)
-            var frame: CGRect = CGRect(x: 0, y: yImagePos - UIApplication.shared.statusBarFrame.height, width: self.view.frame.width, height: imageViewHeight)
-            imageView.image = chosenImage
+            var frame = CGRect()
+            var fromTop: CGFloat = 0
             
-            // Adjust for image and black view overlap
-            // If it's in portrait
-            if chosenImage.size.height > chosenImage.size.width {
-                // If overlapping
-                if blackViewHeight.constant > yImagePos {
-                    // Change position
-                    overlapDiff = blackViewHeight.constant - yImagePos
-                    frame = CGRect(x: 0, y: yImagePos - UIApplication.shared.statusBarFrame.height - overlapDiff, width: self.view.frame.width, height: imageViewHeight)
-                }
+            if chosenImage.size.height > chosenImage.size.width { // If portrait
+                fromTop = -circleTopMargin - lineThickness / 2
+                frame = CGRect(x: -circleLeftMargin - lineThickness / 2, y: fromTop, width: self.view.frame.height * (chosenImage.size.width / chosenImage.size.height), height: self.view.frame.height)
+            } else if chosenImage.size.height < chosenImage.size.width { // If landscape
+                let imageHeight = self.view.frame.width * (chosenImage.size.height / chosenImage.size.width)
+                fromTop = self.view.center.y - imageHeight / 2
+                frame = CGRect(x: -circleLeftMargin + lineThickness / 2, y: fromTop - circleTopMargin - lineThickness / 2, width: self.view.frame.width, height: imageHeight)
+            } else { // If square
+                fromTop = self.view.center.y - self.view.frame.width / 2
+                frame = CGRect(x: -circleLeftMargin + lineThickness / 2, y: fromTop - circleTopMargin - lineThickness / 2, width: self.view.frame.width, height: self.view.frame.width)
+                // TODO: Change this to exactly fit the scroll view instead?
             }
             
+            imageView.image = chosenImage
             imageView.frame = frame
             renderedImageView = imageView
             scrollView.addSubview(imageView)
@@ -65,30 +79,24 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
             self.dismiss(animated: true, completion: nil)
         }
         
-        let radius = (self.view.frame.width - Dimensions.getPoints(64)) / 2 // Radius of circle
-        
         // Draw black circle outline with Core Graphics
-        let diameter = radius * 2
-        
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: diameter+4, height: diameter+4))
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: diameter+lineThickness*2, height: diameter+lineThickness*2))
         let img = renderer.image { (ctx) in
             ctx.cgContext.setFillColor(UIColor.clear.cgColor)
             ctx.cgContext.setStrokeColor(UIColor.black.cgColor)
-            ctx.cgContext.setLineWidth(2)
-            let rectangle = CGRect(x: 2, y: 2, width: diameter, height: diameter)
+            ctx.cgContext.setLineWidth(lineThickness)
+            let rectangle = CGRect(x: lineThickness, y: lineThickness, width: diameter, height: diameter)
             ctx.cgContext.addEllipse(in: rectangle)
             ctx.cgContext.drawPath(using: .stroke)
         }
         
-        var circleFrame: CGRect = CGRect(x: Dimensions.getPoints(32), y: self.view.center.y - radius, width: diameter+4, height: diameter+4)
-        if overlapDiff > 0 {
-            circleFrame = CGRect(x: Dimensions.getPoints(32), y: self.view.center.y - radius - overlapDiff, width: diameter+4, height: diameter+4)
-        }
+        let circleFrame: CGRect = CGRect(x: circleLeftMargin-lineThickness, y: circleTopMargin, width: diameter+lineThickness*2, height: diameter+lineThickness*2)
+        
         let imgview = UIImageView(frame: circleFrame)
         imgview.image = img
         self.view.addSubview(imgview)
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -98,10 +106,19 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.renderedImageView
     }
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        let subView = scrollView.subviews[0]
+        
+        let offSetX: CGFloat = max((scrollView.bounds.size.width - scrollView.contentSize.width) * 0.5, 0)
+        let offSetY: CGFloat = max((scrollView.bounds.size.height - scrollView.contentSize.height) * 0.5, 0)
+        
+        subView.center = CGPoint(x: scrollView.contentSize.width * 0.5 + offSetX, y: scrollView.contentSize.height * 0.5 + offSetY)
+    }
     
     // MARK: IBOutlet Actions
     @IBAction func chooseImage(_ sender: Any) {
         print("submit image")
+        self.dismiss(animated: true, completion: nil)
     }
     @IBAction func cancelEdit(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)

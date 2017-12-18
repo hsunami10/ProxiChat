@@ -974,9 +974,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" alpha="0.55000000000000004" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pwU-0x-Hoo">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" alpha="0.55000000000000004" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pwU-0x-Hoo">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="736" id="dyl-93-IvM"/>
+                                    <constraint firstAttribute="width" constant="414" id="uxh-pi-GPf"/>
+                                </constraints>
                             </scrollView>
                             <view alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SUH-jw-e2C">
                                 <rect key="frame" x="0.0" y="666" width="414" height="70"/>
@@ -1022,8 +1025,10 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="pwU-0x-Hoo" firstAttribute="centerY" secondItem="aK5-3O-Uce" secondAttribute="centerY" id="KtV-tk-g9y"/>
                             <constraint firstItem="SUH-jw-e2C" firstAttribute="leading" secondItem="rTs-oI-1eP" secondAttribute="leading" id="Nrr-gV-1m5"/>
                             <constraint firstItem="SUH-jw-e2C" firstAttribute="trailing" secondItem="rTs-oI-1eP" secondAttribute="trailing" id="XnR-As-UoY"/>
+                            <constraint firstItem="pwU-0x-Hoo" firstAttribute="centerX" secondItem="aK5-3O-Uce" secondAttribute="centerX" id="apr-U4-G3o"/>
                             <constraint firstItem="SUH-jw-e2C" firstAttribute="bottom" secondItem="rTs-oI-1eP" secondAttribute="bottom" id="kKG-2Y-mAq"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="rTs-oI-1eP"/>
@@ -1032,6 +1037,8 @@
                         <outlet property="blackView" destination="SUH-jw-e2C" id="uCW-G5-y2v"/>
                         <outlet property="blackViewHeight" destination="fel-JP-evs" id="5FZ-Ms-ki2"/>
                         <outlet property="scrollView" destination="pwU-0x-Hoo" id="jID-yV-cEP"/>
+                        <outlet property="scrollViewHeight" destination="dyl-93-IvM" id="YPJ-9C-VCe"/>
+                        <outlet property="scrollViewWidth" destination="uxh-pi-GPf" id="R8a-Fk-7Az"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="H2K-Ri-pZ6" userLabel="First Responder" sceneMemberID="firstResponder"/>

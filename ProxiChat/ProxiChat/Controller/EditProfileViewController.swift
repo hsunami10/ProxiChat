@@ -75,6 +75,8 @@ class EditProfileViewController: UIViewController {
             doubleFieldTitleLabel.text = "Password"
             doubleTextFieldOne.placeholder = "Enter a new password"
             doubleTextFieldTwo.placeholder = "Confirm the new password"
+            doubleTextFieldOne.isSecureTextEntry = true
+            doubleTextFieldTwo.isSecureTextEntry = true
             
             doubleTextFieldOneHeightConstraint.constant = textFieldHeight
             doubleTextFieldTwoHeightConstraint.constant = textFieldHeight

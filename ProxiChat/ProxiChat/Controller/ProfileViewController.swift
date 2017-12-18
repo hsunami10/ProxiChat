@@ -249,10 +249,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     // MARK: UIImagePickerController Delegate Methods
-    // TODO: Add some way for the users to preview what their picture would look like and edit
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         if let chosenImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
             self.image = chosenImage
+            
             dismiss(animated: true) {
                 self.performSegue(withIdentifier: "goToEditPicture", sender: self)
             }

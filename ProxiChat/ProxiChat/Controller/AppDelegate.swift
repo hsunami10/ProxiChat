@@ -24,7 +24,7 @@ protocol JoinGroupDelegate {
 }
 /// Protocol for updating / editing the user's profile. Data (field info) is passed back from the EditProfileViewController to the ProfileViewController.
 protocol UpdateProfileDelegate {
-    /// Realtime and saves the user's updated field.
+    /// Realtime updates and saves the user's updated field.
     func updateProfile(_ type: Int, _ content: String)
 }
 
