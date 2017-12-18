@@ -20,7 +20,7 @@ import SwiftyJSON
  TODO: Have a way to edit the profile picture after choosing one - into a "circular" frame
  */
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate, UpdatePictureDelegate {
     
     // MARK: Instance variables
     var socket: SocketIOClient?
@@ -150,6 +150,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         })
     }
     
+    // MARK: UpdatePictureDelegate Methods
+    func updatePicture(_ image: UIImage) {
+        print("received image and save")
+        profilePicture.image = image
+        self.view.layoutIfNeeded()
+    }
+    
     // MARK: UpdateProfileDelegate Methods
     func updateProfile(_ type: Int, _ content: String) {
         switch type {
@@ -252,7 +259,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         if let chosenImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
             self.image = chosenImage
-            
             dismiss(animated: true) {
                 self.performSegue(withIdentifier: "goToEditPicture", sender: self)
             }
@@ -349,6 +355,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         } else if segue.identifier == "goToEditPicture" {
             let destinationVC = segue.destination as! EditPictureViewController
             destinationVC.image = image
+            destinationVC.delegate = self
         }
     }
     

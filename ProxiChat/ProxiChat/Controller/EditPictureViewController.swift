@@ -12,8 +12,12 @@ import CoreGraphics
 
 class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     
-    var image: UIImage?
+    var image: UIImage? // UIImagePickerController image
     var renderedImageView: UIImageView?
+    var delegate: UpdatePictureDelegate?
+    var circleLeftMargin: CGFloat = 0
+    var circleTopMargin: CGFloat = 0
+    var diameter: CGFloat = 0
 
     @IBOutlet var scrollView: UIScrollView!
     @IBOutlet var scrollViewWidth: NSLayoutConstraint!
@@ -26,11 +30,11 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let lineThickness: CGFloat = Dimensions.getPoints(2) // Width of circle outline
-        let circleLeftMargin = Dimensions.getPoints(32)
+        let lineThickness = Dimensions.getPoints(2) // Width of circle outline
+        circleLeftMargin = Dimensions.getPoints(32)
         let radius = (self.view.frame.width - circleLeftMargin * 2) / 2 // Radius of circle
-        let circleTopMargin = self.view.center.y - radius - lineThickness
-        let diameter = radius * 2
+        circleTopMargin = self.view.center.y - radius - lineThickness
+        diameter = radius * 2
         
         // Full view, not safe area
         blackViewHeight.constant = (70 / 736) * self.view.frame.height
@@ -44,8 +48,6 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         scrollView.maximumZoomScale = 10
         scrollView.clipsToBounds = false
         scrollView.delegate = self
-        
-//        scrollView.backgroundColor = UIColor.green
         
         scrollViewWidth.constant = diameter + lineThickness
         scrollViewHeight.constant = scrollViewWidth.constant
@@ -117,7 +119,12 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     
     // MARK: IBOutlet Actions
     @IBAction func chooseImage(_ sender: Any) {
-        print("submit image")
+        // TODO: Crop image, then run delegate method
+        // Cropping isn't working, always showing the same cropped image?
+        let cropRect = CGRect(x: 0, y: 0, width: (renderedImageView?.image?.size.width)!, height: (renderedImageView?.image?.size.height)!)
+        let imageRef = (renderedImageView?.image?.cgImage?.cropping(to: cropRect))!
+        let croppedImage = UIImage(cgImage: imageRef, scale: (renderedImageView?.image?.scale)!, orientation: (renderedImageView?.image?.imageOrientation)!)
+        delegate?.updatePicture(croppedImage)
         self.dismiss(animated: true, completion: nil)
     }
     @IBAction func cancelEdit(_ sender: Any) {

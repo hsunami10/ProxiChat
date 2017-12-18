@@ -27,6 +27,11 @@ protocol UpdateProfileDelegate {
     /// Realtime updates and saves the user's updated field.
     func updateProfile(_ type: Int, _ content: String)
 }
+/// Protocol for updating / editing the user's picture. Data (image) is passed back from the EditPictureViewController to the ProfileViewController.
+protocol UpdatePictureDelegate {
+    /// Realtime updates and saves the user's updated picture.
+    func updatePicture(_ image: UIImage)
+}
 
 // MARK: Extensions
 extension String {
