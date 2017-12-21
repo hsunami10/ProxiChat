@@ -186,7 +186,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profileTableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
-    // MARK: UITableView Delegate Methods
+    // MARK: UITableView Delegate and DataSource Methods
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         rowSelected = indexPath.row
         UIView.setAnimationsEnabled(true)

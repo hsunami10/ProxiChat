@@ -10,6 +10,8 @@ import UIKit
 import SVProgressHUD
 import CoreGraphics
 
+// TODO: FIX BUG - won't allow the image to scroll at first until you zoom
+
 class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     
     var image: UIImage? // UIImagePickerController image
@@ -18,10 +20,12 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     var circleLeftMargin: CGFloat = 0
     var circleTopMargin: CGFloat = 0
     var diameter: CGFloat = 0
+    var firstZoom = false
 
     @IBOutlet var scrollView: UIScrollView!
     @IBOutlet var scrollViewWidth: NSLayoutConstraint!
     @IBOutlet var scrollViewHeight: NSLayoutConstraint!
+    @IBOutlet var testImageView: UIImageView!
     
     // TODO: Add black views around the circle?
     @IBOutlet var blackView: UIView!
@@ -61,7 +65,13 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
             
             if chosenImage.size.height > chosenImage.size.width { // If portrait
                 fromTop = -circleTopMargin - lineThickness / 2
-                frame = CGRect(x: -circleLeftMargin - lineThickness / 2, y: fromTop, width: self.view.frame.height * (chosenImage.size.width / chosenImage.size.height), height: self.view.frame.height)
+                
+//                frame = CGRect(x: -circleLeftMargin - lineThickness / 2, y: fromTop, width: self.view.frame.height * (chosenImage.size.width / chosenImage.size.height), height: self.view.frame.height)
+                
+                // TODO: Change this later?
+                let w = scrollViewHeight.constant * (chosenImage.size.width / chosenImage.size.height)
+                frame = CGRect(x: scrollViewWidth.constant / 2 - w / 2, y: 0, width: w, height: scrollViewHeight.constant)
+                
             } else if chosenImage.size.height < chosenImage.size.width { // If landscape
                 let imageHeight = self.view.frame.width * (chosenImage.size.height / chosenImage.size.width)
                 fromTop = self.view.center.y - imageHeight / 2
@@ -110,6 +120,9 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     }
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         let subView = scrollView.subviews[0]
+        if !firstZoom {
+            firstZoom = true
+        }
         
         let offSetX: CGFloat = max((scrollView.bounds.size.width - scrollView.contentSize.width) * 0.5, 0)
         let offSetY: CGFloat = max((scrollView.bounds.size.height - scrollView.contentSize.height) * 0.5, 0)
@@ -120,12 +133,25 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     // MARK: IBOutlet Actions
     @IBAction func chooseImage(_ sender: Any) {
         // TODO: Crop image, then run delegate method
-        // Cropping isn't working, always showing the same cropped image?
-        let cropRect = CGRect(x: 0, y: 0, width: (renderedImageView?.image?.size.width)!, height: (renderedImageView?.image?.size.height)!)
-        let imageRef = (renderedImageView?.image?.cgImage?.cropping(to: cropRect))!
-        let croppedImage = UIImage(cgImage: imageRef, scale: (renderedImageView?.image?.scale)!, orientation: (renderedImageView?.image?.imageOrientation)!)
-        delegate?.updatePicture(croppedImage)
-        self.dismiss(animated: true, completion: nil)
+        // TODO: Handle first zoom here (if !firstZoom, else)
+
+        // If haven't zoomed
+        if !firstZoom {
+            
+        } else {
+            
+        }
+        
+        let scale = 1 / scrollView.zoomScale
+        
+        let visibleRect = CGRect(x: scrollView.contentOffset.x * scale, y: scrollView.contentOffset.y * scale, width: scrollViewWidth.constant * scale, height: scrollViewHeight.constant * scale)
+        let ref = renderedImageView?.image?.cgImage?.cropping(to: visibleRect)
+        let croppedImage = UIImage(cgImage: ref!)
+        
+        testImageView.image = croppedImage
+        
+//        delegate?.updatePicture(croppedImage)
+//        self.dismiss(animated: true, completion: nil)
     }
     @IBAction func cancelEdit(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)

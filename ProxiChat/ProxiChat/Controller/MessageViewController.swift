@@ -223,7 +223,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: UITableViewDelgate Methods
+    // MARK: UITableView Delegate and DataSource Methods
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messageArray.count
     }

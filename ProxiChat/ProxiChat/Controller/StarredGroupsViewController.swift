@@ -87,7 +87,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         })
     }
     
-    // MARK: UITableView Delegate Methods
+    // MARK: UITableView Delegate and DataSource Methods
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         joinGroup(indexPath.row)
         tableView.deselectRow(at: indexPath, animated: true)

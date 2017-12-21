@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		62B2CB57F5955BEB62EEEF6B /* Pods_ProxiChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */; };
 		E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40A948D1FDF76FC006097B1 /* Validate.swift */; };
+		E429D1F81FEB7B7100EAAEFD /* SettingsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E429D1F61FEB7B7100EAAEFD /* SettingsCell.swift */; };
+		E429D1F91FEB7B7100EAAEFD /* SettingsCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E429D1F71FEB7B7100EAAEFD /* SettingsCell.xib */; };
 		E434EDDE1FE5CC9300B26F22 /* Dimensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */; };
 		E434EDE01FE6051C00B26F22 /* EditPictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */; };
 		E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DA91FC1387B0027C756 /* MessageCell.swift */; };
@@ -48,6 +50,8 @@
 		5F8E292D05CB9C559164906A /* Pods-ProxiChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProxiChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat.debug.xcconfig"; sourceTree = "<group>"; };
 		ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProxiChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E40A948D1FDF76FC006097B1 /* Validate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validate.swift; sourceTree = "<group>"; };
+		E429D1F61FEB7B7100EAAEFD /* SettingsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCell.swift; sourceTree = "<group>"; };
+		E429D1F71FEB7B7100EAAEFD /* SettingsCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SettingsCell.xib; sourceTree = "<group>"; };
 		E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dimensions.swift; sourceTree = "<group>"; };
 		E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPictureViewController.swift; sourceTree = "<group>"; };
 		E4486DA91FC1387B0027C756 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
@@ -113,6 +117,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		E429D1F51FEB7B4F00EAAEFD /* Custom Settings Cell */ = {
+			isa = PBXGroup;
+			children = (
+				E429D1F61FEB7B7100EAAEFD /* SettingsCell.swift */,
+				E429D1F71FEB7B7100EAAEFD /* SettingsCell.xib */,
+			);
+			path = "Custom Settings Cell";
+			sourceTree = "<group>";
+		};
 		E4486DA81FC1385F0027C756 /* Custom Message Cells */ = {
 			isa = PBXGroup;
 			children = (
@@ -174,6 +187,7 @@
 		E4B3D7591FBAADF000F539EA /* View */ = {
 			isa = PBXGroup;
 			children = (
+				E429D1F51FEB7B4F00EAAEFD /* Custom Settings Cell */,
 				E4E258FA1FDD9ED8006B807C /* Custom Profile Cell */,
 				E4486DA81FC1385F0027C756 /* Custom Message Cells */,
 				E4CB11861FBD1207003B627E /* Custom Group Cell */,
@@ -292,6 +306,7 @@
 			files = (
 				E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */,
 				E4B3D7511FBA9D2000F539EA /* LaunchScreen.storyboard in Resources */,
+				E429D1F91FEB7B7100EAAEFD /* SettingsCell.xib in Resources */,
 				E4486DB01FC1388D0027C756 /* AlertMessageCell.xib in Resources */,
 				E4E258FE1FDD9EF6006B807C /* ProfileCell.xib in Resources */,
 				E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */,
@@ -391,6 +406,7 @@
 				E4B3D75F1FBB857900F539EA /* LogInViewController.swift in Sources */,
 				E4CB118D1FBD12B9003B627E /* GroupCell.swift in Sources */,
 				E4CB11941FBEAE7F003B627E /* Message.swift in Sources */,
+				E429D1F81FEB7B7100EAAEFD /* SettingsCell.swift in Sources */,
 				E4FAB4991FD723E600D2C6E1 /* LocalGroupsData.swift in Sources */,
 				E4B3D7611FBB85AF00F539EA /* SignUpViewController.swift in Sources */,
 				E4FAB49D1FD7814900D2C6E1 /* StarredGroupsViewController.swift in Sources */,

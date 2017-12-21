@@ -209,7 +209,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     
-    // MARK: UITableView Methods
+    // MARK: UITableView Delegate and DataSource Methods
     
     // When a group is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
