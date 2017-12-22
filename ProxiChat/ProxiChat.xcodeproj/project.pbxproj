@@ -15,8 +15,6 @@
 		E434EDE01FE6051C00B26F22 /* EditPictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */; };
 		E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DA91FC1387B0027C756 /* MessageCell.swift */; };
 		E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4486DAA1FC1387B0027C756 /* MessageCell.xib */; };
-		E4486DAF1FC1388D0027C756 /* AlertMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */; };
-		E4486DB01FC1388D0027C756 /* AlertMessageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4486DAE1FC1388D0027C756 /* AlertMessageCell.xib */; };
 		E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */; };
 		E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */; };
 		E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4B3D74A1FBA9D2000F539EA /* Main.storyboard */; };
@@ -56,8 +54,6 @@
 		E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPictureViewController.swift; sourceTree = "<group>"; };
 		E4486DA91FC1387B0027C756 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
 		E4486DAA1FC1387B0027C756 /* MessageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MessageCell.xib; sourceTree = "<group>"; };
-		E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertMessageCell.swift; sourceTree = "<group>"; };
-		E4486DAE1FC1388D0027C756 /* AlertMessageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AlertMessageCell.xib; sourceTree = "<group>"; };
 		E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupViewController.swift; sourceTree = "<group>"; };
 		E4B3D7431FBA9D2000F539EA /* ProxiChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProxiChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -131,8 +127,6 @@
 			children = (
 				E4486DA91FC1387B0027C756 /* MessageCell.swift */,
 				E4486DAA1FC1387B0027C756 /* MessageCell.xib */,
-				E4486DAD1FC1388D0027C756 /* AlertMessageCell.swift */,
-				E4486DAE1FC1388D0027C756 /* AlertMessageCell.xib */,
 			);
 			path = "Custom Message Cells";
 			sourceTree = "<group>";
@@ -307,7 +301,6 @@
 				E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */,
 				E4B3D7511FBA9D2000F539EA /* LaunchScreen.storyboard in Resources */,
 				E429D1F91FEB7B7100EAAEFD /* SettingsCell.xib in Resources */,
-				E4486DB01FC1388D0027C756 /* AlertMessageCell.xib in Resources */,
 				E4E258FE1FDD9EF6006B807C /* ProfileCell.xib in Resources */,
 				E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */,
 				E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */,
@@ -412,7 +405,6 @@
 				E4FAB49D1FD7814900D2C6E1 /* StarredGroupsViewController.swift in Sources */,
 				E4FAB4A51FD7837800D2C6E1 /* NavigationSideMenu.swift in Sources */,
 				E4CB11851FBC10A7003B627E /* GroupsViewController.swift in Sources */,
-				E4486DAF1FC1388D0027C756 /* AlertMessageCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

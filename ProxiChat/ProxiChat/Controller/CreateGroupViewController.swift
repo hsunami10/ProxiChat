@@ -15,7 +15,6 @@ import SVProgressHUD
 /**
  - TODO:
     - Fix unwrapping optional bug for coordinates? - LINE 87 - possible because there are multiple view controllers?
-    - Fix transition into MessageViewController
  */
 class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     

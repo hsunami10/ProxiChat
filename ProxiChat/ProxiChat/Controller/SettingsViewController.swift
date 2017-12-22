@@ -44,6 +44,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         settingsTableView.delegate = self
         settingsTableView.dataSource = self
         settingsTableView.register(UINib.init(nibName: "SettingsCell", bundle: nil), forCellReuseIdentifier: "settingsCell")
+        settingsTableView.isScrollEnabled = false
         
         // Responsive layout
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)

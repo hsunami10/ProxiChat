@@ -17,7 +17,6 @@ import CoreLocation
  - DO THIS FIRST -> REMOVE ALERT CELLS
  - add swipe/drag close to side navigation menu
  - maybe change all SVProgressHUD.showError to UIAlertControllers?
- - have an option for the user to choose when to update (maybe?)
  - only store in database when starred and delete when unstarred
  */
 

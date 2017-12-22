@@ -123,6 +123,10 @@ class EditProfileViewController: UIViewController {
         
         self.view.layoutIfNeeded()
     }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

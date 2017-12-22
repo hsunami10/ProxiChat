@@ -197,7 +197,7 @@ proxichat_nsp.on('connection', socket => {
   // NOTE: Getting messages
   // TODO: Paginate
   socket.on('get_messages_on_start', group_id => {
-    pool.query(`SELECT messages.id, messages.author, messages.group_id, messages.content, messages.date_sent, messages.is_alert, users.picture FROM messages INNER JOIN users ON messages.author = users.username WHERE group_id = '${group_id}' ORDER BY messages.date_sent ASC`, (err, res) => {
+    pool.query(`SELECT messages.id, messages.author, messages.group_id, messages.content, messages.date_sent, users.picture FROM messages INNER JOIN users ON messages.author = users.username WHERE group_id = '${group_id}' ORDER BY messages.date_sent ASC`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
         socket.emit('get_messages_on_start_response', { success: false, error_msg: 'There was a problem getting messages. Please try again.' })
@@ -213,7 +213,6 @@ proxichat_nsp.on('connection', socket => {
   socket.on('send_message', data => {
     // Send to sender first, then send to users in room
     socket.emit('receive_message', {
-      is_alert: false,
       author: data.username,
       content: data.content,
       date_sent: data.date_sent,
@@ -222,7 +221,6 @@ proxichat_nsp.on('connection', socket => {
       group_id: data.group_id
     })
     socket.to('room-' + data.group_id).emit('receive_message', {
-      is_alert: false,
       author: data.username,
       content: data.content,
       date_sent: data.date_sent,
@@ -230,7 +228,7 @@ proxichat_nsp.on('connection', socket => {
       picture: data.picture,
       group_id: data.group_id
     })
-    pool.query(`INSERT INTO messages (id, author, group_id, content, is_alert) VALUES ('${data.id}', '${data.username}', '${data.group_id}', '${data.content}', false)`, (err, res) => {
+    pool.query(`INSERT INTO messages (id, author, group_id, content) VALUES ('${data.id}', '${data.username}', '${data.group_id}', '${data.content}')`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
         console.log(err);

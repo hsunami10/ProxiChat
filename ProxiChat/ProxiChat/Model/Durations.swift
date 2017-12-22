@@ -18,4 +18,7 @@ struct Durations {
     
     /// Duration for view controller transitions when a side navigation item is clicked.
     static let navigationDuration: TimeInterval = 0.5
+    
+    /// Duration for showing the group information in the MessageViewController.
+    static let showGroupInfoDuration: TimeInterval = 0.5
 }

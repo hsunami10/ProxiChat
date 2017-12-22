@@ -194,6 +194,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         performSegue(withIdentifier: "goToEditProfile", sender: self)
         tableView.deselectRow(at: indexPath, animated: true)
     }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return numOfRows
     }

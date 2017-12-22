@@ -14,5 +14,4 @@ class Message {
     var content = ""
     var dateSent = ""
     var picture = ""
-    var isAlert = false
 }
