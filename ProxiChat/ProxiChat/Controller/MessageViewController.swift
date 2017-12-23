@@ -36,16 +36,20 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var groupInformation: Group!
     var socket: SocketIOClient?
     var messageArray: [Message] = [Message]()
-    var lastNumOfLines: CGFloat = 1.82381823433138 // Saves the last number of line change
-    var lastTextViewHeight: CGFloat! // Keep track of different in height change to change the messageTableViewHeight constraint also
-    let maxNumOfLines: CGFloat = 5.8657937806874 // TODO: 5 lines - change this accordingly
+    var lastLines = 1 // Saves the last number of line change
+    let maxLines = 5 // 5 lines - max number of text view lines
     let placeholder = "Enter a message..."
     let placeholderColor: UIColor = UIColor.lightGray
-    let typingHeight = Dimensions.getPoints(50) // Height of typing view
+    var typingHeight: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
+    let paddingTextView = Dimensions.getPoints(10) // Top and bottom padding of text view
+    var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
+    var lastContentHeight: CGFloat = 0
+    var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var sendButton: UIButton!
     @IBOutlet var dimView: UIView!
+    @IBOutlet var coverStatusViewHeight: NSLayoutConstraint!
     
     @IBOutlet var messageTableView: UITableView!
     @IBOutlet var messageTableViewBottomConstraint: NSLayoutConstraint! // Same as typing view height
@@ -68,10 +72,19 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         super.viewDidLoad()
         groupTitle.text = groupInformation.title
         
+        // Make a fake placeholder in text view
+        messageTextView.text = placeholder
+        messageTextView.textColor = placeholderColor
+        startingContentHeight = messageTextView.contentSize.height
+        lastContentHeight = startingContentHeight
+        maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
+        
         // Responsive layout
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        typingHeight = startingContentHeight + Dimensions.getPoints(20) // Relative to text view starting content size + 10 padding top + 10 padding bottom
         typingViewHeight.constant = typingHeight
         messageTableViewBottomConstraint.constant = typingViewHeight.constant
+        coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
         
         eventHandlers()
         
@@ -95,11 +108,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.keyboardType = .alphabet
         messageTextView.isScrollEnabled = true
         messageTextView.alwaysBounceVertical = false
-        // Make a fake placeholder
-        messageTextView.text = placeholder
-        messageTextView.textColor = placeholderColor
-        lastTextViewHeight = messageTextView.contentSize.height
-        messageTextView.frame.size = CGSize(width: messageTextView.frame.size.width, height: lastTextViewHeight)
         
         messageTableView.separatorStyle = .none
         messageViewHeight.constant = self.view.frame.height - UIApplication.shared.statusBarFrame.height - infoViewHeight.constant
@@ -110,10 +118,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         socket?.emit("get_messages_on_start", groupInformation.id)
         configureTableView()
         
-        // Cover up status bar
-        let statusView = UIView(frame: CGRect(x: 0, y: 0, width: UIApplication.shared.statusBarFrame.width, height: UIApplication.shared.statusBarFrame.height))
-        statusView.backgroundColor = UIColor.white
-        self.view.addSubview(statusView)
         self.view.layoutIfNeeded()
     }
     
@@ -272,46 +276,42 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func textViewDidEndEditing(_ textView: UITextView) {
         // Change spaces and empty text to placeholder
-        if textView.text.split(separator: " ").count == 0 {
+        if Validate.isInvalidInput(textView.text!) {
             textView.text = placeholder
             textView.textColor = placeholderColor
         }
     }
     
-    // TODO: Figure out scrolling text view and height change
-    // TODO: Height does not change
+    // TODO: Why is it over changing height?
     func textViewDidChange(_ textView: UITextView) {
-        let numberOfLines = textView.contentSize.height / (textView.font?.lineHeight)!
-        print(numberOfLines)
-//        print(String(Int(floorf(Float(numberOfLines)))) + " lines: " + String(describing: numberOfLines))
-//        print(textView.contentSize.height)
+        let lines = textView.contentSize.height / (textView.font?.lineHeight)! // Float
+        let wholeLines = Int(floorf(Float(lines))) // Whole number
         
-        // If more than of equal to the max number of lines AND was less than the limit
-//        if floorf(Float(numberOfLines)) >= floorf(Float(maxNumOfLines)) && floorf(Float(lastNumOfLines)) < floorf(Float(maxNumOfLines)) {
-//            if floorf(Float(numberOfLines)) != floorf(Float(lastNumOfLines)) {
-//                let maxHeightSize = (textView.font?.lineHeight)! * maxNumOfLines
-//                let diff = maxHeightSize - lastTextViewHeight // Get difference between max height and last height
-//                // If greater than max number of lines, then animate height to maxLine height
-//                UIView.animate(withDuration: 0.1, animations: {
-//                    self.typingView.frame.size = CGSize(width: self.typingView.frame.size.width, height: maxHeightSize)
-//                    self.messageViewBottomConstraint.constant = self.messageViewBottomConstraint.constant + diff
-//                    self.view.layoutIfNeeded()
-//                })
-//                lastNumOfLines = numberOfLines
-//                lastTextViewHeight = textView.contentSize.height
-//            }
-//        } else if floorf(Float(numberOfLines)) < floorf(Float(maxNumOfLines)) {
-//            if floorf(Float(numberOfLines)) != floorf(Float(lastNumOfLines)) {
-////                let differenceInHeight = (floorf(Float(numberOfLines)) - floorf(Float(lastNumOfLines))) * Float((textView.font?.lineHeight)!)
-//                let differenceInHeight = textView.contentSize.height - lastTextViewHeight // Get text view height change
-//                UIView.animate(withDuration: 0.1, animations: {
-//                    self.typingView.frame.size = CGSize(width: self.typingView.frame.size.width, height: self.typingView.frame.size.height + differenceInHeight)
-//                    self.view.layoutIfNeeded()
-//                })
-//                lastNumOfLines = numberOfLines
-//                lastTextViewHeight = textView.contentSize.height
-//            }
-//        }
+        // Check to see whether or not the number of lines changed
+        if wholeLines != lastLines {
+            
+            // If adding text and greator than the max number of lines, then don't change the height
+            if lastLines < maxLines || wholeLines < maxLines {
+                
+                // Get the change in height
+                var changeInHeight: CGFloat = 0
+                if wholeLines >= maxLines {
+                    changeInHeight = maxContentHeight - lastContentHeight
+                } else {
+                    changeInHeight = textView.contentSize.height - lastContentHeight
+                }
+                
+                if !UIView.areAnimationsEnabled {
+                    UIView.setAnimationsEnabled(true)
+                }
+                UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
+                    self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(changeInHeight)
+                })
+                
+                lastLines = wholeLines
+                lastContentHeight = textView.contentSize.height
+            }
+        }
     }
     
     // MARK: Scrolling Methods
@@ -336,14 +336,14 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group: Group) {
+        // TODO: Check initialization
         UIView.setAnimationsEnabled(true)
         messageArray = [Message]()
         groupInformation = group
         groupTitle.text = group.title
-        lastNumOfLines = 1
+        lastLines = 1
         messageTextView.text = placeholder
         messageTextView.textColor = UIColor.lightGray
-        lastTextViewHeight = (messageTextView.font?.lineHeight)!
         socket?.emit("get_messages_on_start", group.id)
     }
     
@@ -382,7 +382,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             UIView.animate(withDuration: duration) {
                 self.messageViewBottomConstraint.constant = 0
                 self.typingViewBottomConstraint.constant = 0
-                self.messageTableViewBottomConstraint.constant = Dimensions.getPoints(self.typingHeight)
+                self.messageTableViewBottomConstraint.constant = Dimensions.getPoints(self.typingViewHeight.constant)
                 self.view.layoutIfNeeded()
             }
         }

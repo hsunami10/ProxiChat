@@ -1242,10 +1242,13 @@
                                         </constraints>
                                     </tableView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rrK-X6-rsR" userLabel="Typing View">
-                                        <rect key="frame" x="0.0" y="611" width="414" height="50"/>
+                                        <rect key="frame" x="0.0" y="605" width="414" height="56"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ku6-Zw-MCO">
-                                                <rect key="frame" x="370" y="10" width="36" height="30"/>
+                                                <rect key="frame" x="370" y="16" width="36" height="30"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="30" id="qFk-Mp-yrR"/>
+                                                </constraints>
                                                 <state key="normal" title="Send">
                                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 </state>
@@ -1254,11 +1257,8 @@
                                                 </connections>
                                             </button>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fVI-eD-UYN">
-                                                <rect key="frame" x="8" y="10" width="354" height="30"/>
+                                                <rect key="frame" x="8" y="10" width="354" height="36"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="30" id="hdO-eH-793"/>
-                                                </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                             </textView>
@@ -1266,8 +1266,7 @@
                                         <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="Ku6-Zw-MCO" secondAttribute="trailing" constant="8" id="0qA-oL-o4f"/>
-                                            <constraint firstAttribute="height" constant="50" id="OzR-jO-2hY"/>
-                                            <constraint firstItem="Ku6-Zw-MCO" firstAttribute="top" secondItem="rrK-X6-rsR" secondAttribute="top" constant="10" id="OzX-a7-8qs"/>
+                                            <constraint firstAttribute="height" constant="56" id="OzR-jO-2hY"/>
                                             <constraint firstItem="Ku6-Zw-MCO" firstAttribute="leading" secondItem="fVI-eD-UYN" secondAttribute="trailing" constant="8" id="YyL-ou-2IU"/>
                                             <constraint firstAttribute="bottom" secondItem="Ku6-Zw-MCO" secondAttribute="bottom" constant="10" id="Zfu-Yy-ofV"/>
                                             <constraint firstItem="fVI-eD-UYN" firstAttribute="leading" secondItem="rrK-X6-rsR" secondAttribute="leading" constant="8" id="eMe-Fz-rTH"/>
@@ -1336,6 +1335,13 @@
                                     <constraint firstItem="q3l-1s-3Mj" firstAttribute="centerY" secondItem="6Cc-uW-389" secondAttribute="centerY" id="twv-iC-0zk"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YCA-5B-Sqm" userLabel="Cover Status View">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="20"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="20" id="k23-GB-MeD"/>
+                                </constraints>
+                            </view>
                             <view userInteractionEnabled="NO" alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="neF-31-gEL" userLabel="Dim View">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1348,16 +1354,20 @@
                             <constraint firstAttribute="trailing" secondItem="neF-31-gEL" secondAttribute="trailing" id="DUr-b4-nNq"/>
                             <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="b8s-d9-G46" secondAttribute="top" id="Ihp-W1-dZR"/>
                             <constraint firstAttribute="bottom" secondItem="neF-31-gEL" secondAttribute="bottom" id="MZm-uW-I9b"/>
+                            <constraint firstItem="YCA-5B-Sqm" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="UVr-Sp-P5Q"/>
                             <constraint firstAttribute="bottom" secondItem="ABx-JH-PiH" secondAttribute="bottom" id="XSZ-ie-q5z"/>
                             <constraint firstAttribute="trailing" secondItem="ABx-JH-PiH" secondAttribute="trailing" id="ZTk-xq-0Cc"/>
+                            <constraint firstItem="YCA-5B-Sqm" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="ZhZ-Mm-hff"/>
                             <constraint firstAttribute="trailing" secondItem="6Cc-uW-389" secondAttribute="trailing" id="dyb-Tn-vbG"/>
                             <constraint firstItem="ABx-JH-PiH" firstAttribute="centerX" secondItem="Sk0-ar-0jc" secondAttribute="centerX" id="eFI-L9-IXk"/>
                             <constraint firstItem="neF-31-gEL" firstAttribute="leading" secondItem="Sk0-ar-0jc" secondAttribute="leading" id="ear-0E-UnS"/>
+                            <constraint firstItem="b8s-d9-G46" firstAttribute="trailing" secondItem="YCA-5B-Sqm" secondAttribute="trailing" id="m6i-Rt-ORY"/>
                             <constraint firstItem="neF-31-gEL" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="pu5-cG-cJV"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="b8s-d9-G46"/>
                     </view>
                     <connections>
+                        <outlet property="coverStatusViewHeight" destination="k23-GB-MeD" id="fUS-NM-YPw"/>
                         <outlet property="dimView" destination="neF-31-gEL" id="EDh-Lh-YaK"/>
                         <outlet property="groupTitle" destination="poG-Ov-25h" id="TJn-pA-EEk"/>
                         <outlet property="infoView" destination="6Cc-uW-389" id="6kW-oa-Ee8"/>

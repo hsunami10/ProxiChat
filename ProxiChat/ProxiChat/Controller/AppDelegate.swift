@@ -15,6 +15,7 @@ import SocketIO
  - To fully customize segue animations:
     - Uncheck "Animates" in Main.storyboard
     - Dismiss without animation
+ - have status bar color to be the same as the info view color
  */
 
 // MARK: Custom Protocols
