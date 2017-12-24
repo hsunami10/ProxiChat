@@ -14,10 +14,10 @@ import CoreLocation
 
 /*
  TODO / BUGS
- - DO THIS FIRST -> REMOVE ALERT CELLS
  - add swipe/drag close to side navigation menu
  - maybe change all SVProgressHUD.showError to UIAlertControllers?
  - only store in database when starred and delete when unstarred
+ - ADD SEARCH BAR
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -123,8 +123,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.picture = String(describing: user["picture"]!)
                 UserData.radius = user["radius"] as! Int
                 UserData.username = String(describing: user["username"]!)
-                
-                print(UserData.radius)
             } else {
                 SVProgressHUD.dismiss()
                 SVProgressHUD.showError(withStatus: error_msg)
@@ -207,9 +205,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
-    
     // MARK: UITableView Delegate and DataSource Methods
-    
     // When a group is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // Check public or private
@@ -368,12 +364,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 groupObj.coordinates = group["coordinates"].stringValue
                 groupObj.creator = group["created_by"].stringValue
                 groupObj.dateCreated = cd.convert()
-                groupObj.description = group["description"].stringValue
                 groupObj.id = group["id"].stringValue
                 groupObj.is_public = group["is_public"].boolValue
                 groupObj.numMembers = group["number_members"].intValue
                 groupObj.password = group["password"].stringValue
                 groupObj.title = group["title"].stringValue
+                groupObj.rawDate = group["date_created"].stringValue
                 
                 self.groupArray.append(groupObj)
             }

@@ -11,6 +11,8 @@ import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 
+// TODO: ADD SEARCH BAR
+
 class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: Instance variables
@@ -69,12 +71,12 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
                     groupObj.coordinates = group["coordinates"].stringValue
                     groupObj.creator = group["created_by"].stringValue
                     groupObj.dateCreated = cd.convert()
-                    groupObj.description = group["description"].stringValue
                     groupObj.id = group["id"].stringValue
                     groupObj.is_public = group["is_public"].boolValue
                     groupObj.numMembers = group["number_members"].intValue
                     groupObj.password = group["password"].stringValue
                     groupObj.title = group["title"].stringValue
+                    groupObj.rawDate = group["date_created"].stringValue
                     
                     self.groupArray.append(groupObj)
                 }

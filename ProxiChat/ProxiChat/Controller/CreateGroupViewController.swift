@@ -93,7 +93,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     "is_public": self.newGroup.is_public,
                     "group_name": self.newGroup.title,
                     "group_password": self.newGroup.password,
-                    "group_description": self.newGroup.description,
                     "group_coordinates": self.newGroup.coordinates,
                     "group_date": self.newGroup.dateCreated
                     ])
@@ -207,11 +206,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         let cd = ConvertDate(date: String(describing: Date()))
         newGroup.creator = created_by
         newGroup.dateCreated = cd.convert()
-        if group_description.split(separator: " ").count > 0 { // Check for valid description input
-            newGroup.description = group_description
-        } else {
-            newGroup.description = ""
-        }
         newGroup.is_public = is_public
         if is_public { // Check for whether is public
             newGroup.password = group_password

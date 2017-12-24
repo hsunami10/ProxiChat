@@ -20,7 +20,7 @@ struct Durations {
     static let navigationDuration: TimeInterval = 0.5
     
     /// Duration for showing the group information in the MessageViewController.
-    static let showGroupInfoDuration: TimeInterval = 0.5
+    static let showGroupInfoDuration: TimeInterval = 0.25
     
     /// Duration for which the text view height changes when the number of lines change.
     static let textViewHeightDuration: TimeInterval = 0.1

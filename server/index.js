@@ -46,7 +46,7 @@ proxichat_nsp.on('connection', socket => {
 
   // NOTE: Get starred groups
   socket.on('get_starred_groups', username => {
-    pool.query(`SELECT groups.id, groups.title, groups.password, groups.description, groups.created_by, groups.is_public, groups.coordinates, groups.number_members, groups.date_created FROM groups INNER JOIN users_groups ON users_groups.group_id = groups.id WHERE users_groups.username = '${username}'`, (err, res) => {
+    pool.query(`SELECT groups.id, groups.title, groups.password, groups.created_by, groups.is_public, groups.coordinates, groups.number_members, groups.date_created FROM groups INNER JOIN users_groups ON users_groups.group_id = groups.id WHERE users_groups.username = '${username}'`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
         socket.emit('get_starred_groups_response', { success: false, error_msg: 'There was a problem getting your groups. Please try again.' })
@@ -76,6 +76,8 @@ proxichat_nsp.on('connection', socket => {
             // TODO: Handle so it doesn't crash
             socket.emit('update_profile_response', { error_msg: 'There was a problem updating your password. Please try again.' })
             console.log(err);
+          } else {
+            console.log('update password success');
           }
         })
         break
@@ -85,6 +87,8 @@ proxichat_nsp.on('connection', socket => {
             // TODO: Handle so it doesn't crash
             socket.emit('update_profile_response', { error_msg: 'There was a problem updating your bio. Please try again.' })
             console.log(err);
+          } else {
+            console.log('update bio success');
           }
         })
         break
@@ -94,6 +98,8 @@ proxichat_nsp.on('connection', socket => {
             // TODO: Handle so it doesn't crash
             socket.emit('update_profile_response', { error_msg: 'There was a problem updating your email. Please try again.' })
             console.log(err);
+          } else {
+            console.log('update email success');
           }
         })
         break
@@ -182,6 +188,8 @@ proxichat_nsp.on('connection', socket => {
       USERNAME_TO_GROUPS[username] = {}
       USERNAME_TO_GROUPS[username][group_id] = group_id
     }
+
+    proxichat_nsp.in('room-' + group_id).emit('group_stats', { number_online: proxichat_nsp.adapter.rooms['room-' + group_id].length })
   })
 
   // NOTE: Only triggered when going back to groups page and not starred
@@ -190,8 +198,15 @@ proxichat_nsp.on('connection', socket => {
     var username = data.username
 
     socket.leave('room-' + group_id)
-
     delete USERNAME_TO_GROUPS[username][group_id]
+
+    // Check if the last person has left the room
+    if (proxichat_nsp.adapter.rooms['room-' + group_id]) {
+      proxichat_nsp.in('room-' + group_id).emit('group_stats', { number_online: proxichat_nsp.adapter.rooms['room-' + group_id].length })
+    } else {
+      // TODO: Delete the room
+      console.log('last person left, delete the group');
+    }
   })
 
   // NOTE: Getting messages
@@ -241,7 +256,7 @@ proxichat_nsp.on('connection', socket => {
     var g_id = shortid.generate()
 
     // TODO: Add group to database - use create_group_proxichat
-    pool.query(`SELECT create_group_proxichat('${g_id}', '${data.group_name}', '${data.group_password}', '${data.group_description}', '${data.created_by}', '${data.group_date}', ${data.is_public}, '${data.group_coordinates}', '${shortid.generate()}')`, (err, res) => {
+    pool.query(`SELECT create_group_proxichat('${g_id}', '${data.group_name}', '${data.group_password}', '${data.created_by}', '${data.group_date}', ${data.is_public}, '${data.group_coordinates}', '${shortid.generate()}')`, (err, res) => {
       if (err) {
         // TODO: Handle so it doesn't crash
         socket.emit('create_group_response', { success: false, error_msg: 'There was a problem creating a group. Please try again.' })

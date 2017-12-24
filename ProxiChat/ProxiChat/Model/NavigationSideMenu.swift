@@ -9,6 +9,8 @@
 import Foundation
 import UIKit
 
+// TODO: Change stack view buttons into table view later
+
 /**
  Holds all the necessary properties of the navigation side menu
  */
@@ -88,9 +90,11 @@ class NavigationSideMenu {
     
     /// Toggle side navigation menu.
     static func toggleSideNav(show: Bool) {
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         switch NavigationSideMenu.currentView {
         case 0:
-            UIView.setAnimationsEnabled(true)
             if show {
                 UIView.animate(withDuration: Durations.sideNavDuration) {
                     NavigationSideMenu.groupsObj.navigationLeftConstraint.constant = 0
@@ -109,21 +113,20 @@ class NavigationSideMenu {
             }
             break
         case 1:
-            UIView.setAnimationsEnabled(true)
             if show {
                 UIView.animate(withDuration: Durations.sideNavDuration) {
                     NavigationSideMenu.starredObj.navigationLeftConstraint.constant = 0
                     NavigationSideMenu.starredObj.starredGroupsViewLeftConstraint.constant = NavigationSideMenu.starredObj.navigationViewWidth.constant
                     NavigationSideMenu.starredObj.view.layoutIfNeeded()
                 }
-//                NavigationSideMenu.starredObj.groupsTableView.allowsSelection = false
+                NavigationSideMenu.starredObj.starredGroupsTableView.allowsSelection = false
             } else {
                 UIView.animate(withDuration: Durations.sideNavDuration, animations: {
                     NavigationSideMenu.starredObj.navigationLeftConstraint.constant = -NavigationSideMenu.starredObj.navigationViewWidth.constant
                     NavigationSideMenu.starredObj.starredGroupsViewLeftConstraint.constant = 0
                     NavigationSideMenu.starredObj.view.layoutIfNeeded()
                 }, completion: { (complete) in
-//                    NavigationSideMenu.groupsObj.groupsTableView.allowsSelection = complete
+                    NavigationSideMenu.starredObj.starredGroupsTableView.allowsSelection = complete
                 })
             }
             break
@@ -152,14 +155,14 @@ class NavigationSideMenu {
                     NavigationSideMenu.settingsObj.settingsViewLeftConstraint.constant = NavigationSideMenu.settingsObj.navigationViewWidth.constant
                     NavigationSideMenu.settingsObj.view.layoutIfNeeded()
                 }
-                //                NavigationSideMenu.starredObj.groupsTableView.allowsSelection = false
+                NavigationSideMenu.settingsObj.settingsTableView.allowsSelection = false
             } else {
                 UIView.animate(withDuration: Durations.sideNavDuration, animations: {
                     NavigationSideMenu.settingsObj.navigationLeftConstraint.constant = -NavigationSideMenu.settingsObj.navigationViewWidth.constant
                     NavigationSideMenu.settingsObj.settingsViewLeftConstraint.constant = 0
                     NavigationSideMenu.settingsObj.view.layoutIfNeeded()
                 }, completion: { (complete) in
-                    //                    NavigationSideMenu.groupsObj.groupsTableView.allowsSelection = complete
+                    NavigationSideMenu.settingsObj.settingsTableView.allowsSelection = complete
                 })
             }
             break

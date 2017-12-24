@@ -24,19 +24,18 @@ import ChameleonFramework
  
  BUGS
  - text view changing height doesn't perfectly shift, some overscrolling
- - table view doesn't perfectly shift the same amount of points as the keyboard
- - Alert message won't center??? - should I show to current user or no?
- - only display alert message if someone stars/favorites the group
+ - table view scrolls? when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP *****
  */
 
 class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
-
+    
     /// 0 - GroupsViewController, 1 - StarredGroupsViewController
     var fromViewController = -1
     var groupInformation: Group!
     var socket: SocketIOClient?
     var messageArray: [Message] = [Message]()
-    var lastLines = 1 // Saves the last number of line change
+    var groupInfoArray = ["# Online", "# Stars", "Settings or View Creator Profile"] // If this is changed, cmd+f "CHANGE INDICES"
+    var lastLines = 1 // Saves the last number of lines
     let maxLines = 5 // 5 lines - max number of text view lines
     let placeholder = "Enter a message..."
     let placeholderColor: UIColor = UIColor.lightGray
@@ -45,6 +44,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
     var lastContentHeight: CGFloat = 0
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
+    var isMessageSent = false // Tag for whether or not a message has been sent - for resetting text view height
+    let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var sendButton: UIButton!
@@ -68,29 +69,49 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var typingViewHeight: NSLayoutConstraint!
     @IBOutlet var typingViewBottomConstraint: NSLayoutConstraint! // Changed only when table view content is not overflowing
     
+    @IBOutlet var groupInfoViewWidth: NSLayoutConstraint!
+    @IBOutlet var groupInfoViewRightConstraint: NSLayoutConstraint!
+    @IBOutlet var groupInfoTableView: UITableView!
+    @IBOutlet var groupInfoTableViewHeight: NSLayoutConstraint!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var groupImageView: UIImageView!
+    @IBOutlet var groupImageViewWidth: NSLayoutConstraint!
+    @IBOutlet var creatorLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         groupTitle.text = groupInformation.title
+        eventHandlers()
         
         // Make a fake placeholder in text view
         messageTextView.text = placeholder
         messageTextView.textColor = placeholderColor
+        
         startingContentHeight = messageTextView.contentSize.height
         lastContentHeight = startingContentHeight
         maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
         typingHeight = startingContentHeight + Dimensions.getPoints(20) // Relative to text view starting content size + 10 padding top + 10 padding bottom
         typingViewHeight.constant = typingHeight
         messageTableViewBottomConstraint.constant = typingViewHeight.constant
-        coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        messageViewHeight.constant = Dimensions.safeAreaHeight - infoViewHeight.constant
+        messageTableViewHeight.constant = messageViewHeight.constant - typingViewHeight.constant
         
-        eventHandlers()
+        // Initialize group info view
+        groupInfoViewWidth.constant = self.view.frame.width * groupInfoRatio
+        groupInfoViewRightConstraint.constant = -groupInfoViewWidth.constant
+        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // TODO: Change this
+        groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count) // TODO: Change this
+        groupInfoTableView.isScrollEnabled = false
         
         messageTableView.delegate = self
         messageTableView.dataSource = self
         messageTextView.delegate = self
+        groupInfoTableView.delegate = self
+        groupInfoTableView.dataSource = self
         
         // Set up action on keyboard show and hide
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
@@ -103,15 +124,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         dimView.addGestureRecognizer(dimTap)
         
         // Register nibs
-        messageTableView.register(UINib(nibName: "MessageCell", bundle: nil), forCellReuseIdentifier: "messageCell")
+        messageTableView.register(UINib.init(nibName: "MessageCell", bundle: nil), forCellReuseIdentifier: "messageCell")
+        groupInfoTableView.register(UINib.init(nibName: "GroupInfoCell", bundle: nil), forCellReuseIdentifier: "groupInfoCell")
+        messageTableView.separatorStyle = .none
         
         messageTextView.keyboardType = .alphabet
         messageTextView.isScrollEnabled = true
         messageTextView.alwaysBounceVertical = false
         
-        messageTableView.separatorStyle = .none
-        messageViewHeight.constant = self.view.frame.height - UIApplication.shared.statusBarFrame.height - infoViewHeight.constant
-        messageTableViewHeight.constant = messageViewHeight.constant - typingViewHeight.constant
+        // Initialize group info view content
+        initializeGroupInfo()
+        groupImageViewWidth.constant = groupInfoViewWidth.constant - Dimensions.getPoints(32) // 16 margins on left and right side
         
         // Get messages - on response, join room
         // TODO: Paginate messages
@@ -130,61 +153,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Dispose of any resources that can be recreated.
     }
     
-    // MARK: IBOutlet Actions
-    @IBAction func goBack(_ sender: Any) {
-        slideRightTransition()
-        UIView.setAnimationsEnabled(false)
-        
-        // Check which view controller it came from
-        switch fromViewController {
-        case 0:
-            performSegue(withIdentifier: "goBackToGroups", sender: self)
-            break
-        case 1:
-            performSegue(withIdentifier: "goBackToStarredGroups", sender: self)
-            break
-        default:
-            break
-        }
-        
-        socket?.emit("leave_room", [
-            "group_id": groupInformation.id,
-            "username": UserData.username
-            ])
-    }
-    
-    @IBAction func showGroupInfo(_ sender: Any) {
-        dimView.isUserInteractionEnabled = true
-        UIView.animate(withDuration: Durations.showGroupInfoDuration) {
-            self.dimView.alpha = 0.5
-        }
-    }
-    
-    @IBAction func sendPressed(_ sender: Any) {
-        if !Validate.isInvalidInput(messageTextView.text!) && messageTextView.textColor != UIColor.lightGray {
-            messageTextView.endEditing(true)
-            messageTextView.isEditable = false
-            sendButton.isEnabled = false
-            
-            // TODO: *** Get picture ***
-            socket?.emit("send_message", [
-                "username": UserData.username,
-                "content": messageTextView.text!,
-                "date_sent": String(describing: Date()),
-                "group_id": groupInformation.id,
-                "id": String(describing: UUID()),
-                "picture": ""
-                ])
-            
-            messageTextView.isEditable = true
-            sendButton.isEnabled = true
-            messageTextView.text = placeholder
-            messageTextView.textColor = UIColor.lightGray
-        }
-    }
-    
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
+        // Receive number of people online whenever someone joins or leaves
+        socket?.on("group_stats", callback: { (data, ack) in
+            // CHANGE INDICES
+            self.groupInfoArray[0] = String(JSON(data[0])["number_online"].intValue) + " Online"
+            let indexPath = IndexPath(row: 0, section: 0)
+            self.groupInfoTableView.reloadRows(at: [indexPath], with: .automatic)
+        })
         // Realtime receiving messages
         socket?.on("receive_message") { (data, ack) in
             let messageObj = Message()
@@ -242,27 +219,99 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    // MARK: IBOutlet Actions
+    @IBAction func goBack(_ sender: Any) {
+        slideRightTransition()
+        UIView.setAnimationsEnabled(false)
+        
+        // Check which view controller it came from
+        switch fromViewController {
+        case 0:
+            performSegue(withIdentifier: "goBackToGroups", sender: self)
+            break
+        case 1:
+            performSegue(withIdentifier: "goBackToStarredGroups", sender: self)
+            break
+        default:
+            break
+        }
+        
+        socket?.emit("leave_room", [
+            "group_id": groupInformation.id,
+            "username": UserData.username
+            ])
+    }
+    
+    @IBAction func showGroupInfo(_ sender: Any) {
+        dimView.isUserInteractionEnabled = true
+        
+        UIView.animate(withDuration: Durations.showGroupInfoDuration) {
+            self.dimView.alpha = 0.5
+            self.groupInfoViewRightConstraint.constant = 0
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @IBAction func sendPressed(_ sender: Any) {
+        if !Validate.isInvalidInput(messageTextView.text!) && messageTextView.textColor != UIColor.lightGray {
+            isMessageSent = true
+            messageTextView.endEditing(true)
+            messageTextView.isEditable = false
+            sendButton.isEnabled = false
+            
+            // TODO: *** Get picture ***
+            socket?.emit("send_message", [
+                "username": UserData.username,
+                "content": messageTextView.text!,
+                "date_sent": String(describing: Date()),
+                "group_id": groupInformation.id,
+                "id": String(describing: UUID()),
+                "picture": ""
+                ])
+            
+            messageTextView.isEditable = true
+            sendButton.isEnabled = true
+            messageTextView.text = placeholder
+            messageTextView.textColor = UIColor.lightGray
+        }
+    }
+    
     // MARK: UITableView Delegate and DataSource Methods
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return messageArray.count
+        if tableView.restorationIdentifier == "message" {
+            return messageArray.count
+        } else {
+            return groupInfoArray.count
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // TODO: Add date later
-        let cell = messageTableView.dequeueReusableCell(withIdentifier: "messageCell", for: indexPath) as! MessageCell
-        cell.content.text = messageArray[indexPath.row].content
-        cell.username.text = messageArray[indexPath.row].author
-        
-        if messageArray[indexPath.row].picture == "" {
-            cell.userPicture.image = UIImage(named: "noPicture")
+        if tableView.restorationIdentifier! == "message" {
+            // TODO: Add date later
+            let cell = messageTableView.dequeueReusableCell(withIdentifier: "messageCell", for: indexPath) as! MessageCell
+            cell.content.text = messageArray[indexPath.row].content
+            cell.username.text = messageArray[indexPath.row].author
+            
+            if messageArray[indexPath.row].picture == "" {
+                cell.userPicture.image = UIImage(named: "noPicture")
+            } else {
+                cell.userPicture.image = UIImage(named: messageArray[indexPath.row].picture)
+            }
+            return cell
         } else {
-            cell.userPicture.image = UIImage(named: messageArray[indexPath.row].picture)
+            let cell = groupInfoTableView.dequeueReusableCell(withIdentifier: "groupInfoCell", for: indexPath) as! GroupInfoCell
+            // TODO: Change image
+            cell.descriptionLabel.text = groupInfoArray[indexPath.row]
+            return cell
         }
-        return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        messageTableView.deselectRow(at: indexPath, animated: true)
+        if tableView.restorationIdentifier == "message" {
+            messageTableView.deselectRow(at: indexPath, animated: true)
+        } else {
+            groupInfoTableView.deselectRow(at: indexPath, animated: true)
+        }
     }
     
     // MARK: UITextViewDelegate Methods
@@ -282,7 +331,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // TODO: Why is it over changing height?
+    // TODO: Why is it over changing height? - FIX THIS
     func textViewDidChange(_ textView: UITextView) {
         let lines = textView.contentSize.height / (textView.font?.lineHeight)! // Float
         let wholeLines = Int(floorf(Float(lines))) // Whole number
@@ -306,6 +355,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
                     self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(changeInHeight)
+                    self.typingView.superview?.layoutIfNeeded()
                 })
                 
                 lastLines = wholeLines
@@ -336,10 +386,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group: Group) {
-        // TODO: Check initialization
         UIView.setAnimationsEnabled(true)
         messageArray = [Message]()
         groupInformation = group
+        initializeGroupInfo()
         groupTitle.text = group.title
         lastLines = 1
         messageTextView.text = placeholder
@@ -382,7 +432,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             UIView.animate(withDuration: duration) {
                 self.messageViewBottomConstraint.constant = 0
                 self.typingViewBottomConstraint.constant = 0
-                self.messageTableViewBottomConstraint.constant = Dimensions.getPoints(self.typingViewHeight.constant)
+                if self.isMessageSent {
+                    self.typingViewHeight.constant = self.typingHeight
+                    self.isMessageSent = false
+                }
+                self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
+                
                 self.view.layoutIfNeeded()
             }
         }
@@ -407,6 +462,24 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
+    func initializeGroupInfo() {
+        // CHANGE INDICES
+        let cd = ConvertDate(date: groupInformation.rawDate)
+        
+        if groupInformation.creator == UserData.username {
+            groupInfoArray[groupInfoArray.count-1] = "Settings"
+        } else {
+            groupInfoArray[groupInfoArray.count-1] = "View Creator Profile"
+        }
+        if groupInformation.numMembers == 1 {
+            groupInfoArray[1] = String(groupInformation.numMembers) + " Star"
+        } else {
+            groupInfoArray[1] = String(groupInformation.numMembers) + " Stars"
+        }
+        creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convertWithFormat("MMM d, yyyy"))"
+        titleLabel.text = groupInformation.title
+        groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture later
+    }
     /// Edit UIViewController transition left -> right
     func slideRightTransition() {
         let transition = CATransition()
@@ -424,9 +497,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @objc func closeGroupInfo() {
-        dimView.isUserInteractionEnabled = false
-        UIView.animate(withDuration: Durations.showGroupInfoDuration) {
+        UIView.animate(withDuration: Durations.showGroupInfoDuration, animations: {
             self.dimView.alpha = 0
+            self.groupInfoViewRightConstraint.constant = -self.groupInfoViewWidth.constant
+            self.view.layoutIfNeeded()
+        }) { (complete) in
+            self.dimView.isUserInteractionEnabled = false
         }
     }
     

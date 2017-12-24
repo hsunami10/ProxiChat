@@ -15,6 +15,10 @@
 		E434EDE01FE6051C00B26F22 /* EditPictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */; };
 		E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4486DA91FC1387B0027C756 /* MessageCell.swift */; };
 		E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4486DAA1FC1387B0027C756 /* MessageCell.xib */; };
+		E4820C9B1FEEF5A000D1FC93 /* NavigationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4820C991FEEF5A000D1FC93 /* NavigationCell.swift */; };
+		E4820C9C1FEEF5A000D1FC93 /* NavigationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4820C9A1FEEF5A000D1FC93 /* NavigationCell.xib */; };
+		E4820CA01FEEFF1900D1FC93 /* GroupInfoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4820C9E1FEEFF1900D1FC93 /* GroupInfoCell.swift */; };
+		E4820CA11FEEFF1900D1FC93 /* GroupInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4820C9F1FEEFF1900D1FC93 /* GroupInfoCell.xib */; };
 		E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */; };
 		E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */; };
 		E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4B3D74A1FBA9D2000F539EA /* Main.storyboard */; };
@@ -54,6 +58,10 @@
 		E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPictureViewController.swift; sourceTree = "<group>"; };
 		E4486DA91FC1387B0027C756 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
 		E4486DAA1FC1387B0027C756 /* MessageCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MessageCell.xib; sourceTree = "<group>"; };
+		E4820C991FEEF5A000D1FC93 /* NavigationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationCell.swift; sourceTree = "<group>"; };
+		E4820C9A1FEEF5A000D1FC93 /* NavigationCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NavigationCell.xib; sourceTree = "<group>"; };
+		E4820C9E1FEEFF1900D1FC93 /* GroupInfoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupInfoCell.swift; sourceTree = "<group>"; };
+		E4820C9F1FEEFF1900D1FC93 /* GroupInfoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GroupInfoCell.xib; sourceTree = "<group>"; };
 		E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupViewController.swift; sourceTree = "<group>"; };
 		E4B3D7431FBA9D2000F539EA /* ProxiChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProxiChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -131,6 +139,24 @@
 			path = "Custom Message Cells";
 			sourceTree = "<group>";
 		};
+		E4820C981FEEF57200D1FC93 /* Custom Navigation Cell */ = {
+			isa = PBXGroup;
+			children = (
+				E4820C991FEEF5A000D1FC93 /* NavigationCell.swift */,
+				E4820C9A1FEEF5A000D1FC93 /* NavigationCell.xib */,
+			);
+			path = "Custom Navigation Cell";
+			sourceTree = "<group>";
+		};
+		E4820C9D1FEEFE2300D1FC93 /* Custom Group Info Cell */ = {
+			isa = PBXGroup;
+			children = (
+				E4820C9E1FEEFF1900D1FC93 /* GroupInfoCell.swift */,
+				E4820C9F1FEEFF1900D1FC93 /* GroupInfoCell.xib */,
+			);
+			path = "Custom Group Info Cell";
+			sourceTree = "<group>";
+		};
 		E4B3D73A1FBA9D1F00F539EA = {
 			isa = PBXGroup;
 			children = (
@@ -181,6 +207,8 @@
 		E4B3D7591FBAADF000F539EA /* View */ = {
 			isa = PBXGroup;
 			children = (
+				E4820C9D1FEEFE2300D1FC93 /* Custom Group Info Cell */,
+				E4820C981FEEF57200D1FC93 /* Custom Navigation Cell */,
 				E429D1F51FEB7B4F00EAAEFD /* Custom Settings Cell */,
 				E4E258FA1FDD9ED8006B807C /* Custom Profile Cell */,
 				E4486DA81FC1385F0027C756 /* Custom Message Cells */,
@@ -301,9 +329,11 @@
 				E4486DAC1FC1387B0027C756 /* MessageCell.xib in Resources */,
 				E4B3D7511FBA9D2000F539EA /* LaunchScreen.storyboard in Resources */,
 				E429D1F91FEB7B7100EAAEFD /* SettingsCell.xib in Resources */,
+				E4820C9C1FEEF5A000D1FC93 /* NavigationCell.xib in Resources */,
 				E4E258FE1FDD9EF6006B807C /* ProfileCell.xib in Resources */,
 				E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */,
 				E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */,
+				E4820CA11FEEFF1900D1FC93 /* GroupInfoCell.xib in Resources */,
 				E4CB118E1FBD12B9003B627E /* GroupCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -382,8 +412,10 @@
 				E4E259001FDDAEA4006B807C /* AlertMessages.swift in Sources */,
 				E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */,
 				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
+				E4820CA01FEEFF1900D1FC93 /* GroupInfoCell.swift in Sources */,
 				E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */,
 				E4FAB4971FD7154700D2C6E1 /* UserData.swift in Sources */,
+				E4820C9B1FEEF5A000D1FC93 /* NavigationCell.swift in Sources */,
 				E4FAB49B1FD73F0900D2C6E1 /* Durations.swift in Sources */,
 				E4486DAB1FC1387B0027C756 /* MessageCell.swift in Sources */,
 				E4FAB4A11FD782B500D2C6E1 /* SettingsViewController.swift in Sources */,
