@@ -20,6 +20,8 @@ import SVProgressHUD
  - Support: Contact, FAQ?, Feedback, Report
  */
 
+// TODO: BUG WHEN LOGGING BACK IN / CREATING A NEW ACCOUNT AGAIN - UIAlert not animated???
+
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: Instance variables
@@ -90,9 +92,18 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @IBAction func logOut(_ sender: Any) {
-        removeUserDefaults()
-        revealTopToBottomTransition()
-        performSegue(withIdentifier: "logOutDelete", sender: self)
+        let alert = UIAlertController(title: "Log Out", message: "Are you sure you want to log out?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+            self.removeUserDefaults()
+            self.revealTopToBottomTransition()
+            self.performSegue(withIdentifier: "logOutDelete", sender: self)
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
+        present(alert, animated: true, completion: nil)
     }
     
     @IBAction func showNavMenu(_ sender: Any) {
@@ -175,6 +186,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         } else if segue.identifier == "logOutDelete" {
             let destinationVC = segue.destination as! WelcomeViewController
             destinationVC.socket = socket
+            UserData.connected = false
             socket?.leaveNamespace()
         }
         socket = nil

@@ -268,6 +268,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     "username": username,
                     "radius": UserData.radius
                     ])
+                UserData.coordinates = "\(location.coordinate.latitude) \(location.coordinate.longitude)"
+                print("got location")
                 manager.stopUpdatingLocation()
             }
         }
