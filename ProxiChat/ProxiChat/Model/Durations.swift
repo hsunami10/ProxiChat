@@ -16,7 +16,7 @@ struct Durations {
     /// Duration for left to right and right to left view controller transitions. Mainly for navigating from messages to groups and back.
     static let messageTransitionDuration: TimeInterval = 0.5
     
-    /// Duration for view controller transitions when a side navigation item is clicked.
+    /// Duration for view controller transitions when a side navigation item is clicked. Also for custom segue transitions.
     static let navigationDuration: TimeInterval = 0.5
     
     /// Duration for showing the group information in the MessageViewController.

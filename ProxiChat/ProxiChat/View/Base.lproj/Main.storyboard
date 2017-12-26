@@ -1465,11 +1465,27 @@
                         <outlet property="typingViewHeight" destination="OzR-jO-2hY" id="tvI-6m-GYs"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goBackToGroups" id="OD0-pG-fXq"/>
                         <segue destination="hE2-Tj-l73" kind="show" identifier="goBackToStarredGroups" id="Q67-rq-eHC"/>
+                        <segue destination="osD-mn-0Uu" kind="show" identifier="goToMembers" animates="NO" id="8Tz-eq-JRC"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fkA-EB-BVw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3686.9565217391305" y="866.57608695652186"/>
+        </scene>
+        <!--MembersViewController-->
+        <scene sceneID="Uvh-Jo-fug">
+            <objects>
+                <viewController title="MembersViewController" id="osD-mn-0Uu" customClass="MembersViewController" customModule="ProxiChat" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="L07-Wl-9Aw">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="J0f-Zj-uOs"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="6G2-2E-EXr" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4970" y="867"/>
         </scene>
         <!--SettingsViewController-->
         <scene sceneID="3V3-Me-WnM">
@@ -1669,6 +1685,7 @@
                         <segue destination="rqU-je-oq9" kind="show" identifier="goToProfile" id="jVh-gv-aL5"/>
                         <segue destination="hE2-Tj-l73" kind="show" identifier="goToStarred" id="bGS-Gh-TUi"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goToGroups" id="FVf-rN-Wko"/>
+                        <segue destination="VlN-qc-ZeU" kind="show" identifier="logOutDelete" animates="NO" id="VFB-Pb-Bfy"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dg6-2Y-Tik" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1766,7 +1783,7 @@
         <segue reference="seX-dU-mTJ"/>
         <segue reference="mxj-Sx-jCE"/>
         <segue reference="jVh-gv-aL5"/>
-        <segue reference="Q67-rq-eHC"/>
-        <segue reference="OD0-pG-fXq"/>
+        <segue reference="bGS-Gh-TUi"/>
+        <segue reference="FVf-rN-Wko"/>
     </inferredMetricsTieBreakers>
 </document>

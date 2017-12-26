@@ -154,6 +154,10 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         self.present(alert, animated: true, completion: nil)
     }
     

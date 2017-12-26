@@ -144,6 +144,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 // TODO: Maybe have a "try again" option
                 let alert = UIAlertController(title: "Oops!", message: error_msg, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                
+                if !UIView.areAnimationsEnabled {
+                    UIView.setAnimationsEnabled(true)
+                }
                 self.present(alert, animated: true, completion: nil)
             }
         }
@@ -225,6 +229,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     ])
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            
+            if !UIView.areAnimationsEnabled {
+                UIView.setAnimationsEnabled(true)
+            }
             present(alert, animated: true, completion: nil)
         }
         groupsTableView.deselectRow(at: indexPath, animated: true)

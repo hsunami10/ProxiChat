@@ -19,10 +19,10 @@ import ChameleonFramework
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send - user has left the group
- - only send "user has left" message when NOT STARRED
  - save what the user wrote in textfield even when the app closes?
  
  BUGS
+ - table view scrolls down when going from scrolling table view to non scrolling - FIX THIS
  - text view changing height doesn't perfectly shift, some overscrolling
  - table view scrolls? when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP *****
  */
@@ -34,7 +34,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var groupInformation: Group!
     var socket: SocketIOClient?
     var messageArray: [Message] = [Message]()
-    var groupInfoArray = ["# Online", "# Stars", "Settings or View Creator Profile"] // If this is changed, cmd+f "CHANGE INDICES"
+    var groupInfoArray = ["# Online", "# Stars", "Settings or View Creator Profile"] // If this is changed, cmd+f "CHANGE INDICES" or "CHANGE STRING"
     var lastLines = 1 // Saves the last number of lines
     let maxLines = 5 // 5 lines - max number of text view lines
     let placeholder = "Enter a message..."
@@ -103,8 +103,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Initialize group info view
         groupInfoViewWidth.constant = self.view.frame.width * groupInfoRatio
         groupInfoViewRightConstraint.constant = -groupInfoViewWidth.constant
-        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // TODO: Change this
-        groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count) // TODO: Change this
+        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // Height of each row - TODO: Change row height
+        groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count)
         groupInfoTableView.isScrollEnabled = false
         
         messageTableView.delegate = self
@@ -310,6 +310,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         if tableView.restorationIdentifier == "message" {
             messageTableView.deselectRow(at: indexPath, animated: true)
         } else {
+            // CHANGE STRING
+            if groupInfoArray[indexPath.row].contains("Star") || groupInfoArray[indexPath.row].contains("Online") {
+                performSegue(withIdentifier: "goToMembers", sender: self)
+            }
             groupInfoTableView.deselectRow(at: indexPath, animated: true)
         }
     }
@@ -458,12 +462,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             destinationVC.socket = socket
             destinationVC.messageObj = self // If the user navigates to any other view controller, then set the socket = nil
             UserData.createNewMessageViewController = false
+        } else if segue.identifier == "goToMembers" {
+            let destinationVC = segue.destination as! MembersViewController
+            destinationVC.socket = socket
+            // TODO: Finish this later if needed
         }
     }
     
     // MARK: Miscellaneous Methods
     func initializeGroupInfo() {
         // CHANGE INDICES
+        // CHANGE STRING
         let cd = ConvertDate(date: groupInformation.rawDate)
         
         if groupInformation.creator == UserData.username {
@@ -480,6 +489,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         titleLabel.text = groupInformation.title
         groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture later
     }
+    
     /// Edit UIViewController transition left -> right
     func slideRightTransition() {
         let transition = CATransition()

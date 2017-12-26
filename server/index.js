@@ -44,6 +44,19 @@ proxichat_nsp.on('connection', socket => {
     USERNAME_TO_SOCKET[username] = socket
   })
 
+  // NOTE: Delete account
+  socket.on('delete_account', username => {
+    pool.query(`DELETE FROM users WHERE username = '${username}'`, (err, res) => {
+      if (err) {
+        // TODO: Handle so it doesn't crash
+        socket.emit('delete_account_response', { success: false })
+        console.log(err);
+      } else {
+        socket.emit('delete_account_response', { success: true })
+      }
+    })
+  })
+
   // NOTE: Get starred groups
   socket.on('get_starred_groups', username => {
     pool.query(`SELECT groups.id, groups.title, groups.password, groups.created_by, groups.is_public, groups.coordinates, groups.number_members, groups.date_created FROM groups INNER JOIN users_groups ON users_groups.group_id = groups.id WHERE users_groups.username = '${username}'`, (err, res) => {
@@ -174,7 +187,7 @@ proxichat_nsp.on('connection', socket => {
     })
   })
 
-  // NOTE: Joining and leaving a room (group chat)
+  // NOTE: Joining and leaving a room (group chat) (ONLINE ONLY)
   socket.on('join_room', data => {
     var group_id = data.group_id
     var username = data.username
@@ -192,7 +205,7 @@ proxichat_nsp.on('connection', socket => {
     proxichat_nsp.in('room-' + group_id).emit('group_stats', { number_online: proxichat_nsp.adapter.rooms['room-' + group_id].length })
   })
 
-  // NOTE: Only triggered when going back to groups page and not starred
+  // NOTE: Only triggered when going back to groups page and not starred (ONLINE ONLY)
   socket.on('leave_room', data => {
     var group_id = data.group_id
     var username = data.username
@@ -200,12 +213,9 @@ proxichat_nsp.on('connection', socket => {
     socket.leave('room-' + group_id)
     delete USERNAME_TO_GROUPS[username][group_id]
 
-    // Check if the last person has left the room
+    // Check if the last person has left the room (no one online)
     if (proxichat_nsp.adapter.rooms['room-' + group_id]) {
       proxichat_nsp.in('room-' + group_id).emit('group_stats', { number_online: proxichat_nsp.adapter.rooms['room-' + group_id].length })
-    } else {
-      // TODO: Delete the room
-      console.log('last person left, delete the group');
     }
   })
 

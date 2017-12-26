@@ -13,7 +13,7 @@ import SVProgressHUD
 
 class WelcomeViewController: UIViewController {
     
-    let socket = SocketIOClient(socketURL: URL(string: "http://localhost:3000")!)
+    var socket: SocketIOClient?
     
     @IBOutlet var signUpButton: UIButton!
     @IBOutlet var logInButton: UIButton!
@@ -23,16 +23,18 @@ class WelcomeViewController: UIViewController {
         super.viewDidLoad()
         statusLabel.text = ""
         
-        // TODO: Add reconnecting later - socket.reconnect()
-        socket.connect(timeoutAfter: 5.0) {
-            self.signUpButton.isEnabled = false
-            self.logInButton.isEnabled = false
-            self.statusLabel.text = "Connection Failed."
-            
-            SVProgressHUD.showError(withStatus: "Connection Failed.")
-            // TODO: Add UIAlertController to reconnect and show failure.
+        if socket == nil {
+            socket = SocketIOClient(socketURL: URL(string: "http://localhost:3000")!)
+            // TODO: Add reconnecting later - socket.reconnect()
+            socket?.connect(timeoutAfter: 5.0) {
+                self.signUpButton.isEnabled = false
+                self.logInButton.isEnabled = false
+                self.statusLabel.text = "Connection Failed."
+                
+                SVProgressHUD.showError(withStatus: "Connection Failed.")
+                // TODO: Add UIAlertController to reconnect and show failure.
+            }
         }
-        // Do any additional setup after loading the view, typically from a nib.
     }
     
     override func didReceiveMemoryWarning() {
@@ -42,6 +44,9 @@ class WelcomeViewController: UIViewController {
     
     // MARK: Segue prepare
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         if segue.identifier == "goToSignUp" {
             let destinationVC = segue.destination as! SignUpViewController
             destinationVC.socket = socket

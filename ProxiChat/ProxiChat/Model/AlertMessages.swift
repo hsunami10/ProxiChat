@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// This holds all the UIAlertController alert messages.
+/// This holds all the reused UIAlertController alert messages.
 struct AlertMessages {
     static let unavailableCamera = "The camera is unavailable right now. It may already be in use."
     static let unavailablePhotoLibrary = "The photo library is unavailable right now. It may already be in use."

@@ -384,7 +384,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     /// Show an action sheet to choose between "camera" and "photo library" when the image is clicked.
     @objc func imageTapped() {
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
+        
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         // TODO: Maybe have an "edit picture" action?
         actionSheet.addAction(UIAlertAction(title: "Take a Photo", style: .default, handler: { (action) in

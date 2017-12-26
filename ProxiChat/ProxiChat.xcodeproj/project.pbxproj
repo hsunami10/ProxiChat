@@ -19,6 +19,7 @@
 		E4820C9C1FEEF5A000D1FC93 /* NavigationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4820C9A1FEEF5A000D1FC93 /* NavigationCell.xib */; };
 		E4820CA01FEEFF1900D1FC93 /* GroupInfoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4820C9E1FEEFF1900D1FC93 /* GroupInfoCell.swift */; };
 		E4820CA11FEEFF1900D1FC93 /* GroupInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4820C9F1FEEFF1900D1FC93 /* GroupInfoCell.xib */; };
+		E4820CA31FF1F3FF00D1FC93 /* MembersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4820CA21FF1F3FF00D1FC93 /* MembersViewController.swift */; };
 		E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */; };
 		E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */; };
 		E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4B3D74A1FBA9D2000F539EA /* Main.storyboard */; };
@@ -62,6 +63,7 @@
 		E4820C9A1FEEF5A000D1FC93 /* NavigationCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NavigationCell.xib; sourceTree = "<group>"; };
 		E4820C9E1FEEFF1900D1FC93 /* GroupInfoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupInfoCell.swift; sourceTree = "<group>"; };
 		E4820C9F1FEEFF1900D1FC93 /* GroupInfoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GroupInfoCell.xib; sourceTree = "<group>"; };
+		E4820CA21FF1F3FF00D1FC93 /* MembersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembersViewController.swift; sourceTree = "<group>"; };
 		E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupViewController.swift; sourceTree = "<group>"; };
 		E4B3D7431FBA9D2000F539EA /* ProxiChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProxiChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -234,6 +236,7 @@
 				E4FAB4A01FD782B500D2C6E1 /* SettingsViewController.swift */,
 				E4D23C6A1FDF1A080059ED54 /* EditProfileViewController.swift */,
 				E434EDDF1FE6051C00B26F22 /* EditPictureViewController.swift */,
+				E4820CA21FF1F3FF00D1FC93 /* MembersViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -434,6 +437,7 @@
 				E429D1F81FEB7B7100EAAEFD /* SettingsCell.swift in Sources */,
 				E4FAB4991FD723E600D2C6E1 /* LocalGroupsData.swift in Sources */,
 				E4B3D7611FBB85AF00F539EA /* SignUpViewController.swift in Sources */,
+				E4820CA31FF1F3FF00D1FC93 /* MembersViewController.swift in Sources */,
 				E4FAB49D1FD7814900D2C6E1 /* StarredGroupsViewController.swift in Sources */,
 				E4FAB4A51FD7837800D2C6E1 /* NavigationSideMenu.swift in Sources */,
 				E4CB11851FBC10A7003B627E /* GroupsViewController.swift in Sources */,

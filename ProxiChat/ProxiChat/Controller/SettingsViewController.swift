@@ -8,6 +8,8 @@
 
 import UIKit
 import SocketIO
+import SwiftyJSON
+import SVProgressHUD
 
 /*
  Sections: Theme, Notifications & Sounds, Support - then logout/signout & delete account
@@ -15,7 +17,7 @@ import SocketIO
  - Notifications & Sounds: maybe find a way to enable/disable in app? with a switch like whatsapp - ask for permissions on start up
     - if enabled, allow the user to choose sounds and/or vibrations (if possible)
     - pause notifications for a certain period of time
- - Support: FAQ, Feedback, Report
+ - Support: Contact, FAQ?, Feedback, Report
  */
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
@@ -36,6 +38,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        eventHandlers()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
@@ -57,17 +60,39 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: SocketIO Event Handlers
+    func eventHandlers() {
+        socket?.on("delete_account_response", callback: { (data, ack) in
+            SVProgressHUD.dismiss()
+            if JSON(data[0])["success"].boolValue {
+                self.removeUserDefaults()
+                self.revealTopToBottomTransition()
+                self.performSegue(withIdentifier: "logOutDelete", sender: self)
+            } else {
+                SVProgressHUD.showError(withStatus: "There was a problem deleting your account. Please try again.")
+            }
+        })
+    }
+    
     // MARK: IBOutlet Actions
     @IBAction func deleteAccount(_ sender: Any) {
-        print("delete account")
-        print("remove all users from the groups that this user owns")
-        print("remove user defaults")
+        let alert = UIAlertController(title: "Delete Account", message: "Are you sure you want to remove your account? This action cannot be reversed.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (action) in
+            self.socket?.emit("delete_account", UserData.username)
+            SVProgressHUD.show()
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
+        present(alert, animated: true, completion: nil)
     }
     
     @IBAction func logOut(_ sender: Any) {
-        // TODO: Finish this method
-        print("log out user")
-        print("remove user defaults")
+        removeUserDefaults()
+        revealTopToBottomTransition()
+        performSegue(withIdentifier: "logOutDelete", sender: self)
     }
     
     @IBAction func showNavMenu(_ sender: Any) {
@@ -141,19 +166,36 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
-            socket = nil
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
-            socket = nil
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
-            socket = nil
+        } else if segue.identifier == "logOutDelete" {
+            let destinationVC = segue.destination as! WelcomeViewController
+            destinationVC.socket = socket
+            socket?.leaveNamespace()
         }
+        socket = nil
     }
     
     // MARK: Miscellaneous Methods
+    func removeUserDefaults() {
+        UserDefaults.standard.removeObject(forKey: "isUserLoggedInProxiChat")
+        UserDefaults.standard.removeObject(forKey: "proxiChatUsername")
+    }
+    
+    func revealTopToBottomTransition() {
+        // TODO: Fix this later to match the dismiss transition
+        let transition = CATransition()
+        transition.duration = Durations.navigationDuration
+        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
+        transition.type = kCATransitionReveal
+        transition.subtype = kCATransitionFromBottom
+        self.view.window?.layer.add(transition, forKey: nil)
+    }
+    
     @objc func closeNavMenu() {
         if navigationLeftConstraint.constant == 0 {
             NavigationSideMenu.toggleSideNav(show: false)
