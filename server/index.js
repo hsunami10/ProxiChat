@@ -156,10 +156,10 @@ proxichat_nsp.on('connection', socket => {
       (err, res) => {
         if (err) {
           // TODO: Handle so it doesn't crash
-          socket.emit('update_location_and_get_groups_create_response', { success: false, data: [], error_msg: 'There was a problem getting groups. Please try again.' })
+          socket.emit('update_location_and_get_groups_create_response', { success: false, groups: [], error_msg: 'There was a problem getting groups. Please try again.' })
           console.log(err);
         } else {
-          socket.emit('update_location_and_get_groups_create_response',  { success: true, data: res.rows, error_msg: '' })
+          socket.emit('update_location_and_get_groups_create_response',  { success: true, groups: res.rows, error_msg: '' })
         }
       })
   })

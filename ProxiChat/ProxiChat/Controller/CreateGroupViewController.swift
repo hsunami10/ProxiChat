@@ -20,7 +20,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     var locationManager = CLLocationManager()
     var socket: SocketIOClient?
-    var newGroup = Group()
+    var newGroup = Group() // Saved for MessageViewController group info
     var data: Any!
     var coordinates = ""
     
@@ -173,10 +173,17 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = newGroup
             destinationVC.socket = socket
-            destinationVC.fromViewController = 0
             socket = nil // Won't receive duplicate events
-            groupsObj?.socket = nil // Won't receive duplicate events
-            starredGroupsObj?.socket = nil
+            
+            // Don't receive duplicate events
+            if let obj = groupsObj {
+                obj.socket = nil
+                destinationVC.fromViewController = 0
+            }
+            if let obj = starredGroupsObj {
+                obj.socket = nil
+                destinationVC.fromViewController = 1
+            }
         }
     }
     
