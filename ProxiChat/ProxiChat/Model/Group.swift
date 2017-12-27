@@ -16,8 +16,8 @@ class Group {
     var password = ""
     var creator = ""
     var coordinates = ""
-    var dateCreated = ""
+    var dateCreated = "" // Formatted readable date
     var id = "" // Generated in node - shortid
     var image: UIImage?
-    var rawDate = ""
+    var rawDate = "" // Unaltered date
 }
