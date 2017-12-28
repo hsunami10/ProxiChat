@@ -163,7 +163,7 @@ proxichat_nsp.on('connection', socket => {
     let group_id = data.id
     let enteredPassword = data.passwordEntered
     let rowIndex = data.rowIndex
-    
+
     pool.query(`SELECT title FROM groups WHERE id = '${group_id}' AND password = '${enteredPassword}'`,
       (err, res) => {
         if (err) {
@@ -189,12 +189,13 @@ proxichat_nsp.on('connection', socket => {
     socket.join('room-' + group_id)
 
     // Add to object to handle leaving the room while terminating app or logging out
-    if (USERNAME_TO_GROUPS[username]) {
-      USERNAME_TO_GROUPS[username][group_id] = group_id
-    } else {
-      USERNAME_TO_GROUPS[username] = {}
-      USERNAME_TO_GROUPS[username][group_id] = group_id
-    }
+    // TODO: Finish later
+    // if (USERNAME_TO_GROUPS[username]) {
+    //   USERNAME_TO_GROUPS[username][group_id] = group_id
+    // } else {
+    //   USERNAME_TO_GROUPS[username] = {}
+    //   USERNAME_TO_GROUPS[username][group_id] = group_id
+    // }
 
     proxichat_nsp.in('room-' + group_id).emit('group_stats', { number_online: proxichat_nsp.adapter.rooms['room-' + group_id].length })
   })
@@ -205,9 +206,10 @@ proxichat_nsp.on('connection', socket => {
     var username = data.username
 
     socket.leave('room-' + group_id)
-    delete USERNAME_TO_GROUPS[username][group_id]
+    // TODO: Finish later
+    // delete USERNAME_TO_GROUPS[username][group_id]
 
-    // Check if the last person has left the room (no one online)
+    // Check if the last person has left the room (no one online) - so won't throw error
     if (proxichat_nsp.adapter.rooms['room-' + group_id]) {
       proxichat_nsp.in('room-' + group_id).emit('group_stats', { number_online: proxichat_nsp.adapter.rooms['room-' + group_id].length })
     }

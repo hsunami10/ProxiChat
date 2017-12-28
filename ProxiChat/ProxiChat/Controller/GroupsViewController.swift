@@ -20,8 +20,6 @@ import CoreLocation
  - ADD SEARCH BAR
  */
 
-// TODO: FIX ASAP - app glitches out when trying to join a private group after joining and leaving another group - runs socket event twice, only for private groups
-
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
     // MARK: Instance variables

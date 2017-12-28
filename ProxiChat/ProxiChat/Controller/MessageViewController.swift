@@ -22,7 +22,7 @@ import ChameleonFramework
  - save what the user wrote in textfield even when the app closes?
  
  BUGS
- - table view scrolls down when going from scrolling table view to non scrolling - FIX THIS
+ - table view scrolls down when going from scrolling table view to non scrolling - FIX THIS - look at joinGroup
  - text view changing height doesn't perfectly shift, some overscrolling
  - table view scrolls? when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP *****
  */
@@ -46,6 +46,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
     var isMessageSent = false // Tag for whether or not a message has been sent - for resetting text view height
     let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
+    var tempMessageTableBottom: CGFloat = 0 // Return message table view bottom constraint to the original value before the keyboard is shown
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var sendButton: UIButton!
@@ -357,6 +358,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 if !UIView.areAnimationsEnabled {
                     UIView.setAnimationsEnabled(true)
                 }
+                
+                // TODO: Use code in keyboardWillShow to animate the rest of the views moving with the textview (3 scenarios)
                 UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
                     self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(changeInHeight)
                     self.typingView.superview?.layoutIfNeeded()
@@ -390,14 +393,21 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group: Group) {
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
+        
+        // TODO: Check if the content is scrollable, if it isn't then scroll to top
         messageArray = [Message]()
         groupInformation = group
         initializeGroupInfo()
         groupTitle.text = group.title
         lastLines = 1
+        
         messageTextView.text = placeholder
         messageTextView.textColor = UIColor.lightGray
+        typingViewHeight.constant = typingHeight
+        
         socket?.emit("get_messages_on_start", group.id)
     }
     
@@ -414,6 +424,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             UIView.animate(withDuration: duration) {
                 // Handle 3 scenarios
                 let leftOverSpace = self.messageTableView.frame.height - self.messageTableView.contentSize.height
+                
+                // Store bottom constraint for hiding the keyboard
+                self.tempMessageTableBottom = self.messageTableViewBottomConstraint.constant
+                
                 if leftOverSpace > 0 {
                     if leftOverSpace < keyboardHeight + self.typingHeight {
                         self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + (keyboardHeight - leftOverSpace)
@@ -424,6 +438,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 } else {
                     self.messageViewBottomConstraint.constant = keyboardHeight
                 }
+                
                 self.view.layoutIfNeeded()
             }
         }
@@ -432,15 +447,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
         if let userInfo = aNotification.userInfo {
             let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
-            
+            // TODO: Check if text isn't deleted yet - compare typingviewheight with typingheight
             UIView.animate(withDuration: duration) {
                 self.messageViewBottomConstraint.constant = 0
                 self.typingViewBottomConstraint.constant = 0
+                
                 if self.isMessageSent {
                     self.typingViewHeight.constant = self.typingHeight
                     self.isMessageSent = false
                 }
-                self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
+//                self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
+                self.messageTableViewBottomConstraint.constant = self.tempMessageTableBottom
                 
                 self.view.layoutIfNeeded()
             }

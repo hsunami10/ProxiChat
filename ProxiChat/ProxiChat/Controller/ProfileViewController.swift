@@ -364,7 +364,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     // MARK: Miscellaneous Methods
-    
     func slideLeftTransition() {
         let transition = CATransition()
         transition.duration = Durations.messageTransitionDuration

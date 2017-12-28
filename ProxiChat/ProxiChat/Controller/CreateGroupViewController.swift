@@ -23,6 +23,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     var newGroup = Group() // Saved for MessageViewController group info
     var data: Any!
     var coordinates = ""
+    let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
     
     /// Store the groups view controller to set socket to nil if a group is created
     var groupsObj: GroupsViewController?
@@ -41,6 +42,12 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         
         // Responsive layout
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        
+        // Initialize error alert
+        locationErrorAlert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { (action) in
+            UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
+        }))
+        locationErrorAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
         privateSwitch.isOn = false
         groupPasswordTextField.isHidden = true
@@ -117,7 +124,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
-        SVProgressHUD.showError(withStatus: "Location unavailable. Check your internet connection.")
+        manager.stopUpdatingLocation()
+        present(locationErrorAlert, animated: true, completion: nil)
     }
     
     // MARK: IBOutlet Actions

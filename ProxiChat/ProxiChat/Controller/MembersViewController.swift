@@ -12,7 +12,7 @@ import SocketIO
 class MembersViewController: UIViewController {
     
     var socket: SocketIOClient?
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 

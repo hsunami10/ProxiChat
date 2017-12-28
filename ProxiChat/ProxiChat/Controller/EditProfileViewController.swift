@@ -10,6 +10,7 @@ import UIKit
 
 /* TODO / BUGS
  - fix layout for editing bio page
+ - check for a change in a profile field (disable update button accordingly)
  */
 
 class EditProfileViewController: UIViewController {
