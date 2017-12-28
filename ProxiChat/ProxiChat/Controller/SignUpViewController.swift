@@ -71,6 +71,9 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
             destinationVC.username = usernameTextField.text!
+            
+            socket?.off("sign_up_response")
+            socket = nil
         }
     }
     

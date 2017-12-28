@@ -38,12 +38,6 @@ proxichat_nsp.on('connection', socket => {
 
   socket.emit('join_success')
 
-  // This sets the sockets so users are able to send to these sockets
-  socket.on('go_online', username => {
-    SOCKETID_TO_USERNAME[socket.id] = username
-    USERNAME_TO_SOCKET[username] = socket
-  })
-
   // NOTE: Delete account
   socket.on('delete_account', username => {
     pool.query(`DELETE FROM users WHERE username = '${username}'`, (err, res) => {
@@ -169,7 +163,7 @@ proxichat_nsp.on('connection', socket => {
     let group_id = data.id
     let enteredPassword = data.passwordEntered
     let rowIndex = data.rowIndex
-
+    
     pool.query(`SELECT title FROM groups WHERE id = '${group_id}' AND password = '${enteredPassword}'`,
       (err, res) => {
         if (err) {

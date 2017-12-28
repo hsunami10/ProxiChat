@@ -20,6 +20,8 @@ import CoreLocation
  - ADD SEARCH BAR
  */
 
+// TODO: FIX ASAP - app glitches out when trying to join a private group after joining and leaving another group - runs socket event twice, only for private groups
+
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
     // MARK: Instance variables
@@ -151,9 +153,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 self.present(alert, animated: true, completion: nil)
             }
         }
-        socket?.on("join_success") { (data, ack) in
-            self.socket?.emit("go_online", self.username)
-        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -222,6 +221,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 textField.isSecureTextEntry = true
             })
             alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
+                print("emit join private group event")
                 self.socket?.emit("join_private_group", [
                     "id": self.groupArray[indexPath.row].id,
                     "passwordEntered": alert.textFields?.first?.text!,
@@ -298,6 +298,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // Set MessageViewController socket to nil
         if segue.identifier != "joinGroup" {
             if let mObj = messageObj {
+                mObj.socket?.off("group_stats")
+                mObj.socket?.off("receive_message")
+                mObj.socket?.off("get_messages_on_start_response")
                 mObj.socket = nil
             }
         }
@@ -307,7 +310,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             destinationVC.groupInformation = selectedGroup
             destinationVC.socket = socket
             destinationVC.fromViewController = 0
-            socket = nil // Won't receive duplicate events
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.socket = socket
@@ -315,18 +317,24 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
-            socket = nil
             UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
-            socket = nil
             UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToSettings" {
             let destinationVC = segue.destination as! SettingsViewController
             destinationVC.socket = socket
-            socket = nil
             UserData.createNewMessageViewController = true
+        }
+        
+        // Remove sockets for all but create group
+        if segue.identifier != "createGroup" {
+            socket?.off("join_private_group_response")
+            socket?.off("update_location_and_get_groups_response")
+            socket?.off("get_user_info_response")
+            socket?.off("join_success")
+            socket = nil // Won't receive duplicate events
         }
     }
     
@@ -377,8 +385,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 groupObj.is_public = group["is_public"].boolValue
                 groupObj.numMembers = group["number_members"].intValue
                 groupObj.password = group["password"].stringValue
-                groupObj.title = group["title"].stringValue
                 groupObj.rawDate = group["date_created"].stringValue
+                groupObj.title = group["title"].stringValue
                 
                 self.groupArray.append(groupObj)
             }

@@ -71,6 +71,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
             destinationVC.username = usernameTextField.text!
+            
+            socket?.off("sign_in_response")
+            socket = nil
         }
     }
     

@@ -189,6 +189,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             UserData.connected = false
             socket?.leaveNamespace()
         }
+        
+        // TODO: Change this later when other features are added
+        socket?.off("delete_account_response")
         socket = nil
     }
     

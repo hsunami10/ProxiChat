@@ -339,15 +339,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
-            socket = nil
         } else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
-            socket = nil
         } else if segue.identifier == "goToSettings" {
             let destinationVC = segue.destination as! SettingsViewController
             destinationVC.socket = socket
-            socket = nil
         } else if segue.identifier == "goToEditProfile" {
             let destinationVC = segue.destination as! EditProfileViewController
             destinationVC.row = rowSelected
@@ -357,6 +354,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             let destinationVC = segue.destination as! EditPictureViewController
             destinationVC.image = image
             destinationVC.delegate = self
+        }
+        
+        if segue.identifier != "goToEditProfile" && segue.identifier != "goToEditPicture" {
+            socket?.off("update_radius_response")
+            socket?.off("update_profile_response")
+            socket = nil
         }
     }
     

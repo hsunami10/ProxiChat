@@ -134,7 +134,7 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     @IBAction func chooseImage(_ sender: Any) {
         // TODO: Crop image, then run delegate method
         // TODO: Handle first zoom here (if !firstZoom, else)
-
+        
         // If haven't zoomed
         if !firstZoom {
             
@@ -150,6 +150,7 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         
         testImageView.image = croppedImage
         
+        // TODO: Uncomment later
 //        delegate?.updatePicture(croppedImage)
 //        self.dismiss(animated: true, completion: nil)
     }

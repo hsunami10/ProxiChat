@@ -100,7 +100,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     // MARK: CLLocationManagerDelegate Methods
-    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             if String(describing: Date()) == String(describing: location.timestamp) {
@@ -122,8 +121,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     // MARK: IBOutlet Actions
-    
-    // TOOD: Update locations here
     @IBAction func submit(_ sender: Any) {
         let alert = UIAlertController(title: "Warning", message: "Submitting this will update your location as well.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Continue", style: .default, handler: { (action) in
@@ -173,15 +170,23 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = newGroup
             destinationVC.socket = socket
-            socket = nil // Won't receive duplicate events
+            
+            socket?.off("create_group_response")
+            socket?.off("update_location_and_get_groups_create_response")
+            socket = nil
             
             // Don't receive duplicate events
-            if let obj = groupsObj {
-                obj.socket = nil
+            if let gObj = groupsObj {
+                gObj.socket?.off("join_private_group_response")
+                gObj.socket?.off("update_location_and_get_groups_response")
+                gObj.socket?.off("get_user_info_response")
+                gObj.socket?.off("join_success")
+                gObj.socket = nil
                 destinationVC.fromViewController = 0
             }
-            if let obj = starredGroupsObj {
-                obj.socket = nil
+            if let sObj = starredGroupsObj {
+                sObj.socket?.off("get_starred_groups_response")
+                sObj.socket = nil
                 destinationVC.fromViewController = 1
             }
         }

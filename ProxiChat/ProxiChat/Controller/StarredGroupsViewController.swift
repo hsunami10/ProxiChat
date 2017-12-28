@@ -153,6 +153,9 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier != "joinGroupStarred" {
             if let mObj = messageObj {
+                mObj.socket?.off("group_stats")
+                mObj.socket?.off("receive_message")
+                mObj.socket?.off("get_messages_on_start_response")
                 mObj.socket = nil
             }
         }
@@ -161,7 +164,6 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
             destinationVC.groupInformation = selectedGroup
             destinationVC.socket = socket
             destinationVC.fromViewController = 1
-            socket = nil // Won't receive duplicate events
         } else if segue.identifier == "createGroupStarred" {
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.socket = socket
@@ -170,18 +172,20 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
             destinationVC.username = UserData.username
-            socket = nil
             UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
-            socket = nil
             UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToSettings" {
             let destinationVC = segue.destination as! SettingsViewController
             destinationVC.socket = socket
-            socket = nil
             UserData.createNewMessageViewController = true
+        }
+        
+        if segue.identifier != "createGroupStarred" {
+            socket?.off("get_starred_groups_response")
+            socket = nil // Won't receive duplicate events
         }
     }
     
