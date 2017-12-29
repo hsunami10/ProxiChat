@@ -189,7 +189,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     // MARK: UITableView Delegate and DataSource Methods
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         rowSelected = indexPath.row
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         slideLeftTransition()
         performSegue(withIdentifier: "goToEditProfile", sender: self)
         tableView.deselectRow(at: indexPath, animated: true)

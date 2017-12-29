@@ -1463,8 +1463,8 @@
                         <outlet property="typingView" destination="rrK-X6-rsR" id="mXf-Nb-6WM"/>
                         <outlet property="typingViewBottomConstraint" destination="s5F-a1-puG" id="oVG-9A-tki"/>
                         <outlet property="typingViewHeight" destination="OzR-jO-2hY" id="tvI-6m-GYs"/>
-                        <segue destination="G5J-Lj-dvA" kind="show" identifier="goBackToGroups" id="OD0-pG-fXq"/>
-                        <segue destination="hE2-Tj-l73" kind="show" identifier="goBackToStarredGroups" id="Q67-rq-eHC"/>
+                        <segue destination="G5J-Lj-dvA" kind="show" identifier="goBackToGroups" animates="NO" id="OD0-pG-fXq"/>
+                        <segue destination="hE2-Tj-l73" kind="show" identifier="goBackToStarredGroups" animates="NO" id="Q67-rq-eHC"/>
                         <segue destination="osD-mn-0Uu" kind="show" identifier="goToMembers" animates="NO" id="8Tz-eq-JRC"/>
                     </connections>
                 </viewController>
@@ -1783,7 +1783,7 @@
         <segue reference="38h-l6-3Or"/>
         <segue reference="mxj-Sx-jCE"/>
         <segue reference="Uez-De-SON"/>
-        <segue reference="3O4-fG-PY9"/>
-        <segue reference="FVf-rN-Wko"/>
+        <segue reference="Q67-rq-eHC"/>
+        <segue reference="OD0-pG-fXq"/>
     </inferredMetricsTieBreakers>
 </document>

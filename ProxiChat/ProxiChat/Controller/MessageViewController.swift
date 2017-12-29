@@ -19,13 +19,15 @@ import ChameleonFramework
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send - user has left the group
- - save what the user wrote in textfield even when the app closes?
  
  BUGS
  - table view scrolls down when going from scrolling table view to non scrolling - FIX THIS - look at joinGroup
  - text view changing height doesn't perfectly shift, some overscrolling
  - table view scrolls? when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP *****
  */
+
+/// Holds the text left over in a certain conversation whenever the user goes back to the groups page. group_id -> text view content
+var contentNotSent: [String : String] = [:]
 
 class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
     
@@ -117,7 +119,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // TODO: Paginate messages
         socket?.emit("get_messages_on_start", groupInformation.id)
         configureTableView()
-        
+
         initializeLayout()
     }
     
@@ -199,7 +201,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: IBOutlet Actions
     @IBAction func goBack(_ sender: Any) {
         slideRightTransition()
-        UIView.setAnimationsEnabled(false)
         
         // Check which view controller it came from
         switch fromViewController {
@@ -250,6 +251,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             sendButton.isEnabled = true
             messageTextView.text = placeholder
             messageTextView.textColor = UIColor.lightGray
+            contentNotSent.removeValue(forKey: groupInformation.id)
         }
     }
     
@@ -312,17 +314,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // TODO: Why is it over changing height? - FIX THIS
+    // TODO: BUG - Why is it over changing height? - FIX THIS
     func textViewDidChange(_ textView: UITextView) {
         let lines = textView.contentSize.height / (textView.font?.lineHeight)! // Float
         let wholeLines = Int(floorf(Float(lines))) // Whole number
         
         // Check to see whether or not the number of lines changed
         if wholeLines != lastLines {
-            
             // If adding text and greator than the max number of lines, then don't change the height
             if lastLines < maxLines || wholeLines < maxLines {
-                
                 // Get the change in height
                 var changeInHeight: CGFloat = 0
                 if wholeLines >= maxLines {
@@ -336,6 +336,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 
                 UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
+                    // If no overflow, then only move the table view up accordingly
                     if self.messageTableViewHeight.constant < self.messageTableView.contentSize.height {
                         self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + CGFloat(changeInHeight)
                     }
@@ -347,6 +348,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 lastLines = wholeLines
                 lastContentHeight = textView.contentSize.height
             }
+        }
+        
+        // If not empty text, then save the text left over in text view
+        if textView.text!.count == 0 {
+            contentNotSent.removeValue(forKey: groupInformation.id)
+        } else {
+            contentNotSent[groupInformation.id] = textView.text!
         }
     }
     
@@ -459,9 +467,14 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Miscellaneous Methods
     func initializeLayout() {
-        // Make a fake placeholder in text view
-        messageTextView.text = placeholder
-        messageTextView.textColor = placeholderColor
+        let keyExists = contentNotSent[groupInformation.id] != nil
+        if !keyExists {
+            messageTextView.text = placeholder
+            messageTextView.textColor = placeholderColor
+        } else {
+            messageTextView.text = contentNotSent[groupInformation.id]
+            messageTextView.textColor = UIColor.black
+        }
         
         startingContentHeight = messageTextView.contentSize.height
         lastContentHeight = startingContentHeight
@@ -485,6 +498,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         self.view.layoutIfNeeded()
     }
+    
     func initializeGroupInfo() {
         // CHANGE INDICES
         // CHANGE STRING
