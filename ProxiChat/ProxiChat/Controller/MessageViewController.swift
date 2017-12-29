@@ -19,9 +19,9 @@ import ChameleonFramework
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send - user has left the group
  
- BUGS
- - table view scrolls down when going from scrolling table view to non scrolling - FIX THIS - look at joinGroup
- - text view changing height doesn't perfectly shift, some overscrolling
+ BUGS - DO THESE NEXT
+ - table view scrolls down when going from scrolling table view to non scrolling - FIX THIS - look at joinGroup - text view stays on scroll to bottom
+ - text view changing height doesn't perfectly shift, some overscrolling - try to VERTICALLY CENTER text, or change height top and bottom, not only one side, because changing the height on one side makes it unbalanced
  - table view scrolls? when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP *****
  */
 
@@ -57,7 +57,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var messageTableViewBottomConstraint: NSLayoutConstraint! // Same as typing view height
     @IBOutlet var messageTableViewHeight: NSLayoutConstraint!
     
-    @IBOutlet var messageTextView: UITextView! // TODO: Add text view dimensions for responsiveness
+    @IBOutlet var messageTextView: UITextView!
     
     @IBOutlet var messageView: UIView!
     @IBOutlet var messageViewHeight: NSLayoutConstraint!
@@ -417,6 +417,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 
                 if leftOverSpace > 0 {
                     if leftOverSpace < keyboardHeight + self.typingHeight {
+                        // TODO: This isn't accurate - it matches up, but sometimes the table view shifts down??? Check hello!!! 4:28
                         self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + (keyboardHeight - leftOverSpace)
                         self.typingViewBottomConstraint.constant = keyboardHeight
                     } else {
@@ -497,7 +498,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Initialize group info view
         groupInfoViewWidth.constant = self.view.frame.width * groupInfoRatio
         groupInfoViewRightConstraint.constant = -groupInfoViewWidth.constant
-        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // Height of each row - TODO: Change row height
+        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // Height of each row - TODO: Change row height later for better UI
         groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count)
         groupInfoTableView.isScrollEnabled = false
         
@@ -521,7 +522,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convertWithFormat("MMM d, yyyy"))"
         titleLabel.text = groupInformation.title
-        groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture later
+        groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture
     }
     
     /// Edit UIViewController transition left -> right
