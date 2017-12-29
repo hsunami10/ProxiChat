@@ -14,8 +14,7 @@ import SwiftDate
 import ChameleonFramework
 
 /*
- TODO / BUGS
- TODO
+ TODO: TODO / BUGS
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send - user has left the group
@@ -48,7 +47,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
     var isMessageSent = false // Tag for whether or not a message has been sent - for resetting text view height
     let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
-    var tempMessageTableBottom: CGFloat = 0 // Return message table view bottom constraint to the original value before the keyboard is shown
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var sendButton: UIButton!
@@ -405,14 +403,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // Get keyboard height
             let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
             
-            // Animate
+            // Get the number of lines to calculate the height of the typing view
+            var numLines = floorf(Float(messageTextView.contentSize.height / (messageTextView.font?.lineHeight)!))
+            if Int(numLines) >= maxLines { // Don't go over the max number of lines
+                numLines = Float(maxLines)
+            }
+            // Height to change starting from the default 1 line text view height
+            let changeInHeight = CGFloat(floorf(Float((messageTextView.font?.lineHeight)!)) * (numLines - 1))
+            
             UIView.animate(withDuration: duration) {
                 // Handle 3 scenarios
                 let leftOverSpace = self.messageTableViewHeight.constant - self.messageTableView.contentSize.height
-                
-                // Store bottom constraint for hiding the keyboard
-                // TODO: Check over - is this necessary?
-                self.tempMessageTableBottom = self.messageTableViewBottomConstraint.constant
                 
                 if leftOverSpace > 0 {
                     if leftOverSpace < keyboardHeight + self.typingHeight {
@@ -424,7 +425,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 } else {
                     self.messageViewBottomConstraint.constant = keyboardHeight
                 }
-                
+                self.typingViewHeight.constant = self.typingViewHeight.constant + changeInHeight
+                self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + changeInHeight
                 self.view.layoutIfNeeded()
             }
         }
@@ -437,7 +439,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.messageViewBottomConstraint.constant = 0
                 self.typingViewBottomConstraint.constant = 0
                 self.typingViewHeight.constant = self.typingHeight
-                self.messageTableViewBottomConstraint.constant = self.tempMessageTableBottom
+                self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
                 self.view.layoutIfNeeded()
             }
         }
@@ -467,6 +469,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Miscellaneous Methods
     func initializeLayout() {
+        
+        // Always start with one line when view is loaded
+        messageTextView.text = " "
+        startingContentHeight = messageTextView.contentSize.height
+        lastContentHeight = startingContentHeight
+        maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
+        
         let keyExists = contentNotSent[groupInformation.id] != nil
         if !keyExists {
             messageTextView.text = placeholder
@@ -476,13 +485,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             messageTextView.textColor = UIColor.black
         }
         
-        startingContentHeight = messageTextView.contentSize.height
-        lastContentHeight = startingContentHeight
-        maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
-        
         // Responsive layout
         coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
-        typingHeight = startingContentHeight + Dimensions.getPoints(20) // Relative to text view starting content size + 10 padding top + 10 padding bottom
+        typingHeight = startingContentHeight + paddingTextView * 2 // Relative to text view starting content size + 10 padding top + 10 padding bottom
         typingViewHeight.constant = typingHeight
         messageTableViewBottomConstraint.constant = typingViewHeight.constant
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
