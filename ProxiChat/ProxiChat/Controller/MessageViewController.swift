@@ -84,30 +84,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         groupTitle.text = groupInformation.title
         eventHandlers()
         
-        // Make a fake placeholder in text view
-        messageTextView.text = placeholder
-        messageTextView.textColor = placeholderColor
-        
-        startingContentHeight = messageTextView.contentSize.height
-        lastContentHeight = startingContentHeight
-        maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
-        
-        // Responsive layout
-        coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
-        typingHeight = startingContentHeight + Dimensions.getPoints(20) // Relative to text view starting content size + 10 padding top + 10 padding bottom
-        typingViewHeight.constant = typingHeight
-        messageTableViewBottomConstraint.constant = typingViewHeight.constant
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
-        messageViewHeight.constant = Dimensions.safeAreaHeight - infoViewHeight.constant
-        messageTableViewHeight.constant = messageViewHeight.constant - typingViewHeight.constant
-        
-        // Initialize group info view
-        groupInfoViewWidth.constant = self.view.frame.width * groupInfoRatio
-        groupInfoViewRightConstraint.constant = -groupInfoViewWidth.constant
-        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // Height of each row - TODO: Change row height
-        groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count)
-        groupInfoTableView.isScrollEnabled = false
-        
         messageTableView.delegate = self
         messageTableView.dataSource = self
         messageTextView.delegate = self
@@ -142,7 +118,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         socket?.emit("get_messages_on_start", groupInformation.id)
         configureTableView()
         
-        self.view.layoutIfNeeded()
+        initializeLayout()
     }
     
     deinit {
@@ -359,10 +335,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     UIView.setAnimationsEnabled(true)
                 }
                 
-                // TODO: Use code in keyboardWillShow to animate the rest of the views moving with the textview (3 scenarios)
                 UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
+                    if self.messageTableViewHeight.constant < self.messageTableView.contentSize.height {
+                        self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + CGFloat(changeInHeight)
+                    }
+                    
                     self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(changeInHeight)
-                    self.typingView.superview?.layoutIfNeeded()
+                    self.view.layoutIfNeeded()
                 })
                 
                 lastLines = wholeLines
@@ -400,13 +379,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // TODO: Check if the content is scrollable, if it isn't then scroll to top
         messageArray = [Message]()
         groupInformation = group
-        initializeGroupInfo()
         groupTitle.text = group.title
         lastLines = 1
         
-        messageTextView.text = placeholder
-        messageTextView.textColor = UIColor.lightGray
-        typingViewHeight.constant = typingHeight
+        initializeGroupInfo()
+        initializeLayout()
         
         socket?.emit("get_messages_on_start", group.id)
     }
@@ -423,9 +400,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // Animate
             UIView.animate(withDuration: duration) {
                 // Handle 3 scenarios
-                let leftOverSpace = self.messageTableView.frame.height - self.messageTableView.contentSize.height
+                let leftOverSpace = self.messageTableViewHeight.constant - self.messageTableView.contentSize.height
                 
                 // Store bottom constraint for hiding the keyboard
+                // TODO: Check over - is this necessary?
                 self.tempMessageTableBottom = self.messageTableViewBottomConstraint.constant
                 
                 if leftOverSpace > 0 {
@@ -447,18 +425,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
         if let userInfo = aNotification.userInfo {
             let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
-            // TODO: Check if text isn't deleted yet - compare typingviewheight with typingheight
             UIView.animate(withDuration: duration) {
                 self.messageViewBottomConstraint.constant = 0
                 self.typingViewBottomConstraint.constant = 0
-                
-                if self.isMessageSent {
-                    self.typingViewHeight.constant = self.typingHeight
-                    self.isMessageSent = false
-                }
-//                self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
+                self.typingViewHeight.constant = self.typingHeight
                 self.messageTableViewBottomConstraint.constant = self.tempMessageTableBottom
-                
                 self.view.layoutIfNeeded()
             }
         }
@@ -487,6 +458,33 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
+    func initializeLayout() {
+        // Make a fake placeholder in text view
+        messageTextView.text = placeholder
+        messageTextView.textColor = placeholderColor
+        
+        startingContentHeight = messageTextView.contentSize.height
+        lastContentHeight = startingContentHeight
+        maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
+        
+        // Responsive layout
+        coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
+        typingHeight = startingContentHeight + Dimensions.getPoints(20) // Relative to text view starting content size + 10 padding top + 10 padding bottom
+        typingViewHeight.constant = typingHeight
+        messageTableViewBottomConstraint.constant = typingViewHeight.constant
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        messageViewHeight.constant = Dimensions.safeAreaHeight - infoViewHeight.constant
+        messageTableViewHeight.constant = messageViewHeight.constant - typingViewHeight.constant
+        
+        // Initialize group info view
+        groupInfoViewWidth.constant = self.view.frame.width * groupInfoRatio
+        groupInfoViewRightConstraint.constant = -groupInfoViewWidth.constant
+        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // Height of each row - TODO: Change row height
+        groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count)
+        groupInfoTableView.isScrollEnabled = false
+        
+        self.view.layoutIfNeeded()
+    }
     func initializeGroupInfo() {
         // CHANGE INDICES
         // CHANGE STRING
