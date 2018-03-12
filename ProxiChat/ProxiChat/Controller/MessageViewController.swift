@@ -11,26 +11,34 @@ import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 import SwiftDate
-import ChameleonFramework
 
 /*
  TODO: TODO / BUGS
+ - paginate - add UIRefreshControl to message table view & paginate PostgreSQL
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
- - when terminating app, request from database, if no results, then send - user has left the group
+ - when terminating app, request from database, if no results, then send leave group event
  
- BUGS - DO THESE NEXT
- - table view scrolls down when going from scrolling table view to non scrolling - FIX THIS - look at joinGroup - text view stays on scroll to bottom
- - text view changing height doesn't perfectly shift, some overscrolling - try to VERTICALLY CENTER text, or change height top and bottom, not only one side, because changing the height on one side makes it unbalanced
- - table view scrolls? when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP *****
+ BUGS
+ - keyboard hiding when send button is pressed - find out how to force keyboard to stop hiding
+ - on keyboard show, when table view is "shifted up", can't scroll to top messages
+    - maybe shift up by x and shrink table view height by x?
+ - table view scrolls down when going from scrolling table view to non scrolling - text view stays on scroll to bottom, so either scroll to top or disable scroll to bottom
+ - text view changing height doesn't perfectly shift, some overscrolling - try to VERTICALLY CENTER text, or change height/2 top and bottom, not only one side, because changing the height on one side makes it unbalanced
+ - table view scrolls when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP ***** - NO IDEA WHY
+ - Fix scrolling when sending / receiving messages - doesn't work for Case 1 & 3
+    - if you're the sender, scroll to bottom including last message
+    - if you're not the sender
+        - on bottom, then scroll to bottom including last message
+        - not on bottom, then don't scroll at all
  */
 
-/// Holds the text left over in a certain conversation whenever the user goes back to the groups page. group_id -> text view content
+/// Holds the text left over in a certain conversation whenever the user goes back to the groups page. [group_id : text view content]
 var contentNotSent: [String : String] = [:]
 
 class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
     
-    /// 0 - GroupsViewController, 1 - StarredGroupsViewController
+    /// Keeps track of which groups view controller to go back to. 0 -- GroupsViewController, 1 -- StarredGroupsViewController.
     var fromViewController = -1
     var groupInformation: Group!
     var socket: SocketIOClient?
@@ -45,7 +53,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
     var lastContentHeight: CGFloat = 0
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
-    var isMessageSent = false // Tag for whether or not a message has been sent - for resetting text view height
+    var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
     let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
     
     @IBOutlet var groupTitle: UILabel!
@@ -156,7 +164,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.messageTableView.reloadData()
             
             // If you are the sender
-            if JSON(data[0])["author"].stringValue == UserData.username {
+            // TODO: If you're at the bottom, scroll
+            if messageObj.author == UserData.username {
                 self.scrollToBottom()
             }
         }
@@ -228,10 +237,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    // TODO: Don't hide keyboard on send
     @IBAction func sendPressed(_ sender: Any) {
         if !Validate.isInvalidInput(messageTextView.text!) && messageTextView.textColor != UIColor.lightGray {
             isMessageSent = true
-            messageTextView.endEditing(true)
             messageTextView.isEditable = false
             sendButton.isEnabled = false
             
@@ -245,10 +254,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 "picture": ""
                 ])
             
+            // Reset
             messageTextView.isEditable = true
             sendButton.isEnabled = true
             messageTextView.text = placeholder
             messageTextView.textColor = UIColor.lightGray
+            lastLines = 1
+            lastContentHeight = startingContentHeight
             contentNotSent.removeValue(forKey: groupInformation.id)
         }
     }
@@ -262,11 +274,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    /*
+     2 types of cells:
+        - Message
+        - Group Info
+    */
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if tableView.restorationIdentifier! == "message" {
             // TODO: Add date later
             let cell = messageTableView.dequeueReusableCell(withIdentifier: "messageCell", for: indexPath) as! MessageCell
-            cell.content.text = messageArray[indexPath.row].content
+            cell.content.text = messageArray[indexPath.row].content // TODO: BUG - happens rarely (index out of bounds?)
             cell.username.text = messageArray[indexPath.row].author
             
             if messageArray[indexPath.row].picture == "" {
@@ -305,6 +322,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
+        print("end editing")
         // Change spaces and empty text to placeholder
         if Validate.isInvalidInput(textView.text!) {
             textView.text = placeholder
@@ -312,7 +330,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // TODO: BUG - Why is it over changing height? - FIX THIS
+    func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
+        print("textViewShouldEndEditing: \(!isMessageSent)")
+        textView.becomeFirstResponder()
+        return !isMessageSent
+    }
+    
+    // TODO: BUG - Text is not vertically centered? - FIX THIS
     func textViewDidChange(_ textView: UITextView) {
         let lines = textView.contentSize.height / (textView.font?.lineHeight)! // Float
         let wholeLines = Int(floorf(Float(lines))) // Whole number
@@ -340,6 +364,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     }
                     
                     self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(changeInHeight)
+                    print("typingview height: \(self.typingViewHeight.constant)")
+                    print("change in height: \(changeInHeight)")
                     self.view.layoutIfNeeded()
                 })
                 
@@ -361,6 +387,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         if(needToScroll()) {
             let path = NSIndexPath(row: messageArray.count-1, section: 0)
             messageTableView.scrollToRow(at: path as IndexPath, at: .bottom, animated: true)
+        } else {
+            // TODO: "Scroll" to top - take no messages into account
+            // TODO: BUG - when switching from need to scroll to don't need to scroll message views
         }
     }
     
@@ -412,12 +441,18 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             let changeInHeight = CGFloat(floorf(Float((messageTextView.font?.lineHeight)!)) * (numLines - 1))
             
             UIView.animate(withDuration: duration) {
-                // Handle 3 scenarios
+                /*
+                 Handle 3 cases
+                    Case 1 - Don't shift table view up (no scrolling)
+                    Case 2 - Shift up table view and keyboard TOGETHER (scrolling even when keyboard is hidden)
+                    Case 3 - Like 2, but NOT together (keyboard showing will block messages)
+                 */
                 let leftOverSpace = self.messageTableViewHeight.constant - self.messageTableView.contentSize.height
                 
                 if leftOverSpace > 0 {
                     if leftOverSpace < keyboardHeight + self.typingHeight {
-                        // TODO: This isn't accurate - it matches up, but sometimes the table view shifts down??? Check hello!!! 4:28
+                        // TODO: BUG - This isn't accurate - it matches up, but sometimes the table view shifts down???
+                        // Check hello!!! 4:28 VS. greetings: 4:28 again
                         self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + (keyboardHeight - leftOverSpace)
                         self.typingViewBottomConstraint.constant = keyboardHeight
                     } else {
@@ -428,6 +463,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 self.typingViewHeight.constant = self.typingViewHeight.constant + changeInHeight
                 self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + changeInHeight
+                self.isMessageSent = false
                 self.view.layoutIfNeeded()
             }
         }
@@ -435,13 +471,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
         if let userInfo = aNotification.userInfo {
-            let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
-            UIView.animate(withDuration: duration) {
-                self.messageViewBottomConstraint.constant = 0
-                self.typingViewBottomConstraint.constant = 0
-                self.typingViewHeight.constant = self.typingHeight
-                self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
-                self.view.layoutIfNeeded()
+            if !isMessageSent {
+                let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
+                UIView.animate(withDuration: duration) {
+                    self.messageViewBottomConstraint.constant = 0
+                    self.typingViewBottomConstraint.constant = 0
+                    self.typingViewHeight.constant = self.typingHeight
+                    self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
+                    self.view.layoutIfNeeded()
+                }
+            } else {
+                messageTextView.becomeFirstResponder()
             }
         }
     }
@@ -470,9 +510,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Miscellaneous Methods
     func initializeLayout() {
-        
-        // Always start with one line when view is loaded
-        messageTextView.text = " "
+        messageTextView.text = " " // Used to store default height of 1 line (startingContentHeight)
         startingContentHeight = messageTextView.contentSize.height
         lastContentHeight = startingContentHeight
         maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))

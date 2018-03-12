@@ -8,7 +8,7 @@
 
 import UIKit
 
-/// Holds all of a certain group's information.
+/// Holds all of a group's data.
 class Group {
     var title = ""
     var numMembers = 1

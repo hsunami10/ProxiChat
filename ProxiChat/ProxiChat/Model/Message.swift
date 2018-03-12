@@ -6,7 +6,7 @@
 //  Copyright © 2017 Michael Hsu. All rights reserved.
 //
 
-/// Holds all of the message's information.
+/// Holds all of the message's data.
 class Message {
     var id = ""
     var author = ""

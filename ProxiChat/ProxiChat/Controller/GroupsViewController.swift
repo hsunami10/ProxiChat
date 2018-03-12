@@ -30,9 +30,13 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var groupArray: [Group] = [Group]()
     var selectedGroup = Group()
     var delegate: JoinGroupDelegate?
-    /// Stores the last visited message view controller. Set the socket of this object to "nil" if the user navigates to another view that's not messages.
-    var messageObj: MessageViewController?
     let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
+    
+    /**
+     Stores the last visited message view controller.
+     Set the socket of this object to "nil" if the user navigates to another view that's not messages.
+     */
+    var messageObj: MessageViewController?
     
     // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!

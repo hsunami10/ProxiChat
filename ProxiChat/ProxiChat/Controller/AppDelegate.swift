@@ -34,6 +34,7 @@ protocol UpdatePictureDelegate {
     func updatePicture(_ image: UIImage)
 }
 
+
 // MARK: Extensions
 extension String {
     /// Gets pixel height of a string
@@ -52,6 +53,15 @@ extension String {
         return ceil(boundingBox.width)
     }
 }
+extension UITextView {
+    func centerVertically() {
+        let fittingSize = CGSize(width: bounds.width, height: CGFloat.greatestFiniteMagnitude)
+        let size = sizeThatFits(fittingSize)
+        let topOffset = (bounds.size.height - size.height * zoomScale) / 2
+        let positiveTopOffset = max(1, topOffset)
+        contentOffset = CGPoint(x: contentOffset.x, y: -positiveTopOffset)
+    }
+}
 
 // TODO: background app refresh -> most apps use this - figure out how to use this
 @UIApplicationMain
@@ -61,7 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-                
+        
         Dimensions.safeAreaHeight = (window?.frame.height)! - UIApplication.shared.statusBarFrame.height
         Dimensions.safeAreaWidth = (window?.frame.width)!
         
@@ -79,7 +89,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window?.makeKeyAndVisible()
         }
         
-        // If the key exists, use it, otherwise, start with an empty dictionary.
+        // If the key exists, use the dictionary, otherwise, start with an empty dictionary.
         if let savedContent = UserDefaults.standard.dictionary(forKey: "proxiChatContentNotSent") as? [String : String] {
             contentNotSent = savedContent
         } else {
@@ -92,6 +102,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+        UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -111,6 +122,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
+        
+        // TODO: Sent leave room event
     }
     
 }

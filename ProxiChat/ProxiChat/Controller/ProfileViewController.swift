@@ -14,6 +14,7 @@ import SVProgressHUD
 import SwiftyJSON
 
 /* TODO / BUGS
+ - BUG: Problem with loading up radius sometimes - radius = 0? is it when UserDefaults is gone?
  - TODO: MAKE EVERYTHING RESPONSIVE
  - make sure the picture is actually cut - can still click on the rectangular part, even thought it's circular
  - maybe add conversions to other distance units?
