@@ -87,7 +87,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
-        // If the user is not connected, then connect to the server and request location usage.
+        // If the user is not already connected, then connect to the server and request location usage.
         if !UserData.connected {
             // TODO: Add reconnecting later - socket.reconnect()
             socket?.connect(timeoutAfter: 5.0, withHandler: {
