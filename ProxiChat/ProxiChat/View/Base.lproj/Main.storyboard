@@ -1223,7 +1223,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ABx-JH-PiH" userLabel="Message View">
-                                <rect key="frame" x="0.0" y="75" width="414" height="661"/>
+                                <rect key="frame" x="0.0" y="70.333333333333314" width="414" height="666"/>
                                 <subviews>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="message" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="wl2-tX-nQa">
                                         <rect key="frame" x="0.0" y="0.0" width="414" height="611"/>
@@ -1233,7 +1233,7 @@
                                         </constraints>
                                     </tableView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rrK-X6-rsR" userLabel="Typing View">
-                                        <rect key="frame" x="0.0" y="605" width="414" height="56"/>
+                                        <rect key="frame" x="0.0" y="610" width="414" height="56"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ku6-Zw-MCO">
                                                 <rect key="frame" x="370" y="16" width="36" height="30"/>
@@ -1272,14 +1272,14 @@
                                     <constraint firstItem="wl2-tX-nQa" firstAttribute="leading" secondItem="ABx-JH-PiH" secondAttribute="leading" id="1ai-kw-5Qz"/>
                                     <constraint firstItem="rrK-X6-rsR" firstAttribute="leading" secondItem="ABx-JH-PiH" secondAttribute="leading" id="Apu-ao-lYs"/>
                                     <constraint firstAttribute="trailing" secondItem="rrK-X6-rsR" secondAttribute="trailing" id="JN0-Ro-fd9"/>
-                                    <constraint firstAttribute="bottom" secondItem="wl2-tX-nQa" secondAttribute="bottom" constant="50" id="OuV-gG-dwy"/>
+                                    <constraint firstItem="wl2-tX-nQa" firstAttribute="top" secondItem="ABx-JH-PiH" secondAttribute="top" id="bPl-JF-5Eu"/>
                                     <constraint firstAttribute="bottom" secondItem="rrK-X6-rsR" secondAttribute="bottom" id="s5F-a1-puG"/>
                                     <constraint firstAttribute="trailing" secondItem="wl2-tX-nQa" secondAttribute="trailing" id="z5c-VO-Bui"/>
-                                    <constraint firstAttribute="height" constant="661" id="ztF-pY-k2n"/>
+                                    <constraint firstAttribute="height" constant="666" id="ztF-pY-k2n"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Cc-uW-389" userLabel="Info View">
-                                <rect key="frame" x="0.0" y="20" width="414" height="50"/>
+                                <rect key="frame" x="0.0" y="20.333333333333329" width="414" height="50"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="q3l-1s-3Mj">
                                         <rect key="frame" x="16" y="7" width="44" height="36"/>
@@ -1327,27 +1327,27 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YCA-5B-Sqm" userLabel="Cover Status View">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="20"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="20.333333333333332"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="20" id="k23-GB-MeD"/>
                                 </constraints>
                             </view>
                             <view userInteractionEnabled="NO" alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="neF-31-gEL" userLabel="Dim View">
-                                <rect key="frame" x="0.0" y="20" width="414" height="716"/>
+                                <rect key="frame" x="0.0" y="20.333333333333314" width="414" height="715.66666666666674"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="14U-0t-egh" userLabel="Group Info View">
-                                <rect key="frame" x="138" y="20" width="276" height="716"/>
+                                <rect key="frame" x="138" y="20.333333333333314" width="276" height="715.66666666666674"/>
                                 <subviews>
                                     <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Q4K-hM-voZ">
-                                        <rect key="frame" x="0.0" y="0.0" width="276" height="716"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="276" height="715.66666666666663"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wBh-pS-DR4" userLabel="Content View">
                                                 <rect key="frame" x="0.0" y="0.0" width="276" height="717"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vpt-Dt-tAv" userLabel="Title Label">
-                                                        <rect key="frame" x="8" y="16" width="260" height="21"/>
+                                                        <rect key="frame" x="8" y="16.000000000000004" width="260" height="20.999999999999996"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="21" id="djG-2J-nZR"/>
                                                         </constraints>
@@ -1426,7 +1426,6 @@
                             <constraint firstItem="6Cc-uW-389" firstAttribute="top" secondItem="b8s-d9-G46" secondAttribute="top" id="Ihp-W1-dZR"/>
                             <constraint firstAttribute="bottom" secondItem="neF-31-gEL" secondAttribute="bottom" id="MZm-uW-I9b"/>
                             <constraint firstItem="YCA-5B-Sqm" firstAttribute="leading" secondItem="b8s-d9-G46" secondAttribute="leading" id="UVr-Sp-P5Q"/>
-                            <constraint firstAttribute="bottom" secondItem="ABx-JH-PiH" secondAttribute="bottom" id="XSZ-ie-q5z"/>
                             <constraint firstAttribute="trailing" secondItem="ABx-JH-PiH" secondAttribute="trailing" id="ZTk-xq-0Cc"/>
                             <constraint firstItem="YCA-5B-Sqm" firstAttribute="top" secondItem="Sk0-ar-0jc" secondAttribute="top" id="ZhZ-Mm-hff"/>
                             <constraint firstItem="b8s-d9-G46" firstAttribute="bottom" secondItem="14U-0t-egh" secondAttribute="bottom" id="a2F-W3-8Lw"/>
@@ -1435,6 +1434,7 @@
                             <constraint firstItem="neF-31-gEL" firstAttribute="leading" secondItem="Sk0-ar-0jc" secondAttribute="leading" id="ear-0E-UnS"/>
                             <constraint firstItem="b8s-d9-G46" firstAttribute="trailing" secondItem="YCA-5B-Sqm" secondAttribute="trailing" id="m6i-Rt-ORY"/>
                             <constraint firstItem="neF-31-gEL" firstAttribute="top" secondItem="b8s-d9-G46" secondAttribute="top" id="pu5-cG-cJV"/>
+                            <constraint firstItem="ABx-JH-PiH" firstAttribute="top" secondItem="6Cc-uW-389" secondAttribute="bottom" id="zed-A8-B2c"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="b8s-d9-G46"/>
                     </view>
@@ -1452,16 +1452,13 @@
                         <outlet property="infoView" destination="6Cc-uW-389" id="6kW-oa-Ee8"/>
                         <outlet property="infoViewHeight" destination="2AJ-Eq-59s" id="zKY-hX-Uxh"/>
                         <outlet property="messageTableView" destination="wl2-tX-nQa" id="Qel-7e-NzX"/>
-                        <outlet property="messageTableViewBottomConstraint" destination="OuV-gG-dwy" id="NmV-eJ-QyE"/>
                         <outlet property="messageTableViewHeight" destination="R8U-KC-pgA" id="Kj3-zq-66x"/>
                         <outlet property="messageTextView" destination="fVI-eD-UYN" id="hN0-G4-oBU"/>
                         <outlet property="messageView" destination="ABx-JH-PiH" id="c0I-ez-FIg"/>
-                        <outlet property="messageViewBottomConstraint" destination="XSZ-ie-q5z" id="83E-Z8-Qif"/>
                         <outlet property="messageViewHeight" destination="ztF-pY-k2n" id="hxd-dp-4Zg"/>
                         <outlet property="sendButton" destination="Ku6-Zw-MCO" id="9bj-M7-CRG"/>
                         <outlet property="titleLabel" destination="vpt-Dt-tAv" id="3Zv-9u-rYG"/>
                         <outlet property="typingView" destination="rrK-X6-rsR" id="mXf-Nb-6WM"/>
-                        <outlet property="typingViewBottomConstraint" destination="s5F-a1-puG" id="oVG-9A-tki"/>
                         <outlet property="typingViewHeight" destination="OzR-jO-2hY" id="tvI-6m-GYs"/>
                         <segue destination="G5J-Lj-dvA" kind="show" identifier="goBackToGroups" animates="NO" id="OD0-pG-fXq"/>
                         <segue destination="hE2-Tj-l73" kind="show" identifier="goBackToStarredGroups" animates="NO" id="Q67-rq-eHC"/>

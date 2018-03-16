@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.2",
-    "nodemon": "^1.17.1",
+    "nodemon": "^1.17.2",
     "pg": "^7.4.0",
     "shortid": "^2.2.8",
     "socket.io": "^2.0.4"

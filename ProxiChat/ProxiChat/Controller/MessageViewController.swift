@@ -58,7 +58,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
     
     // Storing initial values for responsive layout
-    var typingHeight: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
+    var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
     var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
     var heightMessageView: CGFloat = 0 // Starting height of message view
@@ -77,21 +77,18 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var coverStatusViewHeight: NSLayoutConstraint!
     
     @IBOutlet var messageTableView: UITableView!
-    @IBOutlet var messageTableViewBottomConstraint: NSLayoutConstraint! // Same as typing view height
     @IBOutlet var messageTableViewHeight: NSLayoutConstraint!
     
     @IBOutlet var messageTextView: UITextView!
     
     @IBOutlet var messageView: UIView!
     @IBOutlet var messageViewHeight: NSLayoutConstraint!
-    @IBOutlet var messageViewBottomConstraint: NSLayoutConstraint! // Changed only when the table view content is overflowing
     
     @IBOutlet var infoView: UIView!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
     
     @IBOutlet var typingView: UIView!
     @IBOutlet var typingViewHeight: NSLayoutConstraint!
-    @IBOutlet var typingViewBottomConstraint: NSLayoutConstraint! // Changed only when table view content is not overflowing
     
     @IBOutlet var groupInfoViewWidth: NSLayoutConstraint!
     @IBOutlet var groupInfoViewRightConstraint: NSLayoutConstraint!
@@ -181,12 +178,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 
                 // TODO: Table view height and bottom constraint responsiveness when contentSize of textView changes
                 UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
-                    // If no overflow, then only move the table view up accordingly
+                    // If overflow, then only move the table view up accordingly
                     if self.messageTableViewHeight.constant < self.messageTableView.contentSize.height {
-                        self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + CGFloat(changeInHeight)
+                        self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - changeInHeight
                     }
                     
-                    self.typingViewHeight.constant = self.typingViewHeight.constant + CGFloat(changeInHeight)
+                    self.typingViewHeight.constant = self.typingViewHeight.constant + changeInHeight
                     self.view.layoutIfNeeded()
                 })
                 
@@ -312,14 +309,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 "picture": ""
                 ])
             
-            // TODO: BUG - when type text, hide keyboard, then send, this runs
-            messageTextView.becomeFirstResponder()
-            
             // Reset
             messageTextView.isEditable = true
             sendButton.isEnabled = true
             messageTextView.text = placeholder
             messageTextView.textColor = UIColor.lightGray
+            
+            // TODO: BUG - when type text, hide keyboard, then send, this runs
+            messageTextView.becomeFirstResponder()
+            
             lastLines = 1
             lastContentHeight = startingContentHeight
             contentNotSent.removeValue(forKey: groupInformation.id)
@@ -453,13 +451,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // Get keyboard height
             let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
             
-            // Get the number of lines to calculate the height of the typing view
-            var numLines = floorf(Float(messageTextView.contentSize.height / (messageTextView.font?.lineHeight)!))
-            if Int(numLines) >= maxLines { // Don't go over the max number of lines
-                numLines = Float(maxLines)
-            }
-            // Height to change starting from the default 1 line text view height - in case there are multiple lines of text
-            let changeInHeight = CGFloat(floorf(Float((messageTextView.font?.lineHeight)!)) * (numLines - 1))
+            let changeInHeight = getHeightChange()
             
             UIView.animate(withDuration: duration) {
                 /*
@@ -473,27 +465,24 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     Case 2 - Shift up table view and keyboard TOGETHER (scrolling even when keyboard is hidden)
                     Case 3 - Like 2, but NOT together (keyboard showing will block messages)
                  */
+                
+                // Empty space
                 let leftOverSpace = self.messageTableViewHeight.constant - self.messageTableView.contentSize.height
                 
                 // If content isn't overflowing
                 if leftOverSpace > 0 {
-                    if leftOverSpace < keyboardHeight + self.typingHeight {
-                        // TODO: BUG - This isn't accurate - it matches up, but sometimes the table view shifts down???
-                        // Check hello!!! 4:28 VS. greetings: 4:28 again
-                        self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + (keyboardHeight - leftOverSpace)
-                        self.messageViewHeight.constant = self.messageViewHeight.constant - (keyboardHeight - leftOverSpace)
-                        self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - (keyboardHeight - leftOverSpace)
-                        self.typingViewBottomConstraint.constant = keyboardHeight
+                    if leftOverSpace < keyboardHeight + self.heightTypingView + changeInHeight {
+                        let diffY = keyboardHeight + self.heightTypingView + changeInHeight - leftOverSpace
+                        self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight
+                        self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - keyboardHeight
+                        self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y + diffY
                     } else {
-                        self.typingViewBottomConstraint.constant = keyboardHeight
+                        self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight
                     }
                 } else {
-                    // BUG: Message view / table view isn't shifting up at all?
-                    print("overflowing L487")
-                    self.messageViewBottomConstraint.constant = keyboardHeight
-                    self.messageViewHeight.constant = self.messageViewHeight.constant - changeInHeight - keyboardHeight
-                    self.messageTableViewBottomConstraint.constant = self.messageTableViewBottomConstraint.constant + changeInHeight
-                    self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - changeInHeight - keyboardHeight
+                    self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y + keyboardHeight + changeInHeight
+                    self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight - changeInHeight
+                    self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - keyboardHeight - changeInHeight
                 }
                 
                 self.typingViewHeight.constant = self.typingViewHeight.constant + changeInHeight
@@ -505,17 +494,18 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
         if let userInfo = aNotification.userInfo {
+            let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
+            let changeInHeight = getHeightChange()
+            
             // Only move views down if a message is not sent
             if !isMessageSent {
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
                 UIView.animate(withDuration: duration) {
                     // Reset to starting values
-                    self.messageViewBottomConstraint.constant = 0
-                    self.typingViewBottomConstraint.constant = 0
                     self.messageViewHeight.constant = self.heightMessageView
                     self.messageTableViewHeight.constant = self.heightMessageTableView
-                    self.typingViewHeight.constant = self.typingHeight
-                    self.messageTableViewBottomConstraint.constant = self.typingViewHeight.constant
+                    self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y - keyboardHeight - changeInHeight
+                    self.typingViewHeight.constant = self.heightTypingView
                     self.view.layoutIfNeeded()
                 }
             }
@@ -563,13 +553,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Responsive layout
         coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
         typingViewHeight.constant = startingContentHeight + paddingTextView * 2 // Relative to text view starting content size + 10 padding top + 10 padding bottom
-        messageTableViewBottomConstraint.constant = typingViewHeight.constant
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         messageViewHeight.constant = Dimensions.safeAreaHeight - infoViewHeight.constant
         messageTableViewHeight.constant = messageViewHeight.constant - typingViewHeight.constant
         
         // Store starter dimensions / layout values
-        typingHeight = typingViewHeight.constant
+        heightTypingView = typingViewHeight.constant
         heightMessageView = messageViewHeight.constant
         heightMessageTableView = messageTableViewHeight.constant
         
@@ -631,5 +620,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @objc func tableViewTapped() {
         messageTextView.endEditing(true)
+    }
+    
+    /// Gets the change in height of the text view relative to one line of text.
+    func getHeightChange() -> CGFloat {
+        // Get the number of lines to calculate the height of the typing view
+        var numLines = floorf(Float(messageTextView.contentSize.height / (messageTextView.font?.lineHeight)!))
+        if Int(numLines) >= maxLines { // Don't go over the max number of lines
+            numLines = Float(maxLines)
+        }
+        // Height to change starting from the default 1 line text view height - in case there are multiple lines of text
+        let changeInHeight = CGFloat(floorf(Float((messageTextView.font?.lineHeight)!)) * (numLines - 1))
+        return changeInHeight
     }
 }
