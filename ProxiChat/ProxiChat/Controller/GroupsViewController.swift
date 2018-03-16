@@ -95,7 +95,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 // TODO: Add UIAlertController to reconnect and show failure.
             })
             socket?.joinNamespace("/proxichat_namespace")
-            locationManager.requestWhenInUseAuthorization()
         } else {
             // Update last saved location here
             updateTableWithGroups(LocalGroupsData.data)
@@ -127,6 +126,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.picture = String(describing: user["picture"]!)
                 UserData.radius = user["radius"] as! Int
                 UserData.username = String(describing: user["username"]!)
+                
+                // Only get location AFTER the user data is updated
+                self.locationManager.requestWhenInUseAuthorization()
             } else {
                 SVProgressHUD.dismiss()
                 SVProgressHUD.showError(withStatus: error_msg)
