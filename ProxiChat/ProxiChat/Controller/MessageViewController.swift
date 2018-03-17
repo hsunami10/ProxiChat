@@ -20,17 +20,12 @@ import SwiftDate
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send leave group event
  
- - have a function that handles checking the distance between:
-    1 - bottom of content of the messageTableView
-    2 - top of the typingView
- - to determine whether or not the table view height and bottom constraint needs to change
- 
  BUGS
- - fix L313
- - fix L491
+ - search CONTENT_OFFSET_BUG
+ - scrolling changes contentOffset
+ - look at print outs and fix this problem - setting contentOffset after messages are sent, and keyboard is hidden
+ - sending a message when keyboard is down vs up is different - down is more smooth, up is more rough?
  - fix moving table view etc when contentSize changes
- - on keyboard show & contentSize changing, when table view is "shifted up", can't scroll to top messages
-    - maybe shift up by "x" and shrink table view height by "x"?
  - when a message is sent, the keyboard doesn't reset back to default size (startingContentHeight)
     - shift uitableview accordingly to this shrink
  - table view scrolls down when going from scrolling table view to non scrolling - text view stays on scroll to bottom, so either scroll to top or disable scroll to bottom
@@ -57,9 +52,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var lastContentHeight: CGFloat = 0
     var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
     var firstLoad = true
+    var isScrollBottom = false
     
     // Storing values for responsive layout
-    var offsetDiff: CGFloat = 0 // Keeps track of how much the contentOffset.y needs to be shifted by to reset
+    var oldContentOffset: CGFloat = 0
     var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
     var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
@@ -76,7 +72,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var sendButton: UIButton!
     @IBOutlet var dimView: UIView!
-    @IBOutlet var coverStatusViewHeight: NSLayoutConstraint!
     
     @IBOutlet var messageTableView: UITableView!
     @IBOutlet var messageTableViewHeight: NSLayoutConstraint!
@@ -142,7 +137,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // TODO: Paginate messages
         socket?.emit("get_messages_on_start", groupInformation.id)
         configureTableView()
-
+        
         initializeLayout()
     }
     
@@ -167,19 +162,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         })
         // Realtime receiving messages
         socket?.on("receive_message") { (data, ack) in
-            let messageObj = Message()
-            
-            messageObj.author = JSON(data[0])["author"].stringValue
-            messageObj.content = JSON(data[0])["content"].stringValue
-            messageObj.dateSent = JSON(data[0])["date_sent"].stringValue
-            messageObj.id = JSON(data[0])["id"].stringValue
-            messageObj.groupID = JSON(data[0])["group_id"].stringValue
-            messageObj.picture = JSON(data[0])["picture"].stringValue
-            
+            let messageObj = self.createMessageObj(JSON(data[0])["author"].stringValue, JSON(data[0])["content"].stringValue, JSON(data[0])["date_sent"].stringValue, JSON(data[0])["id"].stringValue, JSON(data[0])["group_id"].stringValue, JSON(data[0])["picture"].stringValue)
             self.messageArray.append(messageObj)
             
-            self.configureTableView()
-            self.messageTableView.reloadData()
+            self.insertMessage()
             
             print("")
             print("receive message height of row")
@@ -192,9 +178,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             print("receive message contentsize height: ", String(describing: self.messageTableView.contentSize.height))
             print("")
             
-            // If you are the sender
-            // TODO: If you're at the bottom, scroll
-            if messageObj.author == UserData.username {
+            // If you're at the bottom, scroll (stay at bottom)
+            if self.isScrollBottom {
                 self.scrollToBottom()
             }
             
@@ -212,15 +197,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             if success {
                 for message in messages {
-                    let messageObj = Message()
-                    
-                    messageObj.author = message["author"].stringValue
-                    messageObj.content = message["content"].stringValue
-                    messageObj.dateSent = message["date_sent"].stringValue
-                    messageObj.groupID = message["group_id"].stringValue
-                    messageObj.id = message["id"].stringValue
-                    messageObj.picture = message["picture"].stringValue
-                    
+                    let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
                     self.messageArray.append(messageObj)
                 }
                 self.configureTableView()
@@ -281,17 +258,26 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             messageTextView.isEditable = false
             sendButton.isEnabled = false
             
+            print("")
             print("contentOffsetY - when send button is pressed: ", String(describing: messageTableView.contentOffset.y))
             
+            let mID = String(describing: UUID())
+            let date = String(describing: Date())
             // TODO: *** Get picture ***
             socket?.emit("send_message", [
                 "username": UserData.username,
                 "content": messageTextView.text!,
-                "date_sent": String(describing: Date()),
+                "date_sent": date,
                 "group_id": groupInformation.id,
-                "id": String(describing: UUID()),
+                "id": mID,
                 "picture": ""
                 ])
+            
+            // Sent message to yourself
+            let messageObj = createMessageObj(UserData.username, messageTextView.text!, date, groupInformation.id, mID, "")
+            messageArray.append(messageObj)
+            insertMessage()
+            scrollToBottom()
             
             // Reset
             messageTextView.isEditable = true
@@ -306,6 +292,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             lastLines = 1
             lastContentHeight = startingContentHeight
             contentNotSent.removeValue(forKey: groupInformation.id)
+            
+            // TODO: BUG - why is the difference 400+ points? - maybe contentOffset is recalculated according to new tableview height?
+            // CONTENT_OFFSET_BUG
+            print("contentOffsetY - right after message was added: ", String(describing: messageTableView.contentOffset.y))
+            print("")
         }
     }
     
@@ -318,11 +309,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    /*
-     2 types of cells:
-        - Message
-        - Group Info
-    */
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if tableView.restorationIdentifier! == "message" {
             // TODO: Add date later
@@ -389,22 +375,20 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         if(needToScroll()) {
             let path = NSIndexPath(row: messageArray.count-1, section: 0)
             messageTableView.scrollToRow(at: path as IndexPath, at: .bottom, animated: !firstLoad)
-        } else {
-            // TODO: "Scroll" to top
-            // TODO: BUG - when switching from need to scroll to don't need to scroll message views
-            // TODO: Overscrolls only with messages that don't need to move when the keyboard is shown
-            messageTableView.scrollRectToVisible(CGRect.init(x: 0, y: 0, width: 1, height: 1), animated: false)
         }
         firstLoad = false
     }
-    
-    /// Is the table view scrolled to the bottom or no?
-    // NOTE: This doesn't work
-    func didScrollToBottom() -> Bool {
-        let distanceFromBottom = messageTableView.contentSize.height - messageTableView.contentOffset.y
-        return distanceFromBottom <= messageTableView.frame.size.height
+    // Check whether scrolled to bottom or not
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let height = scrollView.frame.size.height
+        let contentYoffset = scrollView.contentOffset.y
+        let distanceFromBottom = scrollView.contentSize.height - contentYoffset
+        if distanceFromBottom < height {
+            isScrollBottom = true
+        } else {
+            isScrollBottom = false
+        }
     }
-    
     /// Do you need to scroll or no?
     func needToScroll() -> Bool {
         return messageTableView.contentSize.height > messageTableView.frame.size.height
@@ -436,6 +420,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 
                 print("\ncenter of table view - before keyboard shown: ", String(describing: messageTableView.center.y))
                 print("contentOffsetY - before keyboard shown: ", String(describing: messageTableView.contentOffset.y))
+                oldContentOffset = messageTableView.contentOffset.y
                 
                 // Get keyboard animation duration
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
@@ -506,6 +491,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     self.typingViewHeight.constant = self.heightTypingView
                     self.view.layoutIfNeeded()
                 }
+                
+                print("contentOffsetY - after keyboard hide: ", String(describing: self.messageTableView.contentOffset.y))
             }
         }
     }
@@ -589,7 +576,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         // Responsive layout
-        coverStatusViewHeight.constant = UIApplication.shared.statusBarFrame.height
         typingViewHeight.constant = startingContentHeight + paddingTextView * 2 // Relative to text view starting content size + 10 padding top + 10 padding bottom
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         messageViewHeight.constant = Dimensions.safeAreaHeight - infoViewHeight.constant
@@ -670,5 +656,41 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Height to change starting from the default 1 line text view height - in case there are multiple lines of text
         let changeInHeight = CGFloat(floorf(Float((messageTextView.font?.lineHeight)!)) * (numLines - 1))
         return changeInHeight
+    }
+    
+    /**
+     Creates a message object with the specified properties and returns it.
+     
+     - returns:
+        A message object with the specified properties.
+    
+     - parameters:
+        - author: The author of the message.
+        - content: The content of the message.
+        - dateSent: The date the message was sent.
+        - groupID: The id of the group this message was sent in.
+        - id: The UUID of this message (unique).
+        - picture: The profile picture of the author.
+     */
+    func createMessageObj(_ author: String, _ content: String, _ dateSent: String, _ groupID: String, _ id: String, _ picture: String) -> Message {
+        let messageObj = Message()
+        messageObj.author = author
+        messageObj.content = content
+        messageObj.dateSent = dateSent
+        messageObj.groupID = groupID
+        messageObj.id = id
+        messageObj.picture = picture
+        return messageObj
+    }
+    
+    /// Adds a row to the messageTableView at the bottom.
+    func insertMessage() {
+        configureTableView()
+        let indexPath = IndexPath(row: messageArray.count-1, section: 0)
+        UIView.setAnimationsEnabled(false)
+        messageTableView.beginUpdates()
+        messageTableView.insertRows(at: [indexPath], with: UITableViewRowAnimation.none)
+        messageTableView.endUpdates()
+        UIView.setAnimationsEnabled(true)
     }
 }

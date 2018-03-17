@@ -233,14 +233,14 @@ proxichat_nsp.on('connection', socket => {
   // NOTE: Sending messages
   socket.on('send_message', data => {
     // Send to sender first, then send to users in room
-    socket.emit('receive_message', {
-      author: data.username,
-      content: data.content,
-      date_sent: data.date_sent,
-      id: data.id,
-      picture: data.picture,
-      group_id: data.group_id
-    })
+    // socket.emit('receive_message', {
+    //   author: data.username,
+    //   content: data.content,
+    //   date_sent: data.date_sent,
+    //   id: data.id,
+    //   picture: data.picture,
+    //   group_id: data.group_id
+    // })
     socket.to('room-' + data.group_id).emit('receive_message', {
       author: data.username,
       content: data.content,
@@ -253,6 +253,8 @@ proxichat_nsp.on('connection', socket => {
       if (err) {
         // TODO: Handle so it doesn't crash
         console.log(err);
+      } else {
+        // TODO: Send confirmation that it has been successfully sent
       }
     })
   })
