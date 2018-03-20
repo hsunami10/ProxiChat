@@ -21,7 +21,9 @@ import SwiftDate
  - when terminating app, request from database, if no results, then send leave group event
  
  BUGS
- - search CONTENT_OFFSET_BUG
+ - index out of range in tableView cellForRowAt when going back to groups with keyboard up, AFTER sending message - FIX ASAP
+    - search BREAKPOINT
+ - search CONTENT_OFFSET_BUG - sending a message when keyboard is out scrolls faster than not - problem could be contentOffset set on keyboard show
  - scrolling changes contentOffset
  - look at print outs and fix this problem - setting contentOffset after messages are sent, and keyboard is hidden
  - sending a message when keyboard is down vs up is different - down is more smooth, up is more rough?
@@ -163,29 +165,14 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Realtime receiving messages
         socket?.on("receive_message") { (data, ack) in
             let messageObj = self.createMessageObj(JSON(data[0])["author"].stringValue, JSON(data[0])["content"].stringValue, JSON(data[0])["date_sent"].stringValue, JSON(data[0])["id"].stringValue, JSON(data[0])["group_id"].stringValue, JSON(data[0])["picture"].stringValue)
+            
             self.messageArray.append(messageObj)
-            
             self.insertMessage()
-            
-            print("")
-            print("receive message height of row")
-            let indexPath = IndexPath(row: self.messageArray.count-1, section: 0)
-            let frame = self.messageTableView.rectForRow(at: indexPath)
-            print(frame.height)
-            print("")
-            
-            print("")
-            print("receive message contentsize height: ", String(describing: self.messageTableView.contentSize.height))
-            print("")
             
             // If you're at the bottom, scroll (stay at bottom)
             if self.isScrollBottom {
                 self.scrollToBottom()
             }
-            
-            print("\ncontentOffsetY in eventHandlers(): ", String(describing: self.messageTableView.contentOffset.y))
-            print("why is this value a lot larger?")
-            print("NOTE - look at: height of the table view is smaller, distance between centers, \n")
         }
         
         // Get messages from database on join room
@@ -201,6 +188,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     self.messageArray.append(messageObj)
                 }
                 self.configureTableView()
+                // TODO: BREAKPOINT
                 self.messageTableView.reloadData()
                 
                 print("")
@@ -234,6 +222,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         default:
             break
         }
+        
+        // Reset everything
+        isMessageSent = false
+        messageTextView.resignFirstResponder()
         
         socket?.emit("leave_room", [
             "group_id": groupInformation.id,
@@ -313,7 +305,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         if tableView.restorationIdentifier! == "message" {
             // TODO: Add date later
             let cell = messageTableView.dequeueReusableCell(withIdentifier: "messageCell", for: indexPath) as! MessageCell
-            cell.content.text = messageArray[indexPath.row].content // TODO: BUG - happens rarely (index out of bounds?)
+            cell.content.text = messageArray[indexPath.row].content // TODO: BUG - (index out of range?)
             cell.username.text = messageArray[indexPath.row].author
             
             if messageArray[indexPath.row].picture == "" {
@@ -457,9 +449,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                             self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight
                         }
                     } else {
-                        self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y + keyboardHeight + changeInHeight
                         self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight - changeInHeight
                         self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - keyboardHeight - changeInHeight
+                        self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y + keyboardHeight + changeInHeight
                     }
                     
                     self.typingViewHeight.constant = self.typingViewHeight.constant + changeInHeight
