@@ -22,11 +22,6 @@ import SwiftDate
  - contentoffset and contentinset - https://fizzbuzzer.com/understanding-the-contentoffset-and-contentinset-properties-of-the-uiscrollview-class/
  
  BUGS
- - index out of range in tableView cellForRowAt when going back to groups with keyboard up, AFTER sending message - FIX ASAP
-    - search BREAKPOINT
- - search CONTENT_OFFSET_BUG - sending a message when keyboard is out scrolls faster than not - problem could be contentOffset set on keyboard show
-    - maybe do something with contentInset?
-    - https://innovation.vivint.com/maintaining-content-offset-when-the-size-of-your-uiscrollview-changes-554d7742885a
  - scrolling changes contentOffset
  - look at print outs and fix this problem - setting contentOffset after messages are sent, and keyboard is hidden
  - sending a message when keyboard is down vs up is different - down is more smooth, up is more rough?
@@ -60,7 +55,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var isScrollBottom = false
     
     // Storing values for responsive layout
-    var oldContentOffset: CGFloat = 0
     var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
     var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
@@ -196,10 +190,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 self.messageTableView.reloadData()
                 
-                print("")
-                print("on load contentsize height: ", String(describing: self.messageTableView.contentSize.height))
-                print("")
-                
                 // Join room after you get messages
                 self.socket?.emit("join_room", [
                     "group_id": self.groupInformation.id,
@@ -255,9 +245,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             messageTextView.isEditable = false
             sendButton.isEnabled = false
             
-            print("")
-            print("contentOffsetY - when send button is pressed: ", String(describing: messageTableView.contentOffset.y))
-            
             let mID = String(describing: UUID())
             let date = String(describing: Date())
             // TODO: *** Get picture ***
@@ -273,16 +260,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // Sent message to yourself
             let messageObj = createMessageObj(UserData.username, messageTextView.text!, date, groupInformation.id, mID, "")
             messageArray.append(messageObj)
-//            configureTableView()
-//            messageTableView.reloadData()
             
-            insertMessage()
-            
-            print("contentOffsetY - right after message was added: ", String(describing: messageTableView.contentOffset.y))
-            
-            messageTableView.scrollToBottom(messageArray, true)
-            
-            print("contentOffsetY - right after scroll: ", String(describing: messageTableView.contentOffset.y))
+            DispatchQueue.main.async {
+                self.insertMessage()
+                self.messageTableView.scrollToBottom(self.messageArray, true)
+            }
             
             // Reset
             messageTextView.isEditable = true
@@ -297,10 +279,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             lastLines = 1
             lastContentHeight = startingContentHeight
             contentNotSent.removeValue(forKey: groupInformation.id)
-            
-            // TODO: BUG - why is the difference 400+ points? - maybe contentOffset is recalculated according to new tableview height?
-            // CONTENT_OFFSET_BUG
-            print("")
         }
     }
     
@@ -419,10 +397,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // Only show keyboard if it's NOT shown
             if messageViewHeight.constant == heightMessageView {
                 
-                print("\ncenter of table view - before keyboard shown: ", String(describing: messageTableView.center.y))
-                print("contentOffsetY - before keyboard shown: ", String(describing: messageTableView.contentOffset.y))
-                oldContentOffset = messageTableView.contentOffset.y
-                
                 // Get keyboard animation duration
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
                 
@@ -466,11 +440,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     self.typingViewHeight.constant += changeInHeight
                     self.view.layoutIfNeeded()
                 }
-                print("contentOffsetY - after keyboard shown (adding keyboard height): ", String(describing: messageTableView.contentOffset.y))
             }
-            
-            print("center of table view - after keyboard shown: ", String(describing: messageTableView.center.y))
-            print("")
             isMessageSent = false
         }
     }
@@ -491,8 +461,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     self.typingViewHeight.constant = self.heightTypingView
                     self.view.layoutIfNeeded()
                 }
-                
-                print("contentOffsetY - after keyboard hide: ", String(describing: self.messageTableView.contentOffset.y))
             }
         }
     }
