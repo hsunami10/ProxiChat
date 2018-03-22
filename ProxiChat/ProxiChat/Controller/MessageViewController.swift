@@ -19,11 +19,14 @@ import SwiftDate
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send leave group event
+ - contentoffset and contentinset - https://fizzbuzzer.com/understanding-the-contentoffset-and-contentinset-properties-of-the-uiscrollview-class/
  
  BUGS
  - index out of range in tableView cellForRowAt when going back to groups with keyboard up, AFTER sending message - FIX ASAP
     - search BREAKPOINT
  - search CONTENT_OFFSET_BUG - sending a message when keyboard is out scrolls faster than not - problem could be contentOffset set on keyboard show
+    - maybe do something with contentInset?
+    - https://innovation.vivint.com/maintaining-content-offset-when-the-size-of-your-uiscrollview-changes-554d7742885a
  - scrolling changes contentOffset
  - look at print outs and fix this problem - setting contentOffset after messages are sent, and keyboard is hidden
  - sending a message when keyboard is down vs up is different - down is more smooth, up is more rough?
@@ -63,6 +66,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
     var heightMessageView: CGFloat = 0 // Starting height of message view
     var heightMessageTableView: CGFloat = 0 // Starting height of message table view
+    var cellHeightDict: [Int : CGFloat] = [:] // Stores actual cell heights
     
     // Constants
     let maxLines = 5 // 5 lines - max number of text view lines
@@ -138,9 +142,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Get messages - on response, join room
         // TODO: Paginate messages
         socket?.emit("get_messages_on_start", groupInformation.id)
-        configureTableView()
         
         initializeLayout()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        messageTableView.scrollToBottom(messageArray, false)
     }
     
     deinit {
@@ -170,8 +177,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.insertMessage()
             
             // If you're at the bottom, scroll (stay at bottom)
-            if self.isScrollBottom {
-                self.scrollToBottom()
+            if self.messageTableView.isAtBottom {
+                self.messageTableView.scrollToBottom(self.messageArray, true)
             }
         }
         
@@ -187,8 +194,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
                     self.messageArray.append(messageObj)
                 }
-                self.configureTableView()
-                // TODO: BREAKPOINT
                 self.messageTableView.reloadData()
                 
                 print("")
@@ -200,7 +205,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     "group_id": self.groupInformation.id,
                     "username": UserData.username
                     ])
-                self.scrollToBottom()
+                self.messageTableView.scrollToBottom(self.messageArray, false)
             } else {
                 SVProgressHUD.showError(withStatus: error_msg)
             }
@@ -268,8 +273,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // Sent message to yourself
             let messageObj = createMessageObj(UserData.username, messageTextView.text!, date, groupInformation.id, mID, "")
             messageArray.append(messageObj)
+//            configureTableView()
+//            messageTableView.reloadData()
+            
             insertMessage()
-            scrollToBottom()
+            
+            print("contentOffsetY - right after message was added: ", String(describing: messageTableView.contentOffset.y))
+            
+            messageTableView.scrollToBottom(messageArray, true)
+            
+            print("contentOffsetY - right after scroll: ", String(describing: messageTableView.contentOffset.y))
             
             // Reset
             messageTextView.isEditable = true
@@ -287,12 +300,31 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             // TODO: BUG - why is the difference 400+ points? - maybe contentOffset is recalculated according to new tableview height?
             // CONTENT_OFFSET_BUG
-            print("contentOffsetY - right after message was added: ", String(describing: messageTableView.contentOffset.y))
             print("")
         }
     }
     
     // MARK: UITableView Delegate and DataSource Methods
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cellHeightDict[indexPath.row] = cell.frame.size.height
+    }
+
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        if let height = cellHeightDict[indexPath.row] {
+            return height
+        } else {
+            return UITableViewAutomaticDimension
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if let height = cellHeightDict[indexPath.row] {
+            return height
+        } else {
+            return UITableViewAutomaticDimension
+        }
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if tableView.restorationIdentifier == "message" {
             return messageArray.count
@@ -302,7 +334,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if tableView.restorationIdentifier! == "message" {
+        if tableView.restorationIdentifier! == "message" && indexPath.row < messageArray.count {
             // TODO: Add date later
             let cell = messageTableView.dequeueReusableCell(withIdentifier: "messageCell", for: indexPath) as! MessageCell
             cell.content.text = messageArray[indexPath.row].content // TODO: BUG - (index out of range?)
@@ -361,38 +393,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Scrolling Methods
-    
-    /// Handles scrolling to the bottom of the message table view.
-    func scrollToBottom() {
-        if(needToScroll()) {
-            let path = NSIndexPath(row: messageArray.count-1, section: 0)
-            messageTableView.scrollToRow(at: path as IndexPath, at: .bottom, animated: !firstLoad)
-        }
-        firstLoad = false
-    }
     // Check whether scrolled to bottom or not
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let height = scrollView.frame.size.height
-        let contentYoffset = scrollView.contentOffset.y
-        let distanceFromBottom = scrollView.contentSize.height - contentYoffset
-        if distanceFromBottom < height {
-            isScrollBottom = true
-        } else {
-            isScrollBottom = false
-        }
-    }
-    /// Do you need to scroll or no?
-    func needToScroll() -> Bool {
-        return messageTableView.contentSize.height > messageTableView.frame.size.height
+        isScrollBottom = scrollView.isAtBottom
     }
     
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group: Group) {
-        if !UIView.areAnimationsEnabled {
-            UIView.setAnimationsEnabled(true)
-        }
+        UIView.setAnimationsEnabled(true)
         
-        // TODO: Check if the content is scrollable, if it isn't then scroll to top
         messageArray = [Message]()
         groupInformation = group
         groupTitle.text = group.title
@@ -442,22 +451,21 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     if leftOverSpace > 0 {
                         if leftOverSpace < keyboardHeight + self.heightTypingView + changeInHeight {
                             let diffY = keyboardHeight + self.heightTypingView + changeInHeight - leftOverSpace
-                            self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight
-                            self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - keyboardHeight
-                            self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y + diffY
+                            self.messageViewHeight.constant -= keyboardHeight
+                            self.messageTableViewHeight.constant -= keyboardHeight
+                            self.messageTableView.contentOffset.y += diffY
                         } else {
-                            self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight
+                            self.messageViewHeight.constant -= keyboardHeight
                         }
                     } else {
-                        self.messageViewHeight.constant = self.messageViewHeight.constant - keyboardHeight - changeInHeight
-                        self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - keyboardHeight - changeInHeight
-                        self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y + keyboardHeight + changeInHeight
+                        self.messageViewHeight.constant -= (keyboardHeight + changeInHeight)
+                        self.messageTableViewHeight.constant -= (keyboardHeight + changeInHeight)
+                        self.messageTableView.contentOffset.y += keyboardHeight + changeInHeight
                     }
                     
-                    self.typingViewHeight.constant = self.typingViewHeight.constant + changeInHeight
+                    self.typingViewHeight.constant += changeInHeight
                     self.view.layoutIfNeeded()
                 }
-                
                 print("contentOffsetY - after keyboard shown (adding keyboard height): ", String(describing: messageTableView.contentOffset.y))
             }
             
@@ -479,7 +487,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     // Reset to starting values
                     self.messageViewHeight.constant = self.heightMessageView
                     self.messageTableViewHeight.constant = self.heightMessageTableView
-                    self.messageTableView.contentOffset.y = self.messageTableView.contentOffset.y - keyboardHeight - changeInHeight
+                    self.messageTableView.contentOffset.y -= (keyboardHeight + changeInHeight)
                     self.typingViewHeight.constant = self.heightTypingView
                     self.view.layoutIfNeeded()
                 }
@@ -515,10 +523,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
                     // If overflow, then only move the table view up accordingly
                     if self.messageTableViewHeight.constant < self.messageTableView.contentSize.height {
-                        self.messageTableViewHeight.constant = self.messageTableViewHeight.constant - changeInHeight
+                        self.messageTableViewHeight.constant -= changeInHeight
                     }
                     
-                    self.typingViewHeight.constant = self.typingViewHeight.constant + changeInHeight
+                    self.typingViewHeight.constant += changeInHeight
                     self.view.layoutIfNeeded()
                 })
                 
@@ -618,12 +626,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.view.window?.layer.add(transition, forKey: nil)
     }
     
-    /// Change the height based on content. If estimated height is wrong, then change height based on constraints
-    func configureTableView() {
-        messageTableView.rowHeight = UITableViewAutomaticDimension
-        messageTableView.estimatedRowHeight = 120.0
-    }
-    
     @objc func closeGroupInfo() {
         UIView.animate(withDuration: Durations.showGroupInfoDuration, animations: {
             self.dimView.alpha = 0
@@ -677,7 +679,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     /// Adds a row to the messageTableView at the bottom.
     func insertMessage() {
-        configureTableView()
         let indexPath = IndexPath(row: messageArray.count-1, section: 0)
         UIView.setAnimationsEnabled(false)
         messageTableView.beginUpdates()

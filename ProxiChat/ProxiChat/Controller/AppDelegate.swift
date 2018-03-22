@@ -62,6 +62,32 @@ extension UITextView {
         contentOffset = CGPoint(x: contentOffset.x, y: -positiveTopOffset)
     }
 }
+extension UIScrollView {
+    /// A Bool value that determines whether the scroll view is at the bottom.
+    var isAtBottom: Bool {
+        let distanceFromBottom = contentSize.height - contentOffset.y
+        return distanceFromBottom < frame.size.height
+    }
+    
+    /// A Bool value that determines whether the scroll view needs to scroll.
+    var needToScroll: Bool {
+        return contentSize.height > frame.size.height
+    }
+}
+extension UITableView {
+    /**
+     Scroll to the bottom of the table view.
+     - parameters:
+        - content: Array of table view objects. (ex. message objects)
+        - animated: Determine whether or not the animate the scrolling.
+     */
+    func scrollToBottom(_ content: [Any], _ animated: Bool) {
+        if content.count > 0 {
+            let lastItem = IndexPath(item: content.count-1, section: 0)
+            scrollToRow(at: lastItem, at: .bottom, animated: animated)
+        }
+    }
+}
 
 // TODO: background app refresh -> most apps use this - figure out how to use this
 @UIApplicationMain

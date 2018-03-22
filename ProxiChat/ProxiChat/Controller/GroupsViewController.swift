@@ -59,7 +59,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         // Responsive layout
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
-        
         // UITableView initialization
         groupsTableView.delegate = self
         groupsTableView.dataSource = self
