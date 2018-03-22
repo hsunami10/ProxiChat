@@ -10,7 +10,7 @@ import UIKit
 import SocketIO
 
 /*
- Key things to remember:
+ Key things to remember / notes:
  - Even if you dismiss a ViewController, it still exists, so those socket events will still be run unless socket = nil
  - To fully customize segue animations:
     - Uncheck "Animates" in Main.storyboard
@@ -78,8 +78,8 @@ extension UITableView {
     /**
      Scroll to the bottom of the table view.
      - parameters:
-        - content: Array of table view objects. (ex. message objects)
-        - animated: Determine whether or not the animate the scrolling.
+        - content: Array of table view objects. (ex. array of message objects)
+        - animated: Determines whether or not the animate the scrolling.
      */
     func scrollToBottom(_ content: [Any], _ animated: Bool) {
         if content.count > 0 {

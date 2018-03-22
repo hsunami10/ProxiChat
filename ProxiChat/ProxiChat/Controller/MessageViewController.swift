@@ -22,19 +22,7 @@ import SwiftDate
  - contentoffset and contentinset - https://fizzbuzzer.com/understanding-the-contentoffset-and-contentinset-properties-of-the-uiscrollview-class/
  
  BUGS
- - scrolling changes contentOffset
- - look at print outs and fix this problem - setting contentOffset after messages are sent, and keyboard is hidden
- - sending a message when keyboard is down vs up is different - down is more smooth, up is more rough?
- - fix moving table view etc when contentSize changes
- - when a message is sent, the keyboard doesn't reset back to default size (startingContentHeight)
-    - shift uitableview accordingly to this shrink
- - table view scrolls down when going from scrolling table view to non scrolling - text view stays on scroll to bottom, so either scroll to top or disable scroll to bottom
- - table view scrolls when the message view as a whole is shifted up -> ***** IMPORTANT NEED TO FIX ASAP ***** - NO IDEA WHY
- - Fix scrolling when sending / receiving messages - doesn't work for Case 1 & 3
-    - if you're the sender, scroll to bottom including last message
-    - if you're not the sender
-        - on bottom, then scroll to bottom including last message
-        - not on bottom, then don't scroll at all
+ 
  */
 
 /// Holds the text left over in a certain conversation whenever the user goes back to the groups page. [group_id : text view content]
@@ -112,7 +100,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
         
         // Add an observer to track whenever the contentSize has changed
-        messageTextView.addObserver(self, forKeyPath: "contentSize", options: NSKeyValueObservingOptions.new, context: nil)
+        messageTextView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         
         // Initialize gestures
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
@@ -168,11 +156,14 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             let messageObj = self.createMessageObj(JSON(data[0])["author"].stringValue, JSON(data[0])["content"].stringValue, JSON(data[0])["date_sent"].stringValue, JSON(data[0])["id"].stringValue, JSON(data[0])["group_id"].stringValue, JSON(data[0])["picture"].stringValue)
             
             self.messageArray.append(messageObj)
-            self.insertMessage()
             
-            // If you're at the bottom, scroll (stay at bottom)
-            if self.messageTableView.isAtBottom {
-                self.messageTableView.scrollToBottom(self.messageArray, true)
+            DispatchQueue.main.async {
+                self.insertMessage()
+                
+                // If you're at the bottom, scroll (stay at bottom)
+                if self.messageTableView.isAtBottom {
+                    self.messageTableView.scrollToBottom(self.messageArray, true)
+                }
             }
         }
         
@@ -221,6 +212,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Reset everything
         isMessageSent = false
         messageTextView.resignFirstResponder()
+        messageTextView.text = ""
         
         socket?.emit("leave_room", [
             "group_id": groupInformation.id,
@@ -344,7 +336,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: UITextViewDelegate Methods
+    // MARK: UITextViewDelegate Methods / UITextView
     func textViewDidBeginEditing(_ textView: UITextView) {
         // Change placeholder to actual text
         if textView.textColor == placeholderColor {
@@ -367,6 +359,45 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             contentNotSent.removeValue(forKey: groupInformation.id)
         } else {
             contentNotSent[groupInformation.id] = textView.text!
+        }
+    }
+    
+    // Respond to contentSize change in messageTextView
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        // Safe unwrapping
+        if object is UITextView, let textView = object as? UITextView {
+            let lines = textView.contentSize.height / (textView.font?.lineHeight)! // Float
+            let wholeLines = Int(floorf(Float(lines))) // Whole number
+            
+            // If adding text and greator than the max number of lines, then don't change the height
+            if lastLines < maxLines || wholeLines < maxLines {
+                // Get the change in height
+                var changeInHeight: CGFloat = 0
+                if wholeLines >= maxLines {
+                    changeInHeight = maxContentHeight - lastContentHeight
+                } else {
+                    changeInHeight = textView.contentSize.height - lastContentHeight
+                }
+                
+                if !UIView.areAnimationsEnabled {
+                    UIView.setAnimationsEnabled(true)
+                }
+                
+                // TODO: Table view height and bottom constraint responsiveness when contentSize of textView changes
+                UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
+                    // If overflow, then only move the table view up accordingly
+                    if self.messageTableViewHeight.constant < self.messageTableView.contentSize.height {
+                        self.messageTableViewHeight.constant -= changeInHeight
+                        self.messageTableView.contentOffset.y += changeInHeight
+                    }
+                    
+                    self.typingViewHeight.constant += changeInHeight
+                    self.view.layoutIfNeeded()
+                })
+                
+                lastLines = wholeLines
+                lastContentHeight = textView.contentSize.height
+            }
         }
     }
     
@@ -432,7 +463,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                             self.messageViewHeight.constant -= keyboardHeight
                         }
                     } else {
-                        self.messageViewHeight.constant -= (keyboardHeight + changeInHeight)
+                        self.messageViewHeight.constant -= keyboardHeight
                         self.messageTableViewHeight.constant -= (keyboardHeight + changeInHeight)
                         self.messageTableView.contentOffset.y += keyboardHeight + changeInHeight
                     }
@@ -461,45 +492,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     self.typingViewHeight.constant = self.heightTypingView
                     self.view.layoutIfNeeded()
                 }
-            }
-        }
-    }
-    
-    // MARK: Observers
-    // Respond to contentSize change in messageTextView
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        // Safe unwrapping
-        if object is UITextView, let textView = object as? UITextView {
-            let lines = textView.contentSize.height / (textView.font?.lineHeight)! // Float
-            let wholeLines = Int(floorf(Float(lines))) // Whole number
-            
-            // If adding text and greator than the max number of lines, then don't change the height
-            if lastLines < maxLines || wholeLines < maxLines {
-                // Get the change in height
-                var changeInHeight: CGFloat = 0
-                if wholeLines >= maxLines {
-                    changeInHeight = maxContentHeight - lastContentHeight
-                } else {
-                    changeInHeight = textView.contentSize.height - lastContentHeight
-                }
-                
-                if !UIView.areAnimationsEnabled {
-                    UIView.setAnimationsEnabled(true)
-                }
-                
-                // TODO: Table view height and bottom constraint responsiveness when contentSize of textView changes
-                UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
-                    // If overflow, then only move the table view up accordingly
-                    if self.messageTableViewHeight.constant < self.messageTableView.contentSize.height {
-                        self.messageTableViewHeight.constant -= changeInHeight
-                    }
-                    
-                    self.typingViewHeight.constant += changeInHeight
-                    self.view.layoutIfNeeded()
-                })
-                
-                lastLines = wholeLines
-                lastContentHeight = textView.contentSize.height
             }
         }
     }
