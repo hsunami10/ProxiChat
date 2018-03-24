@@ -10,7 +10,7 @@ import UIKit
 
 /**
  Holds all of the data in the user's last location update.
- Also caches anything related to the two groups view controllers.
+ Also caches anything related to the two groups view controllers, such as contentOffset.
  */
 struct LocalGroupsData {
     static var data: Any!

@@ -21,7 +21,7 @@ import CoreLocation
  
  BUGS
  - going into profile / settings views, then going back to "find groups" view and reloading gets ALL groups?
-    - something wrong with db query?
+    - something wrong with db query!!!
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -413,6 +413,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     self.stopLoading()
                 }
             }
+            // TODO: Question - stop loading before or after everything is finished?
         } else {
             SVProgressHUD.showError(withStatus: error_msg)
             self.stopLoading()

@@ -14,13 +14,12 @@ import SwiftDate
 
 /*
  TODO
- - maybe move sockets to background thread - right now it runs on main thread
  - paginate - add UIRefreshControl to message table view & paginate PostgreSQL
  - dragging to hide keyboard
  - display images (find how to show images uploaded from phone - url? path?)
  - figure out what to do with starred joining and leaving
  - when terminating app, request from database, if no results, then send leave group event
- - contentoffset and contentinset - https://fizzbuzzer.com/understanding-the-contentoffset-and-contentinset-properties-of-the-uiscrollview-class/
+ - maybe find a way to cache whether or not the keyboard is showing / hiding?
  
  BUGS
  */
@@ -183,16 +182,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
             if success {
                 self.messageArray = [Message]()
-                
-//                for message in messages {
-//                    let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
-//                    self.messageArray.append(messageObj)
-//                }
-                
-//                DispatchQueue.main.async {
-//                    self.messageTableView.reloadData()
-//                    self.messageTableView.scrollToBottom(self.messageArray, false)
-//                }
                 
                 // Load messages on background queue
                 // Perform UI updation on main queue
@@ -388,7 +377,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // Respond to contentSize change in messageTextView
+    // Respond to contentSize change in messageTextView`
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         // Safe unwrapping
         if object is UITextView, let textView = object as? UITextView {

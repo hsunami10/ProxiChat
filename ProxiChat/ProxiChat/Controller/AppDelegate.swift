@@ -20,6 +20,7 @@ import SocketIO
     - the class which conforms to the protocol gets sent the events (receiver / delegate)
         - when performing segue, set destination view controller's delegate property to self
     - the sender calls delegate's protocol's methods to send data BACK to delegate (delegate property)
+ - contentoffset vs contentinset - https://fizzbuzzer.com/understanding-the-contentoffset-and-contentinset-properties-of-the-uiscrollview-class/
  */
 
 // MARK: Custom Protocols
