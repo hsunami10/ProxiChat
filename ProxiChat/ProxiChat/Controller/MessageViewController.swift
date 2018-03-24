@@ -183,14 +183,29 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
             if success {
                 self.messageArray = [Message]()
-                for message in messages {
-                    let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
-                    self.messageArray.append(messageObj)
-                }
                 
-                DispatchQueue.main.async {
-                    self.messageTableView.reloadData()
-                    self.messageTableView.scrollToBottom(self.messageArray, false)
+//                for message in messages {
+//                    let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
+//                    self.messageArray.append(messageObj)
+//                }
+                
+//                DispatchQueue.main.async {
+//                    self.messageTableView.reloadData()
+//                    self.messageTableView.scrollToBottom(self.messageArray, false)
+//                }
+                
+                // Load messages on background queue
+                // Perform UI updation on main queue
+                DispatchQueue.global().async {
+                    for message in messages {
+                        let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
+                        self.messageArray.append(messageObj)
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.messageTableView.reloadData()
+                        self.messageTableView.scrollToBottom(self.messageArray, false)
+                    }
                 }
                 
                 // Join room after you get messages

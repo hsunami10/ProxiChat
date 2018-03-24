@@ -389,24 +389,30 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if success {
             LocalGroupsData.data = data
             self.groupArray = [Group]()
-            for group in groups {
-                let groupObj = Group()
-                let cd = ConvertDate(date: group["date_created"].stringValue)
+            
+            DispatchQueue.global().async {
+                for group in groups {
+                    let groupObj = Group()
+                    let cd = ConvertDate(date: group["date_created"].stringValue)
+                    
+                    groupObj.coordinates = group["coordinates"].stringValue
+                    groupObj.creator = group["created_by"].stringValue
+                    groupObj.dateCreated = cd.convert()
+                    groupObj.id = group["id"].stringValue
+                    groupObj.is_public = group["is_public"].boolValue
+                    groupObj.numMembers = group["number_members"].intValue
+                    groupObj.password = group["password"].stringValue
+                    groupObj.rawDate = group["date_created"].stringValue
+                    groupObj.title = group["title"].stringValue
+                    
+                    self.groupArray.append(groupObj)
+                }
                 
-                groupObj.coordinates = group["coordinates"].stringValue
-                groupObj.creator = group["created_by"].stringValue
-                groupObj.dateCreated = cd.convert()
-                groupObj.id = group["id"].stringValue
-                groupObj.is_public = group["is_public"].boolValue
-                groupObj.numMembers = group["number_members"].intValue
-                groupObj.password = group["password"].stringValue
-                groupObj.rawDate = group["date_created"].stringValue
-                groupObj.title = group["title"].stringValue
-                
-                self.groupArray.append(groupObj)
+                DispatchQueue.main.async {
+                    self.groupsTableView.reloadData()
+                    self.stopLoading()
+                }
             }
-            self.groupsTableView.reloadData() // cellforRowAt
-            self.stopLoading()
         } else {
             SVProgressHUD.showError(withStatus: error_msg)
             self.stopLoading()

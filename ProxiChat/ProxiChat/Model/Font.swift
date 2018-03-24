@@ -7,7 +7,6 @@
 //
 //  List of font names: https://gist.github.com/tadija/cb4ec0cbf0a89886d488d1d8b595d0e9
 
-import Foundation
 import UIKit
 
 /// This struct is used to store all functions and constants related to fonts.
