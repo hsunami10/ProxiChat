@@ -339,6 +339,7 @@
                         <outlet property="groupsViewHeight" destination="GmP-ub-x7E" id="ipV-bB-HSy"/>
                         <outlet property="groupsViewWidth" destination="FCO-KD-OTE" id="cX4-ui-TTL"/>
                         <outlet property="infoViewHeight" destination="tAz-gB-bKh" id="a9R-Ui-epS"/>
+                        <outlet property="infoViewLabel" destination="CBz-1q-DlV" id="gVR-Cy-27N"/>
                         <outlet property="navigationLeftConstraint" destination="Hvb-ae-wXU" id="WxZ-Y3-DC3"/>
                         <outlet property="navigationViewWidth" destination="UQ1-9N-A0W" id="KXV-fr-8aI"/>
                         <segue destination="bNj-gu-XBO" kind="show" identifier="joinGroup" animates="NO" id="38h-l6-3Or"/>
@@ -495,6 +496,7 @@
                     </view>
                     <connections>
                         <outlet property="infoViewHeight" destination="o6G-6r-KGc" id="kkb-um-0hT"/>
+                        <outlet property="infoViewLabel" destination="MKq-iS-JM8" id="u8I-mp-kKi"/>
                         <outlet property="navigationLeftConstraint" destination="cAC-ZP-1UZ" id="Pbh-mp-cAO"/>
                         <outlet property="navigationViewWidth" destination="3QS-su-aE6" id="Tw8-4i-X0h"/>
                         <outlet property="starredGroupsTableView" destination="wpA-cB-DGo" id="L0d-yQ-GIM"/>
@@ -714,6 +716,7 @@
                     </view>
                     <connections>
                         <outlet property="infoViewHeight" destination="Y77-7D-mlc" id="8XB-so-cCl"/>
+                        <outlet property="infoViewLabel" destination="5ec-Pg-Jbx" id="2B9-VD-8iD"/>
                         <outlet property="navigationLeftConstraint" destination="kmo-mv-d07" id="vhr-H9-3W2"/>
                         <outlet property="navigationViewWidth" destination="hgM-6j-a7o" id="YQq-TR-Nh4"/>
                         <outlet property="profilePicture" destination="H3z-qm-y7K" id="kiZ-DY-K3G"/>
@@ -1206,6 +1209,7 @@
                         <outlet property="groupNameTextField" destination="U6y-l5-KWc" id="G4V-n1-qnQ"/>
                         <outlet property="groupPasswordTextField" destination="sga-jV-shc" id="D5v-rA-X0d"/>
                         <outlet property="infoViewHeight" destination="O6S-hY-PXh" id="3nR-An-KpX"/>
+                        <outlet property="infoViewLabel" destination="2cs-Kf-bsE" id="8Vc-VE-Dip"/>
                         <outlet property="privateSwitch" destination="m84-De-ZbG" id="fAd-Ax-Jq9"/>
                         <segue destination="bNj-gu-XBO" kind="show" identifier="goToMessagesAfterCreate" animates="NO" id="seX-dU-mTJ"/>
                     </connections>
@@ -1661,6 +1665,7 @@
                     </view>
                     <connections>
                         <outlet property="infoViewHeight" destination="1ui-fw-fl7" id="Jlo-gq-G8n"/>
+                        <outlet property="infoViewLabel" destination="z98-bP-77k" id="UXW-z8-bml"/>
                         <outlet property="navigationLeftConstraint" destination="feh-j3-bRr" id="g1N-2v-1Lh"/>
                         <outlet property="navigationViewWidth" destination="trP-N7-whD" id="WHr-6e-hGt"/>
                         <outlet property="settingsTableView" destination="daV-m2-hib" id="Vvp-Mo-VZH"/>
@@ -1765,10 +1770,10 @@
         <image name="noPicture" width="29" height="29"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="2HM-oE-YUK"/>
-        <segue reference="r7C-v9-2H0"/>
+        <segue reference="N6I-j8-8OR"/>
+        <segue reference="seX-dU-mTJ"/>
         <segue reference="8KX-Q8-jJl"/>
-        <segue reference="CND-Ga-KUU"/>
+        <segue reference="jVh-gv-aL5"/>
         <segue reference="Q67-rq-eHC"/>
         <segue reference="OD0-pG-fXq"/>
     </inferredMetricsTieBreakers>

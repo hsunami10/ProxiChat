@@ -15,6 +15,7 @@ class GroupInfoCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        descriptionLabel.font = Font.getFont(17)
         // Initialization code
     }
 

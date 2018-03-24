@@ -13,7 +13,8 @@ import SVProgressHUD
 import SwiftDate
 
 /*
- TODO: TODO / BUGS
+ TODO
+ - maybe move sockets to background thread - right now it runs on main thread
  - paginate - add UIRefreshControl to message table view & paginate PostgreSQL
  - dragging to hide keyboard
  - display images (find how to show images uploaded from phone - url? path?)
@@ -22,7 +23,6 @@ import SwiftDate
  - contentoffset and contentinset - https://fizzbuzzer.com/understanding-the-contentoffset-and-contentinset-properties-of-the-uiscrollview-class/
  
  BUGS
- 
  */
 
 /// Holds the text left over in a certain conversation whenever the user goes back to the groups page. [group_id : text view content]
@@ -71,6 +71,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @IBOutlet var infoView: UIView!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
+    @IBOutlet var infoViewLabel: UILabel!
     
     @IBOutlet var typingView: UIView!
     @IBOutlet var typingViewHeight: NSLayoutConstraint!
@@ -79,14 +80,22 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var groupInfoViewRightConstraint: NSLayoutConstraint!
     @IBOutlet var groupInfoTableView: UITableView!
     @IBOutlet var groupInfoTableViewHeight: NSLayoutConstraint!
+    
     @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var creatorLabel: UILabel!
+    
     @IBOutlet var groupImageView: UIImageView!
     @IBOutlet var groupImageViewWidth: NSLayoutConstraint!
-    @IBOutlet var creatorLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         groupTitle.text = groupInformation.title
+        groupTitle.font = Font.getFont(Font.infoViewFontSize)
+        titleLabel.font = Font.getFont(17, "\(Font.fontName)-Bold")
+        creatorLabel.font = Font.getFont(17)
+        messageTextView.font = Font.getFont(16)
+        sendButton.titleLabel?.font = Font.getFont(15)
+        
         eventHandlers()
         
         messageTableView.delegate = self
@@ -128,10 +137,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         initializeLayout()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        messageTableView.scrollToBottom(messageArray, false)
-    }
-    
     deinit {
         NotificationCenter.default.removeObserver(self)
         messageTextView.removeObserver(self, forKeyPath: "contentSize")
@@ -149,7 +154,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             // CHANGE INDICES
             self.groupInfoArray[0] = String(JSON(data[0])["number_online"].intValue) + " Online"
             let indexPath = IndexPath(row: 0, section: 0)
-            self.groupInfoTableView.reloadRows(at: [indexPath], with: .automatic)
+            
+            DispatchQueue.main.async {
+                self.groupInfoTableView.reloadRows(at: [indexPath], with: .automatic)
+            }
         })
         // Realtime receiving messages
         socket?.on("receive_message") { (data, ack) in
@@ -166,27 +174,30 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
             }
         }
-        
         // Get messages from database on join room
         socket?.on("get_messages_on_start_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
             let error_msg = JSON(data[0])["error_msg"].stringValue
             let messages = JSON(data[0])["messages"].arrayValue
             UIView.setAnimationsEnabled(true)
-            
+        
             if success {
+                self.messageArray = [Message]()
                 for message in messages {
                     let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
                     self.messageArray.append(messageObj)
                 }
-                self.messageTableView.reloadData()
+                
+                DispatchQueue.main.async {
+                    self.messageTableView.reloadData()
+                    self.messageTableView.scrollToBottom(self.messageArray, false)
+                }
                 
                 // Join room after you get messages
                 self.socket?.emit("join_room", [
                     "group_id": self.groupInformation.id,
                     "username": UserData.username
                     ])
-                self.messageTableView.scrollToBottom(self.messageArray, false)
             } else {
                 SVProgressHUD.showError(withStatus: error_msg)
             }
@@ -222,6 +233,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @IBAction func showGroupInfo(_ sender: Any) {
         dimView.isUserInteractionEnabled = true
+        messageTextView.resignFirstResponder()
         
         UIView.animate(withDuration: Durations.showGroupInfoDuration) {
             self.dimView.alpha = 0.5
@@ -230,7 +242,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // TODO: Don't hide keyboard on send
     @IBAction func sendPressed(_ sender: Any) {
         if !Validate.isInvalidInput(messageTextView.text!) && messageTextView.textColor != UIColor.lightGray {
             isMessageSent = true

@@ -55,6 +55,9 @@ class EditProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        titleLabel.font = Font.getFont(Font.infoViewFontSize)
+        doubleFieldTitleLabel.font = Font.getFont(15)
+        singleFieldTitleLabel.font = Font.getFont(15)
         
         // Responsive layout
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)

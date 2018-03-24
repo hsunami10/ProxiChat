@@ -16,7 +16,8 @@ class GroupCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+        groupName.font = Font.getFont(17)
+        numberOfMembers.font = Font.getFont(17)
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

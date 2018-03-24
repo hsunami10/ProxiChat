@@ -23,6 +23,7 @@ class WelcomeViewController: UIViewController {
         super.viewDidLoad()
         statusLabel.text = ""
         
+        
         if socket == nil {
             socket = SocketIOClient(socketURL: URL(string: "http://localhost:3000")!)
             // TODO: Add reconnecting later - socket.reconnect()

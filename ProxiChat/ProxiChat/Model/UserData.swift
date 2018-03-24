@@ -24,7 +24,7 @@ struct UserData {
      For example, this would be true if the user visited "find groups", but then false when the user visits "messages" and back.
      
      This is set to ```true``` whenever the user leaves the "groups" view controllers.
-    */
+     */
     static var createNewMessageViewController = true
     
     /// Shows whether or not the user is connected to the server.

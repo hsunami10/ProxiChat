@@ -29,12 +29,14 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var navigationViewWidth: NSLayoutConstraint!
     
+    @IBOutlet var infoViewLabel: UILabel!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
     @IBOutlet var starredGroupsTableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         UIView.setAnimationsEnabled(true)
+        infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
         eventHandlers()
         
         // Initialize navigation menu layout and gestures
@@ -80,7 +82,10 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
                     
                     self.groupArray.append(groupObj)
                 }
-                self.starredGroupsTableView.reloadData()
+                
+                DispatchQueue.main.async {
+                    self.starredGroupsTableView.reloadData()
+                }
                 SVProgressHUD.dismiss()
             } else {
                 SVProgressHUD.dismiss()

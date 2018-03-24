@@ -13,11 +13,15 @@ import SVProgressHUD
 import CoreLocation
 
 /*
- TODO / BUGS
+ TODO
  - add swipe/drag close to side navigation menu
  - maybe change all SVProgressHUD.showError to UIAlertControllers?
  - only store in database when starred and delete when unstarred
  - ADD SEARCH BAR
+ 
+ BUGS
+ - going into profile / settings views, then going back to "find groups" view and reloading gets ALL groups?
+    - something wrong with db query?
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -48,10 +52,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var groupsLeftConstraint: NSLayoutConstraint!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
+    @IBOutlet var infoViewLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         UIView.setAnimationsEnabled(true)
+        infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
         eventHandlers()
         
         // Initialize navigation menu layout and gestures
@@ -59,7 +65,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         // Responsive layout
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
-        // UITableView initialization
         groupsTableView.delegate = self
         groupsTableView.dataSource = self
         groupsTableView.register(UINib.init(nibName: "GroupCell", bundle: nil), forCellReuseIdentifier: "groupCell")
@@ -146,14 +151,16 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 let row = JSON(data[0])["row_index"].intValue
                 self.joinGroup(row)
             } else {
-                // TODO: Maybe have a "try again" option
-                let alert = UIAlertController(title: "Oops!", message: error_msg, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
-                
-                if !UIView.areAnimationsEnabled {
-                    UIView.setAnimationsEnabled(true)
+                DispatchQueue.main.async {
+                    // TODO: Maybe have a "try again" option
+                    let alert = UIAlertController(title: "Oops!", message: error_msg, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                    
+                    if !UIView.areAnimationsEnabled {
+                        UIView.setAnimationsEnabled(true)
+                    }
+                    self.present(alert, animated: true, completion: nil)
                 }
-                self.present(alert, animated: true, completion: nil)
             }
         }
     }
@@ -218,25 +225,26 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if groupArray[indexPath.row].is_public {
             joinGroup(indexPath.row)
         } else {
-            let alert = UIAlertController(title: groupArray[indexPath.row].title + " is private!", message: "Please enter a password:", preferredStyle: .alert)
-            alert.addTextField(configurationHandler: { (textField) in
-                textField.placeholder = "Enter a password"
-                textField.isSecureTextEntry = true
-            })
-            alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
-                print("emit join private group event")
-                self.socket?.emit("join_private_group", [
-                    "id": self.groupArray[indexPath.row].id,
-                    "passwordEntered": alert.textFields?.first?.text!,
-                    "rowIndex": String(indexPath.row)
-                    ])
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-            
-            if !UIView.areAnimationsEnabled {
-                UIView.setAnimationsEnabled(true)
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: self.groupArray[indexPath.row].title + " is private!", message: "Please enter a password:", preferredStyle: .alert)
+                alert.addTextField(configurationHandler: { (textField) in
+                    textField.placeholder = "Enter a password"
+                    textField.isSecureTextEntry = true
+                })
+                alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
+                    self.socket?.emit("join_private_group", [
+                        "id": self.groupArray[indexPath.row].id,
+                        "passwordEntered": alert.textFields?.first?.text!,
+                        "rowIndex": String(indexPath.row)
+                        ])
+                }))
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                
+                if !UIView.areAnimationsEnabled {
+                    UIView.setAnimationsEnabled(true)
+                }
+                self.present(alert, animated: true, completion: nil)
             }
-            present(alert, animated: true, completion: nil)
         }
         groupsTableView.deselectRow(at: indexPath, animated: true)
     }
@@ -277,7 +285,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
-    /// Start updating location if the user is not connected and if the user authorized location when in use. This happens ONLY on start up.
+    // Start updating location if the user is not connected and if the user authorized location when in use. This happens ONLY on start up.
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse && !UserData.connected {
             SVProgressHUD.show()
@@ -285,7 +293,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             manager.startUpdatingLocation()
         } else if status == .denied {
             // TODO: Should I have this here, or is it too annoying?
-            present(locationErrorAlert, animated: true, completion: nil)
+            DispatchQueue.main.async {
+                self.present(self.locationErrorAlert, animated: true, completion: nil)
+            }
         }
     }
     
@@ -293,7 +303,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         stopLoading()
-        present(locationErrorAlert, animated: true, completion: nil)
+        DispatchQueue.main.async {
+            self.present(self.locationErrorAlert, animated: true, completion: nil)
+        }
     }
     
     // MARK: Navigation Methods

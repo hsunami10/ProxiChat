@@ -16,6 +16,8 @@ class MessageCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        username.font = Font.getFont(15)
+        content.font = Font.getFont(16)
         // Initialization code
     }
 

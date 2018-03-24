@@ -35,11 +35,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @IBOutlet var settingsViewWidth: NSLayoutConstraint!
     @IBOutlet var settingsViewHeight: NSLayoutConstraint!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
+    @IBOutlet var infoViewLabel: UILabel!
     
     @IBOutlet var settingsTableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
         eventHandlers()
         
         // Initialize navigation menu layout and gestures
@@ -188,6 +190,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             destinationVC.socket = socket
             UserData.connected = false
             socket?.leaveNamespace()
+            removeUserDefaults()
         }
         
         // TODO: Change this later when other features are added
@@ -196,9 +199,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     // MARK: Miscellaneous Methods
+    /// Remove all User Defaults
     func removeUserDefaults() {
-        UserDefaults.standard.removeObject(forKey: "isUserLoggedInProxiChat")
-        UserDefaults.standard.removeObject(forKey: "proxiChatUsername")
+        let domain = Bundle.main.bundleIdentifier!
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        UserDefaults.standard.synchronize()
     }
     
     func revealTopToBottomTransition() {

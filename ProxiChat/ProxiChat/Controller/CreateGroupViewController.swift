@@ -35,6 +35,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet var confirmPasswordTextField: UITextField!
     @IBOutlet var errorLabel: UILabel!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
+    @IBOutlet var infoViewLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,6 +54,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         groupPasswordTextField.isHidden = true
         confirmPasswordTextField.isHidden = true
         errorLabel.text = ""
+        infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()

@@ -16,6 +16,10 @@ import SocketIO
     - Uncheck "Animates" in Main.storyboard
     - Dismiss without animation
  - have status bar color to be the same as the info view color
+ - Delegates & Protocols
+    - the class which conforms to the protocol gets sent the events (receiver / delegate)
+        - when performing segue, set destination view controller's delegate property to self
+    - the sender calls delegate's protocol's methods to send data BACK to delegate (delegate property)
  */
 
 // MARK: Custom Protocols
@@ -37,6 +41,7 @@ protocol UpdatePictureDelegate {
 
 // MARK: Extensions
 extension String {
+    
     /// Gets pixel height of a string
     func height(withConstrainedWidth width: CGFloat, font: UIFont) -> CGFloat {
         let constraintRect = CGSize(width: width, height: .greatestFiniteMagnitude)

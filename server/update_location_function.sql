@@ -15,7 +15,7 @@ BEGIN
 	-- Iterate through all group IDs that the user is NOT in
 	FOR g_id IN (SELECT group_id FROM users_groups WHERE username <> user_id)
 	LOOP
-		FOR r IN SELECT * FROM groups WHERE id = g_id
+		FOR r IN (SELECT * FROM groups WHERE id = g_id)
 		LOOP
 			IF (SELECT ST_Distance(
 				user_location,

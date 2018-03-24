@@ -18,6 +18,8 @@ class ProfileCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        titleLabel.font = Font.getFont(17)
+        contentLabel.font = Font.getFont(17)
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

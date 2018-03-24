@@ -49,6 +49,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet var profilePicture: UIImageView!
     
     // Responsive layout
+    @IBOutlet var infoViewLabel: UILabel!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
     @IBOutlet var profilePictureHeight: NSLayoutConstraint!
     @IBOutlet var profilePictureWidth: NSLayoutConstraint!
@@ -65,6 +66,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
         eventHandlers()
         
         // Initialize navigation menu layout and gestures
