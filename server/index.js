@@ -153,7 +153,7 @@ proxichat_nsp.on('connection', socket => {
           socket.emit('update_location_and_get_groups_create_response', { success: false, groups: [], error_msg: 'There was a problem getting groups. Please try again.' })
           console.log(err);
         } else {
-          console.log(res.rows);
+          // BUG: This gets ALL groups when going to profile/settings and back, then reloading
           socket.emit('update_location_and_get_groups_create_response',  { success: true, groups: res.rows, error_msg: '' })
         }
       })

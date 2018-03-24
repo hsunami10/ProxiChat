@@ -13,7 +13,8 @@ BEGIN
 	UPDATE users SET location = user_location, coordinates = user_coord, radius = user_radius WHERE username = user_id;
 
 	-- Iterate through all group IDs that the user is NOT in
-	FOR g_id IN (SELECT group_id FROM users_groups WHERE username <> user_id)
+  -- Order by distance from the user's current location
+	FOR g_id IN (SELECT group_id FROM users_groups WHERE username <> user_id ORDER BY (SELECT ST_Distance(user_location, (SELECT location FROM groups WHERE id = group_id))))
 	LOOP
 		FOR r IN (SELECT * FROM groups WHERE id = g_id)
 		LOOP

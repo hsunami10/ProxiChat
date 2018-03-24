@@ -38,7 +38,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     /**
      Stores the last visited message view controller.
-     Set the socket of this object to "nil" if the user navigates to another view that's not messages.
+     Set the socket of this object to "nil" if the user navigates to another view that's not the message view.
      */
     var messageObj: MessageViewController?
     
@@ -130,6 +130,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.picture = String(describing: user["picture"]!)
                 UserData.radius = user["radius"] as! Int
                 UserData.username = String(describing: user["username"]!)
+                
+                print("user radius: " + String(UserData.radius))
                 
                 // Only get location AFTER the user data is updated
                 self.locationManager.requestWhenInUseAuthorization()

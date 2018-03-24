@@ -13,12 +13,16 @@ import Photos
 import SVProgressHUD
 import SwiftyJSON
 
-/* TODO / BUGS
- - BUG: Problem with loading up radius sometimes - radius = 0? is it when UserDefaults is gone?
+/*
+ TODO
+ - have a way to edit the profile picture after choosing one - into a "circular" frame
  - TODO: MAKE EVERYTHING RESPONSIVE
  - make sure the picture is actually cut - can still click on the rectangular part, even thought it's circular
  - maybe add conversions to other distance units?
- TODO: Have a way to edit the profile picture after choosing one - into a "circular" frame
+ - change all SVProgressHUDs to UIAlertControllers?
+ 
+ BUGS
+ - radius sometimes 0?
  */
 
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate, UpdatePictureDelegate {
@@ -78,7 +82,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         // TODO: Get the user profile picture here
         
-        
         // Responsive layout
         infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
         profilePictureHeight.constant = Dimensions.pictureDimension
@@ -133,8 +136,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }))
         deniedAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         unavailableAlert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
-        
-        self.view.layoutIfNeeded()
     }
 
     override func didReceiveMemoryWarning() {

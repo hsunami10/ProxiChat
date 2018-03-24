@@ -1,3 +1,4 @@
 /server/node_modules/
 /ProxiChat/Pods/
 proxichat.pem
+connect_linux.sh
