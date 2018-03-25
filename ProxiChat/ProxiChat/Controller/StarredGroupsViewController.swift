@@ -67,7 +67,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
                 let groups = JSON(data[0])["groups"].arrayValue
                 self.groupArray = [Group]()
                 for group in groups {
-                    let groupObj = Group()
+                    var groupObj = Group()
                     let cd = ConvertDate(date: group["date_created"].stringValue)
                     
                     groupObj.coordinates = group["coordinates"].stringValue

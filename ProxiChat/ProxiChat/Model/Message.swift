@@ -7,7 +7,7 @@
 //
 
 /// Holds all of the message's data.
-class Message {
+struct Message {
     var id = ""
     var author = ""
     var groupID = ""

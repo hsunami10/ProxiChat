@@ -9,7 +9,7 @@
 import UIKit
 
 /// Holds all of a group's data.
-class Group {
+struct Group {
     var title = ""
     var numMembers = 1
     var is_public = true

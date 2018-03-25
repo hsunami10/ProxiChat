@@ -14,7 +14,7 @@ import UIKit
 /**
  Holds all the necessary properties of the navigation side menu
  */
-class NavigationSideMenu {
+struct NavigationSideMenu {
     static let duration: TimeInterval = Durations.sideNavDuration
     static let shiftFactor: CGFloat = 0.70
     /**

@@ -15,6 +15,7 @@ import SVProgressHUD
 /**
  - TODO:
     - Fix unwrapping optional bug for coordinates? - LINE 87 - possible because there are multiple view controllers?
+ - maybe only update location when creating, don't get groups???
  */
 class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     

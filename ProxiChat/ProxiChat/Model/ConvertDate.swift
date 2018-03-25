@@ -13,7 +13,7 @@ import SwiftDate
  This handles converting UTC timezone dates to local time, from database and realtime.
  For more information on date formatting, visit http://nsdateformatter.com/.
  */
-class ConvertDate {
+struct ConvertDate {
     
     var date = ""
     let date_format = "MMM d, yyyy h:mm a" // Ex: Dec 5, 1998 4:19 PM

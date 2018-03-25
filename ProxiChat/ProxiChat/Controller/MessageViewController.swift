@@ -642,7 +642,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         - picture: The profile picture of the author.
      */
     func createMessageObj(_ author: String, _ content: String, _ dateSent: String, _ groupID: String, _ id: String, _ picture: String) -> Message {
-        let messageObj = Message()
+        var messageObj = Message()
         messageObj.author = author
         messageObj.content = content
         messageObj.dateSent = dateSent

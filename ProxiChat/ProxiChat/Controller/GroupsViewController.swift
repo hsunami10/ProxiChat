@@ -394,7 +394,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             DispatchQueue.global().async {
                 for group in groups {
-                    let groupObj = Group()
+                    var groupObj = Group()
                     let cd = ConvertDate(date: group["date_created"].stringValue)
                     
                     groupObj.coordinates = group["coordinates"].stringValue

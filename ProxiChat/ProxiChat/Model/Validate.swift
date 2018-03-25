@@ -11,7 +11,7 @@ import Foundation
 // TODO: Maybe add password requirements?
 
 /// This holds all of the functions needed to validate all inputs in textfields and/or textviews.
-class Validate {
+struct Validate {
     
     /**
      Checks whether or not the string is one word. If yes, return ```true```. If no, return ```false```.
