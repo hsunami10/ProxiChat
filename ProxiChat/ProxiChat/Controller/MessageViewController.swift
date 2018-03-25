@@ -498,12 +498,21 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
                 let changeInHeight = getHeightChange()
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
+                let leftOverSpace = heightMessageTableView - self.messageTableView.contentSize.height
                 
                 UIView.animate(withDuration: duration) {
+                    if leftOverSpace > 0 {
+                        if leftOverSpace < keyboardHeight + self.heightTypingView + changeInHeight {
+                            let diffY = keyboardHeight + self.heightTypingView + changeInHeight - leftOverSpace
+                            self.messageTableView.contentOffset.y -= diffY
+                        }
+                    } else {
+                        self.messageTableView.contentOffset.y -= (keyboardHeight + changeInHeight)
+                    }
+                    
                     // Reset to starting values
                     self.messageViewHeight.constant = self.heightMessageView
                     self.messageTableViewHeight.constant = self.heightMessageTableView
-                    self.messageTableView.contentOffset.y -= (keyboardHeight + changeInHeight)
                     self.typingViewHeight.constant = self.heightTypingView
                     self.view.layoutIfNeeded()
                 }

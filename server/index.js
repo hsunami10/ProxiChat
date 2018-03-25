@@ -51,7 +51,7 @@ proxichat_nsp.on("connection", socket => {
   // NOTE: Get the user's info on startup
   socket.on("get_user_info", username => {
     (async () => {
-      const res = pool.query(
+      const res = await pool.query(
         `SELECT picture, password, radius, is_online, coordinates, bio, username, email FROM users WHERE username = '${username}'`
       );
 
@@ -106,7 +106,7 @@ proxichat_nsp.on("connection", socket => {
         break;
       case 2:
         (async () => {
-          const res = pool.query(
+          const res = await pool.query(
             `UPDATE users SET bio = '${content}' WHERE username = '${username}'`
           );
           console.log("update bio success");

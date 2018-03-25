@@ -131,7 +131,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.radius = user["radius"] as! Int
                 UserData.username = String(describing: user["username"]!)
                 
-                print("user radius: " + String(UserData.radius))
+                print("get user radius: " + String(UserData.radius))
                 
                 // Only get location AFTER the user data is updated
                 self.locationManager.requestWhenInUseAuthorization()

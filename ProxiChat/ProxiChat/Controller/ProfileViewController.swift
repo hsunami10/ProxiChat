@@ -295,13 +295,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 // If in range of min and max
                 radiusSlider.value = Float(value)
             }
-            // Save radius and update
-            updateRadius()
         } else {
             textField.text = "1"
             radiusSlider.value = 1
-            updateRadius()
         }
+        
+        // Save radius and update
+        updateRadius()
     }
     
     // MARK: IBOutlet Actions
@@ -382,6 +382,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     /// Locally saves the radius and updates in the database.
     func updateRadius() {
         UserData.radius = Int(radiusTextField.text!)!
+        print("update radius: ", UserData.radius)
         socket?.emit("update_radius", UserData.username, UserData.radius)
     }
     
