@@ -33,11 +33,14 @@ var proxichat_nsp = io.of("/proxichat_namespace");
 // ========================================================================== //
 /*
 NOTE: Promises / async / await - https://javascript.info/async
-- async function - always return a promise, run asynchronously
+- async function - always return a promise, runs asynchronously
 - await - make Javascript wait until the promise settles, then return result
-- no bottleneck because its asynchronous
+- no bottleneck because its asynchronous, so other code can run
 - () after definitions means run the function
 - return resolve/reject stops everything from running after
+  - throw new Error('error message') is the same as reject(new Error('error message'))
+  - throwing error gets treated like a rejection
+  - both jump to .catch
 */
 
 // NOTE: ProxiChat app connection - "online"
@@ -47,26 +50,25 @@ proxichat_nsp.on("connection", socket => {
   // ======================= PROFILE / USER EVENTS =======================
   // NOTE: Get the user's info on startup
   socket.on("get_user_info", username => {
-    pool.query(
-      `SELECT picture, password, radius, is_online, coordinates, bio, username, email FROM users WHERE username = '${username}'`,
-      (err, res) => {
-        if (err) {
-          // TODO: Handle so it doesn't crash
-          socket.emit("get_user_info_response", {
-            success: false,
-            error_msg:
-              "There was a problem getting your account information. Please try again."
-          });
-          console.log(err);
-        } else {
-          socket.emit("get_user_info_response", {
-            success: true,
-            error_msg: "",
-            data: res.rows[0]
-          });
-        }
-      }
-    );
+    (async () => {
+      const res = pool.query(
+        `SELECT picture, password, radius, is_online, coordinates, bio, username, email FROM users WHERE username = '${username}'`
+      );
+
+      socket.emit("get_user_info_response", {
+        success: true,
+        error_msg: "",
+        data: res.rows[0]
+      });
+    })().catch(err => {
+      // TODO: Handle so it doesn't crash
+      socket.emit("get_user_info_response", {
+        success: false,
+        error_msg:
+          "There was a problem getting your account information. Please try again."
+      });
+      console.log(err);
+    });
   });
 
   socket.on("update_radius", (username, radius) => {
