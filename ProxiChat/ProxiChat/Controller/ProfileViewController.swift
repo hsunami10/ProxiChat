@@ -22,7 +22,7 @@ import SwiftyJSON
  - change all SVProgressHUDs to UIAlertControllers?
  
  BUGS
- - radius sometimes 0?
+ - radius sometimes resets to 0 in database?
  */
 
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate, UpdatePictureDelegate {
@@ -170,7 +170,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             var pwd = ""
             while(i > 0) {
                 pwd.append("●")
-                i = i - 1
+                i -= 1
             }
             editedContent = pwd
             break
@@ -227,7 +227,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             var pwd = ""
             while(i > 0) {
                 pwd.append("●")
-                i = i - 1
+                i -= 1
             }
             cell.contentLabel.text = pwd
             break
@@ -382,7 +382,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     /// Locally saves the radius and updates in the database.
     func updateRadius() {
         UserData.radius = Int(radiusTextField.text!)!
-        print("update radius: ", UserData.radius)
+        print("update radius to: ", UserData.radius)
         socket?.emit("update_radius", UserData.username, UserData.radius)
     }
     

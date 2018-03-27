@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		62B2CB57F5955BEB62EEEF6B /* Pods_ProxiChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */; };
 		E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40A948D1FDF76FC006097B1 /* Validate.swift */; };
+		E41F2A2320680F3A00C0A807 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = E41F2A2220680F3A00C0A807 /* Protocols.swift */; };
 		E429D1F81FEB7B7100EAAEFD /* SettingsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E429D1F61FEB7B7100EAAEFD /* SettingsCell.swift */; };
 		E429D1F91FEB7B7100EAAEFD /* SettingsCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E429D1F71FEB7B7100EAAEFD /* SettingsCell.xib */; };
 		E434EDDE1FE5CC9300B26F22 /* Dimensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */; };
@@ -54,6 +55,7 @@
 		5F8E292D05CB9C559164906A /* Pods-ProxiChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProxiChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat.debug.xcconfig"; sourceTree = "<group>"; };
 		ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProxiChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E40A948D1FDF76FC006097B1 /* Validate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validate.swift; sourceTree = "<group>"; };
+		E41F2A2220680F3A00C0A807 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		E429D1F61FEB7B7100EAAEFD /* SettingsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCell.swift; sourceTree = "<group>"; };
 		E429D1F71FEB7B7100EAAEFD /* SettingsCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SettingsCell.xib; sourceTree = "<group>"; };
 		E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dimensions.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				E40A948D1FDF76FC006097B1 /* Validate.swift */,
 				E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */,
 				E475AB1F2065AC020063C361 /* Font.swift */,
+				E41F2A2220680F3A00C0A807 /* Protocols.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -443,6 +446,7 @@
 				E4B3D7611FBB85AF00F539EA /* SignUpViewController.swift in Sources */,
 				E4820CA31FF1F3FF00D1FC93 /* MembersViewController.swift in Sources */,
 				E4FAB49D1FD7814900D2C6E1 /* StarredGroupsViewController.swift in Sources */,
+				E41F2A2320680F3A00C0A807 /* Protocols.swift in Sources */,
 				E4FAB4A51FD7837800D2C6E1 /* NavigationSideMenu.swift in Sources */,
 				E4CB11851FBC10A7003B627E /* GroupsViewController.swift in Sources */,
 			);

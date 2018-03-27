@@ -34,7 +34,7 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let lineThickness = Dimensions.getPoints(2) // Width of circle outline
+        let lineThickness = Dimensions.getPoints(2) // Thickness of circle outline
         circleLeftMargin = Dimensions.getPoints(32)
         let radius = (self.view.frame.width - circleLeftMargin * 2) / 2 // Radius of circle
         circleTopMargin = self.view.center.y - radius - lineThickness
@@ -53,25 +53,24 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         scrollView.clipsToBounds = false
         scrollView.delegate = self
         
+        // Set the dimensions of the scrollview to perfectly enclose the circle
         scrollViewWidth.constant = diameter + lineThickness
         scrollViewHeight.constant = scrollViewWidth.constant
         
         // TODO: Fix this later - test with multiple image sizes first
-        // Create image
+        // Create image & image view
         let imageView = UIImageView()
         if let chosenImage = image {
             var frame = CGRect()
             var fromTop: CGFloat = 0
             
             if chosenImage.size.height > chosenImage.size.width { // If portrait
-                fromTop = -circleTopMargin - lineThickness / 2
-                
+//                fromTop = -circleTopMargin - lineThickness / 2
 //                frame = CGRect(x: -circleLeftMargin - lineThickness / 2, y: fromTop, width: self.view.frame.height * (chosenImage.size.width / chosenImage.size.height), height: self.view.frame.height)
                 
                 // TODO: Change this later?
-                let w = scrollViewHeight.constant * (chosenImage.size.width / chosenImage.size.height)
-                frame = CGRect(x: scrollViewWidth.constant / 2 - w / 2, y: 0, width: w, height: scrollViewHeight.constant)
-                
+                let imgViewWidth = scrollViewHeight.constant * (chosenImage.size.width / chosenImage.size.height)
+                frame = CGRect(x: scrollViewWidth.constant / 2 - imgViewWidth / 2, y: 0, width: imgViewWidth, height: scrollViewHeight.constant)
             } else if chosenImage.size.height < chosenImage.size.width { // If landscape
                 let imageHeight = self.view.frame.width * (chosenImage.size.height / chosenImage.size.width)
                 fromTop = self.view.center.y - imageHeight / 2
@@ -84,6 +83,7 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
             
             imageView.image = chosenImage
             imageView.frame = frame
+            imageView.contentMode = .scaleAspectFit
             renderedImageView = imageView
             scrollView.addSubview(imageView)
         } else {
@@ -93,7 +93,7 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         
         // Draw black circle outline with Core Graphics
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: diameter+lineThickness*2, height: diameter+lineThickness*2))
-        let img = renderer.image { (ctx) in
+        let circle = renderer.image { (ctx) in
             ctx.cgContext.setFillColor(UIColor.clear.cgColor)
             ctx.cgContext.setStrokeColor(UIColor.black.cgColor)
             ctx.cgContext.setLineWidth(lineThickness)
@@ -104,9 +104,9 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         
         let circleFrame: CGRect = CGRect(x: circleLeftMargin-lineThickness, y: circleTopMargin, width: diameter+lineThickness*2, height: diameter+lineThickness*2)
         
-        let imgview = UIImageView(frame: circleFrame)
-        imgview.image = img
-        self.view.addSubview(imgview)
+        let circleView = UIImageView(frame: circleFrame)
+        circleView.image = circle
+        self.view.addSubview(circleView)
     }
     
     override func didReceiveMemoryWarning() {
@@ -118,7 +118,9 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.renderedImageView
     }
+    
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        // Get UIImageView
         let subView = scrollView.subviews[0]
         if !firstZoom {
             firstZoom = true
@@ -150,7 +152,7 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         
         testImageView.image = croppedImage
         
-        // TODO: Uncomment later
+        // TODO: Uncomment later, once testImageView works
 //        delegate?.updatePicture(croppedImage)
 //        self.dismiss(animated: true, completion: nil)
     }

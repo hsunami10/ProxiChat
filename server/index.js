@@ -34,11 +34,13 @@ var proxichat_nsp = io.of("/proxichat_namespace");
 /*
 NOTE: Promises / async / await - https://javascript.info/async
 - async function - always return a promise, runs asynchronously
-- await - make Javascript wait until the promise settles, then return result
+- await (only in async function) - make Javascript wait until the promise settles, then return result
+  - result is resolve(result)
+  - reject goes to .catch
 - no bottleneck because its asynchronous, so other code can run
 - () after definitions means run the function
 - return resolve/reject stops everything from running after
-  - throw new Error('error message') is the same as reject(new Error('error message'))
+  - throw new Error('error message') in promise is the same as reject(new Error('error message'))
   - throwing error gets treated like a rejection
   - both jump to .catch
 */
