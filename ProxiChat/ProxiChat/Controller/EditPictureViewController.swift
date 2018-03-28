@@ -47,14 +47,14 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         blackViewHeight.constant = (70 / 736) * self.view.frame.height
         
         // Initialize scroll view properties
+        scrollView.delegate = self
         scrollView.alwaysBounceVertical = true
         scrollView.alwaysBounceHorizontal = true
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.minimumZoomScale = 0.5
-        scrollView.maximumZoomScale = 10
+        scrollView.minimumZoomScale = 1
+        scrollView.maximumZoomScale = 5
         scrollView.clipsToBounds = false
-        scrollView.delegate = self
         
         // Set the dimensions of the scrollview to perfectly enclose the circle
         scrollViewWidth.constant = diameter + lineThickness
@@ -69,24 +69,22 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
          Square:
             - min -> width & height - scrollview width & height
          */
+        
         // Create image & image view
         // Adjust image view dimensions according to width / height of chosenImage
+        // Default is minimum size
         let imageView = UIImageView()
         if let chosenImage = image {
             var frame = CGRect()
-            var fromTop: CGFloat = 0
             
             if chosenImage.size.height > chosenImage.size.width { // If portrait
                 let imgViewWidth = scrollViewHeight.constant * (chosenImage.size.width / chosenImage.size.height)
                 frame = CGRect(x: scrollViewWidth.constant / 2 - imgViewWidth / 2, y: 0, width: imgViewWidth, height: scrollViewHeight.constant)
             } else if chosenImage.size.height < chosenImage.size.width { // If landscape
-                let imageHeight = self.view.frame.width * (chosenImage.size.height / chosenImage.size.width)
-                fromTop = self.view.center.y - imageHeight / 2
-                frame = CGRect(x: -circleLeftMargin + lineThickness / 2, y: fromTop - circleTopMargin - lineThickness / 2, width: self.view.frame.width, height: imageHeight)
+                let imageHeight = scrollViewWidth.constant * (chosenImage.size.height / chosenImage.size.width)
+                frame = CGRect(x: 0, y: scrollViewHeight.constant / 2 - imageHeight / 2, width: scrollViewWidth.constant, height: imageHeight)
             } else { // If square
-                fromTop = self.view.center.y - self.view.frame.width / 2
-                frame = CGRect(x: -circleLeftMargin + lineThickness / 2, y: fromTop - circleTopMargin - lineThickness / 2, width: self.view.frame.width, height: self.view.frame.width)
-                // TODO: Change this to exactly fit the scroll view instead?
+                frame = CGRect(x: 0, y: 0, width: scrollViewWidth.constant, height: scrollViewHeight.constant)
             }
             
             imageView.image = chosenImage

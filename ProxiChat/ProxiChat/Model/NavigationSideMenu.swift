@@ -17,12 +17,11 @@ import UIKit
 struct NavigationSideMenu {
     
     /// Differentiates which views the user is on.
-    private enum ViewControllerEnum {
+    enum ViewControllerEnum {
         case groups, starred, profile, settings
     }
+    private let shiftFactor: CGFloat = 0.70
     
-    static let duration: TimeInterval = Durations.sideNavDuration
-    static let shiftFactor: CGFloat = 0.70
     /**
      Differentiates which views the user is on.
      - 0 - GroupsViewController
@@ -30,8 +29,7 @@ struct NavigationSideMenu {
      - 2 - ProfileViewController
      - 3 - SettingsViewController
     */
-    static var currentView = -1
-    
+    static var currentView: ViewControllerEnum = .groups
     static var groupsObj: GroupsViewController!
     static var starredObj: StarredGroupsViewController!
     static var profileObj: ProfileViewController!
@@ -44,53 +42,53 @@ struct NavigationSideMenu {
             NavigationSideMenu.groupsObj.groupsViewWidth.constant = NavigationSideMenu.groupsObj.view.frame.size.width // Set groups view width to main view width
             NavigationSideMenu.groupsObj.groupsViewHeight.constant = NavigationSideMenu.groupsObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.groupsObj.groupsLeftConstraint.constant = 0 // Set groups view to normal position
-            NavigationSideMenu.groupsObj.navigationViewWidth.constant = NavigationSideMenu.groupsObj.groupsViewWidth.constant * NavigationSideMenu.shiftFactor // Set width to a factor of groups view
+            NavigationSideMenu.groupsObj.navigationViewWidth.constant = NavigationSideMenu.groupsObj.groupsViewWidth.constant * shiftFactor // Set width to a factor of groups view
             NavigationSideMenu.groupsObj.navigationLeftConstraint.constant = -NavigationSideMenu.groupsObj.navigationViewWidth.constant // Hide from view
             
             let tapGesture = UITapGestureRecognizer(target: NavigationSideMenu.groupsObj, action: #selector(NavigationSideMenu.groupsObj.closeNavMenu))
             tapGesture.cancelsTouchesInView = false
             NavigationSideMenu.groupsObj.groupsView.addGestureRecognizer(tapGesture)
             
-            NavigationSideMenu.currentView = 0
+            NavigationSideMenu.currentView = .groups
         } else if object is StarredGroupsViewController {
             NavigationSideMenu.starredObj = object as! StarredGroupsViewController
             NavigationSideMenu.starredObj.starredGroupsViewWidth.constant = NavigationSideMenu.starredObj.view.frame.size.width
             NavigationSideMenu.starredObj.starredGroupsViewHeight.constant = NavigationSideMenu.starredObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.starredObj.starredGroupsViewLeftConstraint.constant = 0
-            NavigationSideMenu.starredObj.navigationViewWidth.constant = NavigationSideMenu.starredObj.starredGroupsViewWidth.constant * NavigationSideMenu.shiftFactor
+            NavigationSideMenu.starredObj.navigationViewWidth.constant = NavigationSideMenu.starredObj.starredGroupsViewWidth.constant * shiftFactor
             NavigationSideMenu.starredObj.navigationLeftConstraint.constant = -NavigationSideMenu.starredObj.navigationViewWidth.constant
             
             let tapGesture = UITapGestureRecognizer(target: NavigationSideMenu.starredObj, action: #selector(NavigationSideMenu.starredObj.closeNavMenu))
             tapGesture.cancelsTouchesInView = false
             NavigationSideMenu.starredObj.starredGroupsView.addGestureRecognizer(tapGesture)
             
-            NavigationSideMenu.currentView = 1
+            NavigationSideMenu.currentView = .starred
         } else if object is ProfileViewController {
             NavigationSideMenu.profileObj = object as! ProfileViewController
             NavigationSideMenu.profileObj.profileViewWidth.constant = NavigationSideMenu.profileObj.view.frame.size.width
             NavigationSideMenu.profileObj.profileViewHeight.constant = NavigationSideMenu.profileObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.profileObj.profileViewLeftConstraint.constant = 0
-            NavigationSideMenu.profileObj.navigationViewWidth.constant = NavigationSideMenu.profileObj.profileViewWidth.constant * NavigationSideMenu.shiftFactor
+            NavigationSideMenu.profileObj.navigationViewWidth.constant = NavigationSideMenu.profileObj.profileViewWidth.constant * shiftFactor
             NavigationSideMenu.profileObj.navigationLeftConstraint.constant = -NavigationSideMenu.profileObj.navigationViewWidth.constant
             
             let tapGesture = UITapGestureRecognizer(target: NavigationSideMenu.profileObj, action: #selector(NavigationSideMenu.profileObj.closeNavMenu))
             tapGesture.cancelsTouchesInView = false
             NavigationSideMenu.profileObj.profileView.addGestureRecognizer(tapGesture)
             
-            NavigationSideMenu.currentView = 2
+            NavigationSideMenu.currentView = .profile
         } else if object is SettingsViewController {
             NavigationSideMenu.settingsObj = object as! SettingsViewController
             NavigationSideMenu.settingsObj.settingsViewWidth.constant = NavigationSideMenu.settingsObj.view.frame.size.width
             NavigationSideMenu.settingsObj.settingsViewHeight.constant = NavigationSideMenu.settingsObj.view.frame.size.height - UIApplication.shared.statusBarFrame.height
             NavigationSideMenu.settingsObj.settingsViewLeftConstraint.constant = 0
-            NavigationSideMenu.settingsObj.navigationViewWidth.constant = NavigationSideMenu.settingsObj.settingsViewWidth.constant * NavigationSideMenu.shiftFactor
+            NavigationSideMenu.settingsObj.navigationViewWidth.constant = NavigationSideMenu.settingsObj.settingsViewWidth.constant * shiftFactor
             NavigationSideMenu.settingsObj.navigationLeftConstraint.constant = -NavigationSideMenu.settingsObj.navigationViewWidth.constant
             
             let tapGesture = UITapGestureRecognizer(target: NavigationSideMenu.settingsObj, action: #selector(NavigationSideMenu.settingsObj.closeNavMenu))
             tapGesture.cancelsTouchesInView = false
             NavigationSideMenu.settingsObj.settingsView.addGestureRecognizer(tapGesture)
             
-            NavigationSideMenu.currentView = 3
+            NavigationSideMenu.currentView = .settings
         }
     }
     
@@ -99,8 +97,9 @@ struct NavigationSideMenu {
         if !UIView.areAnimationsEnabled {
             UIView.setAnimationsEnabled(true)
         }
+        
         switch NavigationSideMenu.currentView {
-        case 0:
+        case .groups:
             if show {
                 UIView.animate(withDuration: Durations.sideNavDuration) {
                     NavigationSideMenu.groupsObj.navigationLeftConstraint.constant = 0
@@ -118,7 +117,7 @@ struct NavigationSideMenu {
                 })
             }
             break
-        case 1:
+        case .starred:
             if show {
                 UIView.animate(withDuration: Durations.sideNavDuration) {
                     NavigationSideMenu.starredObj.navigationLeftConstraint.constant = 0
@@ -136,7 +135,7 @@ struct NavigationSideMenu {
                 })
             }
             break
-        case 2:
+        case .profile:
             if show {
                 UIView.animate(withDuration: Durations.sideNavDuration) {
                     NavigationSideMenu.profileObj.navigationLeftConstraint.constant = 0
@@ -154,7 +153,7 @@ struct NavigationSideMenu {
                 })
             }
             break
-        case 3:
+        case .settings:
             if show {
                 UIView.animate(withDuration: Durations.sideNavDuration) {
                     NavigationSideMenu.settingsObj.navigationLeftConstraint.constant = 0
