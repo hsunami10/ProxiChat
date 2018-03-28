@@ -19,13 +19,15 @@ import SVProgressHUD
  */
 class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
-    var locationManager = CLLocationManager()
-    var socket: SocketIOClient?
-    var newGroup = Group() // Saved for MessageViewController group info
-    var data: Any!
-    var coordinates = ""
-    let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
+    // MARK: Private Access
+    private var locationManager = CLLocationManager()
+    private var newGroup = Group() // Saved for MessageViewController group info
+    private var data: Any!
+    private var coordinates = ""
+    private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
     
+    // MARK: Public Access
+    var socket: SocketIOClient?
     /// Store the groups view controller to set socket to nil if a group is created
     var groupsObj: GroupsViewController?
     var starredGroupsObj: StarredGroupsViewController?

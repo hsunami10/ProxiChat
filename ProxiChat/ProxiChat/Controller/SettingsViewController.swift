@@ -21,12 +21,13 @@ import SVProgressHUD
  */
 
 // TODO: BUG WHEN LOGGING BACK IN / CREATING A NEW ACCOUNT AGAIN - UIAlert not animated???
-
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    // MARK: Instance variables
+    // MARK: Private Access
+    private let sectionTitles: [String] = ["Color Theme", "Notifications & Sounds", "Support"]
+    
+    // MARK: Public Access
     var socket: SocketIOClient?
-    let sectionTitles: [String] = ["Color Theme", "Notifications & Sounds", "Support"]
     
     @IBOutlet var settingsView: UIView!
     @IBOutlet var settingsViewLeftConstraint: NSLayoutConstraint!

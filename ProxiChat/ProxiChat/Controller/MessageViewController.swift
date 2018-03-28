@@ -22,6 +22,7 @@ import SwiftDate
  - maybe find a way to cache whether or not the keyboard is showing / hiding?
  
  BUGS
+ - when scrolling and showing keyboard at same time, quick drop at top of messagetableview
  */
 
 /// Holds the text left over in a certain conversation whenever the user goes back to the groups page. [group_id : text view content]
@@ -29,32 +30,33 @@ var contentNotSent: [String : String] = [:]
 
 class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
     
+    // MARK: Private Access
+    private var messageArray: [Message] = [Message]()
+    private var groupInfoArray = ["# Online", "# Stars", "Settings or View Creator Profile"] // If this is changed, cmd+f "CHANGE INDICES" or "CHANGE STRING"
+    private var lastLines = 1 // Saves the last number of lines
+    private var lastContentHeight: CGFloat = 0
+    private var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
+    
+    // Storing values for responsive layout
+    private var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
+    private var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
+    private var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
+    private var heightMessageView: CGFloat = 0 // Starting height of message view
+    private var heightMessageTableView: CGFloat = 0 // Starting height of message table view
+    private var cellHeightDict: [Int : CGFloat] = [:] // Stores actual cell heights
+    
+    // Constants
+    private let maxLines = 5 // 5 lines - max number of text view lines
+    private let placeholder = "Enter a message..."
+    private let placeholderColor: UIColor = UIColor.lightGray
+    private let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
+    private let paddingTextView = Dimensions.getPoints(10) // Top and bottom padding of text view
+    
+    // MARK: Public Access
     /// Keeps track of which groups view controller to go back to. 0 -- GroupsViewController, 1 -- StarredGroupsViewController.
     var fromViewController = -1
     var groupInformation: Group!
     var socket: SocketIOClient?
-    var messageArray: [Message] = [Message]()
-    var groupInfoArray = ["# Online", "# Stars", "Settings or View Creator Profile"] // If this is changed, cmd+f "CHANGE INDICES" or "CHANGE STRING"
-    var lastLines = 1 // Saves the last number of lines
-    var lastContentHeight: CGFloat = 0
-    var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
-    var firstLoad = true
-    var isScrollBottom = false
-    
-    // Storing values for responsive layout
-    var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
-    var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
-    var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
-    var heightMessageView: CGFloat = 0 // Starting height of message view
-    var heightMessageTableView: CGFloat = 0 // Starting height of message table view
-    var cellHeightDict: [Int : CGFloat] = [:] // Stores actual cell heights
-    
-    // Constants
-    let maxLines = 5 // 5 lines - max number of text view lines
-    let placeholder = "Enter a message..."
-    let placeholderColor: UIColor = UIColor.lightGray
-    let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
-    let paddingTextView = Dimensions.getPoints(10) // Top and bottom padding of text view
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var sendButton: UIButton!
@@ -416,12 +418,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: Scrolling Methods
-    // Check whether scrolled to bottom or not
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        isScrollBottom = scrollView.isAtBottom
-    }
-    
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group: Group) {
         UIView.setAnimationsEnabled(true)
@@ -540,7 +536,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             destinationVC.socket = socket
             // TODO: Finish this later if needed
         }
-        firstLoad = true
     }
     
     // MARK: Miscellaneous Methods

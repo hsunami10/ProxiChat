@@ -15,6 +15,12 @@ import UIKit
  Holds all the necessary properties of the navigation side menu
  */
 struct NavigationSideMenu {
+    
+    /// Differentiates which views the user is on.
+    private enum ViewControllerEnum {
+        case groups, starred, profile, settings
+    }
+    
     static let duration: TimeInterval = Durations.sideNavDuration
     static let shiftFactor: CGFloat = 0.70
     /**

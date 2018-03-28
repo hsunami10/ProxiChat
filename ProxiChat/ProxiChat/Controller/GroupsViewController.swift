@@ -26,21 +26,22 @@ import CoreLocation
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
-    // MARK: Instance variables
-    var locationManager = CLLocationManager()
-    var socket: SocketIOClient?
-    var username: String = ""
-    var refreshControl: UIRefreshControl!
-    var groupArray: [Group] = [Group]()
-    var selectedGroup = Group()
-    var delegate: JoinGroupDelegate?
-    let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
+    // MARK: Private Access
+    private var locationManager = CLLocationManager()
+    private var refreshControl: UIRefreshControl!
+    private var groupArray: [Group] = [Group]()
+    private var selectedGroup = Group()
+    private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
     
+    // MARK: Public Access
     /**
      Stores the last visited message view controller.
      Set the socket of this object to "nil" if the user navigates to another view that's not the message view.
      */
     var messageObj: MessageViewController?
+    var delegate: JoinGroupDelegate?
+    var socket: SocketIOClient?
+    var username: String = ""
     
     // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!

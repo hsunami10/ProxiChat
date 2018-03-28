@@ -14,13 +14,16 @@ import CoreGraphics
 
 class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     
+    // MARK: Private Access
+    private var renderedImageView: UIImageView?
+    private var circleLeftMargin: CGFloat = 0
+    private var circleTopMargin: CGFloat = 0
+    private var diameter: CGFloat = 0
+    private var firstZoom = false
+    
+    // MARK: Public Access
     var image: UIImage? // UIImagePickerController image
-    var renderedImageView: UIImageView?
     var delegate: UpdatePictureDelegate?
-    var circleLeftMargin: CGFloat = 0
-    var circleTopMargin: CGFloat = 0
-    var diameter: CGFloat = 0
-    var firstZoom = false
 
     @IBOutlet var scrollView: UIScrollView!
     @IBOutlet var scrollViewWidth: NSLayoutConstraint!
@@ -57,18 +60,23 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         scrollViewWidth.constant = diameter + lineThickness
         scrollViewHeight.constant = scrollViewWidth.constant
         
-        // TODO: Fix this later - test with multiple image sizes first
+        // TODO: Fix this later - test with multiple image sizes first - look a vent for an example
+        /* TODO: Scale min and max zoom scales
+         Portrait:
+            - min -> height is size of scrollview height
+         Landscape:
+            - min -> width is size of scrollview width
+         Square:
+            - min -> width & height - scrollview width & height
+         */
         // Create image & image view
+        // Adjust image view dimensions according to width / height of chosenImage
         let imageView = UIImageView()
         if let chosenImage = image {
             var frame = CGRect()
             var fromTop: CGFloat = 0
             
             if chosenImage.size.height > chosenImage.size.width { // If portrait
-//                fromTop = -circleTopMargin - lineThickness / 2
-//                frame = CGRect(x: -circleLeftMargin - lineThickness / 2, y: fromTop, width: self.view.frame.height * (chosenImage.size.width / chosenImage.size.height), height: self.view.frame.height)
-                
-                // TODO: Change this later?
                 let imgViewWidth = scrollViewHeight.constant * (chosenImage.size.width / chosenImage.size.height)
                 frame = CGRect(x: scrollViewWidth.constant / 2 - imgViewWidth / 2, y: 0, width: imgViewWidth, height: scrollViewHeight.constant)
             } else if chosenImage.size.height < chosenImage.size.width { // If landscape

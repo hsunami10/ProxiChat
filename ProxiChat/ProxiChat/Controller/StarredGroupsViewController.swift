@@ -15,10 +15,12 @@ import SVProgressHUD
 
 class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    // MARK: Instance variables
+    // MARK: Private Access
+    private var groupArray: [Group] = [Group]()
+    private var selectedGroup = Group()
+    
+    // MARK: Public Access
     var socket: SocketIOClient?
-    var groupArray: [Group] = [Group]()
-    var selectedGroup = Group()
     var delegate: JoinGroupDelegate?
     var messageObj: MessageViewController?
     

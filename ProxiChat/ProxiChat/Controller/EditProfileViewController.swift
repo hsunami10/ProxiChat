@@ -15,12 +15,13 @@ import UIKit
 
 class EditProfileViewController: UIViewController {
     
-    // MARK: Instance variables
+    // MARK: Private Access
+    private let textFieldHeight: CGFloat = Dimensions.getPoints(30)
+    private let textViewHeight: CGFloat = Dimensions.getPoints(90)
+    
+    // MARK: Public Access
     var row = -1
     var delegate: UpdateProfileDelegate?
-    // Change these accordingly
-    let textFieldHeight: CGFloat = 30
-    let textViewHeight: CGFloat = 90
     
     // Height of button for calculating field view height constraint. Top & bottom constraints are 16 each
     @IBOutlet var updateButton: UIButton!

@@ -27,21 +27,23 @@ import SwiftyJSON
 
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UpdateProfileDelegate, UpdatePictureDelegate {
     
-    // MARK: Instance variables
-    var socket: SocketIOClient?
-    var rowSelected = -1
-    let imagePicker = UIImagePickerController()
-    var image: UIImage?
+    // MARK: Private Access
+    private var rowSelected = -1
+    private let imagePicker = UIImagePickerController()
+    private var image: UIImage?
     
     /// This string is nil if a profile field is not edited
-    var editedContent: String?
+    private var editedContent: String?
     
     /// TableView number of rows
-    let numOfRows = 4
+    private let numOfRows = 4
     
     /// Alert dialog to show when the user denies permissions.
     let deniedAlert = UIAlertController(title: "Oops!", message: "", preferredStyle: UIAlertControllerStyle.alert)
     let unavailableAlert = UIAlertController(title: "Sorry!", message: "", preferredStyle: .alert)
+    
+    // MARK: Public Access
+    var socket: SocketIOClient?
     
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var profileViewLeftConstraint: NSLayoutConstraint!
