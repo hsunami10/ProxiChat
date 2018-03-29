@@ -94,9 +94,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             let usersDB = Database.database().reference().child("Users")
             
             usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
-                if snapshot.hasChild(username) {
-                    self.errorLabel.text = "Username already taken."
-                } else {
+                if !snapshot.hasChild(username) {
                     SVProgressHUD.show()
                     
                     // Email registration
@@ -105,7 +103,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                             print(error!.localizedDescription)
                             self.errorLabel.text = error!.localizedDescription
                         } else {
-                            // Allows for username log in
+                            // Store default user data
                             usersDB.child(username).setValue([
                                 "email" : email,
                                 "password" : password,
@@ -116,15 +114,12 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                                 "bio" : "",
                                 "picture" : "",
                                 ])
-                            
-                            UserData.username = username
-                            UserData.email = (user?.email)!
-                            UserData.password = password
-                            
                             self.performSegue(withIdentifier: "goToGroups", sender: self)
                         }
                         SVProgressHUD.dismiss()
                     })
+                } else {
+                    self.errorLabel.text = "Username already taken."
                 }
             })
         }

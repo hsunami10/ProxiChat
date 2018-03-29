@@ -200,10 +200,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 
                 // Join room after you get messages
-                self.socket?.emit("join_room", [
-                    "group_id": self.groupInformation.id,
-                    "username": UserData.username
-                    ])
+//                self.socket?.emit("join_room", [
+//                    "group_id": self.groupInformation.id,
+//                    "username": UserData.username
+//                    ])
             } else {
                 SVProgressHUD.showError(withStatus: error_msg)
             }

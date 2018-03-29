@@ -15,9 +15,12 @@ struct Group {
     var is_public = true
     var password = ""
     var creator = ""
-    var coordinates = ""
-    var dateCreated = "" // Formatted readable date
-    var id = "" // Generated in node - shortid
+    var latitude = 0.0
+    var longitude = 0.0
+    var dateCreated = ""
     var image: UIImage?
-    var rawDate = "" // Unaltered date
+    
+    // Delete later
+    var rawDate = ""
+    var id = ""
 }

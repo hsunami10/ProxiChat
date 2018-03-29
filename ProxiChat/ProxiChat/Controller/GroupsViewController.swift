@@ -31,7 +31,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     private var groupArray: [Group] = [Group]()
     private var selectedGroup = Group()
     private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
-    private var usersDB = Database.database().reference().child("Users")
+    private let usersDB = Database.database().reference().child("Users")
     
     // MARK: Public Access
     /**
@@ -97,6 +97,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 if snapshot.hasChild(self.username) {
                     let allUsers = snapshot.value as! Dictionary<String, Any>
                     if let user = allUsers[self.username] as? Dictionary<String, Any> {
+                        
                         // Cache user data
                         UserData.bio = user["bio"] as! String
                         UserData.connected = true
@@ -250,11 +251,11 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     textField.isSecureTextEntry = true
                 })
                 alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
-                    self.socket?.emit("join_private_group", [
-                        "id": self.groupArray[indexPath.row].id,
-                        "passwordEntered": alert.textFields?.first?.text!,
-                        "rowIndex": String(indexPath.row)
-                        ])
+//                    self.socket?.emit("join_private_group", [
+//                        "id": self.groupArray[indexPath.row].id,
+//                        "passwordEntered": alert.textFields?.first?.text!,
+//                        "rowIndex": String(indexPath.row)
+//                        ])
                 }))
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
                 
@@ -349,9 +350,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             destinationVC.fromViewController = 0
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
-            destinationVC.socket = socket
-            destinationVC.groupsObj = self // Handle socket = nil only if a group is created
-        } else if segue.identifier == "goToStarred" {
+//            destinationVC.socket = socket
+            destinationVC.groupsObj = self // MessageView - handle which screen to go back to
+        }else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.socket = socket
             UserData.createNewMessageViewController = true
@@ -417,14 +418,14 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     var groupObj = Group()
                     let cd = ConvertDate(date: group["date_created"].stringValue)
                     
-                    groupObj.coordinates = group["coordinates"].stringValue
+//                    groupObj.coordinates = group["coordinates"].stringValue
                     groupObj.creator = group["created_by"].stringValue
                     groupObj.dateCreated = cd.convert()
-                    groupObj.id = group["id"].stringValue
+//                    groupObj.id = group["id"].stringValue
                     groupObj.is_public = group["is_public"].boolValue
                     groupObj.numMembers = group["number_members"].intValue
                     groupObj.password = group["password"].stringValue
-                    groupObj.rawDate = group["date_created"].stringValue
+//                    groupObj.rawDate = group["date_created"].stringValue
                     groupObj.title = group["title"].stringValue
                     
                     self.groupArray.append(groupObj)

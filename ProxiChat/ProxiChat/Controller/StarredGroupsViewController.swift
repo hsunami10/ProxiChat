@@ -72,15 +72,15 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
                     var groupObj = Group()
                     let cd = ConvertDate(date: group["date_created"].stringValue)
                     
-                    groupObj.coordinates = group["coordinates"].stringValue
+//                    groupObj.coordinates = group["coordinates"].stringValue
                     groupObj.creator = group["created_by"].stringValue
                     groupObj.dateCreated = cd.convert()
-                    groupObj.id = group["id"].stringValue
+//                    groupObj.id = group["id"].stringValue
                     groupObj.is_public = group["is_public"].boolValue
                     groupObj.numMembers = group["number_members"].intValue
                     groupObj.password = group["password"].stringValue
                     groupObj.title = group["title"].stringValue
-                    groupObj.rawDate = group["date_created"].stringValue
+//                    groupObj.rawDate = group["date_created"].stringValue
                     
                     self.groupArray.append(groupObj)
                 }
@@ -173,8 +173,8 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
             destinationVC.fromViewController = 1
         } else if segue.identifier == "createGroupStarred" {
             let destinationVC = segue.destination as! CreateGroupViewController
-            destinationVC.socket = socket
-            destinationVC.starredGroupsObj = self // Handle socket = nil only if a group is created
+//            destinationVC.socket = socket
+            destinationVC.starredGroupsObj = self // MessageView - handle which screen to go back to
         } else if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket

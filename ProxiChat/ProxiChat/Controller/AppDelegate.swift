@@ -148,7 +148,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func goOffline() {
-        let username = UserDefaults.standard.value(forKey: "proxiChatUsername") as! String
+        guard let username = UserDefaults.standard.value(forKey: "proxiChatUsername") as? String else { return }
         Database.database().reference().child("Users").child(username).updateChildValues(["is_online" : false])
     }
     
