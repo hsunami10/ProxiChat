@@ -7,27 +7,26 @@
 //
 
 import UIKit
-import SocketIO
 import SwiftyJSON
 import SVProgressHUD
+import Firebase
 
 /*
  TODO / BUGS:
  - add sending email if someone forgot username and/or password
+ - change status to online in prepareSegue function
  */
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
     
-    var socket: SocketIOClient?
-
-    @IBOutlet var usernameTextField: UITextField!
+    @IBOutlet var usernameTextField: UITextField! // Username and Email
     @IBOutlet var passwordTextField: UITextField!
     @IBOutlet var errorLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        usernameTextField.placeholder = "Username / Email"
         errorLabel.text = " "
-        eventHandlers()
         passwordTextField.delegate = self
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
     }
@@ -35,27 +34,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-    
-    // MARK: SocketIO Event Handlers
-    func eventHandlers() {
-        socket?.on("sign_in_response", callback: { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let error_msg = JSON(data[0])["error_msg"].stringValue
-            
-            if success {
-                // Save log in
-                UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
-                UserDefaults.standard.set(self.usernameTextField.text!, forKey: "proxiChatUsername")
-                UserDefaults.standard.synchronize()
-                
-                SVProgressHUD.dismiss()
-                self.performSegue(withIdentifier: "goToGroups", sender: self)
-            } else {
-                SVProgressHUD.dismiss()
-                self.errorLabel.text = error_msg
-            }
-        })
     }
     
     // MARK: UITextField Delegate Methods
@@ -69,11 +47,12 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.socket = socket
             destinationVC.username = usernameTextField.text!
             
-            socket?.off("sign_in_response")
-            socket = nil
+            // Save log in
+            UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
+            UserDefaults.standard.set(self.usernameTextField.text!, forKey: "proxiChatUsername")
+            UserDefaults.standard.synchronize()
         }
     }
     
@@ -102,7 +81,30 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             errorLabel.text = "Invalid username and/or password."
         } else {
             SVProgressHUD.show()
-            socket?.emit("sign_in", username, password)
+            
+            // If valid email
+            if username.contains("@") {
+                if Validate.isValidEmail(username) {
+                    Auth.auth().signIn(withEmail: username, password: password, completion: { (user, error) in
+                        if error != nil {
+                            self.errorLabel.text = error?.localizedDescription
+                        } else {
+                            self.performSegue(withIdentifier: "goToGroups", sender: self)
+                        }
+                    })
+                } else {
+                    self.errorLabel.text = "Invalid email."
+                }
+            } else { // If username
+                Database.database().reference().child("Users").observeSingleEvent(of: .value, with: { (snapshot) in
+                    if snapshot.hasChild(username) {
+                        self.performSegue(withIdentifier: "goToGroups", sender: self)
+                    } else {
+                        self.errorLabel.text = "Username does not exist."
+                    }
+                })
+            }
+            SVProgressHUD.dismiss()
         }
     }
 }

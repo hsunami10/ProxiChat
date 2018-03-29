@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import SocketIO
+import Firebase
 
 /*
  Key things to remember / notes:
@@ -90,6 +90,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Dimensions.safeAreaHeight = (window?.frame.height)! - UIApplication.shared.statusBarFrame.height
         Dimensions.safeAreaWidth = (window?.frame.width)!
         
+        let domain = Bundle.main.bundleIdentifier!
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        UserDefaults.standard.synchronize()
+        
         // Go to groups page if already logged in
         let logInStatus = UserDefaults.standard.bool(forKey: "isUserLoggedInProxiChat") // Can be nil
         if logInStatus {
@@ -98,7 +102,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             if let username = UserDefaults.standard.object(forKey: "proxiChatUsername") {
                 page.username = username as! String // Set saved username
-                page.socket = SocketIOClient(socketURL: URL(string: "http://localhost:3000")!)
             }
             window?.rootViewController = page // Set root view controller
             window?.makeKeyAndVisible()
@@ -111,6 +114,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             contentNotSent = [:]
         }
         
+        // Initialize and configure Firebase
+        FirebaseApp.configure()
+        
         return true
     }
 
@@ -118,6 +124,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
+        goOffline()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -137,8 +144,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
-        
-        // TODO: Sent leave room event
+        goOffline()
+    }
+    
+    func goOffline() {
+        let username = UserDefaults.standard.value(forKey: "proxiChatUsername") as! String
+        Database.database().reference().child("Users").child(username).updateChildValues(["is_online" : false])
     }
     
 }

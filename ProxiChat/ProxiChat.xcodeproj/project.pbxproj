@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		62B2CB57F5955BEB62EEEF6B /* Pods_ProxiChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */; };
 		E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40A948D1FDF76FC006097B1 /* Validate.swift */; };
+		E40F0508206D29CE00D484A3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E40F0507206D29CE00D484A3 /* GoogleService-Info.plist */; };
 		E41F2A2320680F3A00C0A807 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = E41F2A2220680F3A00C0A807 /* Protocols.swift */; };
 		E429D1F81FEB7B7100EAAEFD /* SettingsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E429D1F61FEB7B7100EAAEFD /* SettingsCell.swift */; };
 		E429D1F91FEB7B7100EAAEFD /* SettingsCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E429D1F71FEB7B7100EAAEFD /* SettingsCell.xib */; };
@@ -55,6 +56,7 @@
 		5F8E292D05CB9C559164906A /* Pods-ProxiChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProxiChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat.debug.xcconfig"; sourceTree = "<group>"; };
 		ADEA3E950A31125E27FD76BA /* Pods_ProxiChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProxiChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E40A948D1FDF76FC006097B1 /* Validate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validate.swift; sourceTree = "<group>"; };
+		E40F0507206D29CE00D484A3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		E41F2A2220680F3A00C0A807 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		E429D1F61FEB7B7100EAAEFD /* SettingsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCell.swift; sourceTree = "<group>"; };
 		E429D1F71FEB7B7100EAAEFD /* SettingsCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SettingsCell.xib; sourceTree = "<group>"; };
@@ -232,8 +234,8 @@
 			children = (
 				E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */,
 				E4B3D75C1FBB849D00F539EA /* WelcomeViewController.swift */,
-				E4B3D75E1FBB857900F539EA /* LogInViewController.swift */,
 				E4B3D7601FBB85AF00F539EA /* SignUpViewController.swift */,
+				E4B3D75E1FBB857900F539EA /* LogInViewController.swift */,
 				E4CB11951FC0D71D003B627E /* MessageViewController.swift */,
 				E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */,
 				E4CB11841FBC10A7003B627E /* GroupsViewController.swift */,
@@ -251,6 +253,7 @@
 			isa = PBXGroup;
 			children = (
 				E4B3D7521FBA9D2000F539EA /* Info.plist */,
+				E40F0507206D29CE00D484A3 /* GoogleService-Info.plist */,
 			);
 			path = "Supporting Files";
 			sourceTree = "<group>";
@@ -342,6 +345,7 @@
 				E4E258FE1FDD9EF6006B807C /* ProfileCell.xib in Resources */,
 				E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */,
 				E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */,
+				E40F0508206D29CE00D484A3 /* GoogleService-Info.plist in Resources */,
 				E4820CA11FEEFF1900D1FC93 /* GroupInfoCell.xib in Resources */,
 				E4CB118E1FBD12B9003B627E /* GroupCell.xib in Resources */,
 			);
@@ -373,20 +377,28 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/ChameleonFramework/ChameleonFramework.framework",
+				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
 				"${BUILT_PRODUCTS_DIR}/SVProgressHUD/SVProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/Socket.IO-Client-Swift/SocketIO.framework",
 				"${BUILT_PRODUCTS_DIR}/Starscream/Starscream.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftDate/SwiftDate.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftyJSON/SwiftyJSON.framework",
+				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
+				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ChameleonFramework.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SVProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketIO.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Starscream.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftDate.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyJSON.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

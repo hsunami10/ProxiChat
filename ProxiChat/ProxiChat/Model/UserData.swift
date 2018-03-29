@@ -14,7 +14,8 @@ struct UserData {
     static var password = ""
     static var radius = 0
     static var is_online = true // TODO: Change values later
-    static var coordinates = ""
+    static var latitude = 0.0
+    static var longitude = 0.0
     static var username = ""
     static var bio = ""
     static var email = ""

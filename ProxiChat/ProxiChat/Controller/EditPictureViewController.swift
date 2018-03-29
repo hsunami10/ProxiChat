@@ -136,6 +136,8 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
         let offSetY: CGFloat = max((scrollView.bounds.size.height - scrollView.contentSize.height) * 0.5, 0)
         
         subView.center = CGPoint(x: scrollView.contentSize.width * 0.5 + offSetX, y: scrollView.contentSize.height * 0.5 + offSetY)
+        
+        print("scale: ", scrollView.zoomScale)
     }
     
     // MARK: IBOutlet Actions

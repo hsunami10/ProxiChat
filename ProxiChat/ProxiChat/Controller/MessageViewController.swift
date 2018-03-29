@@ -97,7 +97,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.font = Font.getFont(16)
         sendButton.titleLabel?.font = Font.getFont(15)
         
-        eventHandlers()
+//        eventHandlers()
         
         messageTableView.delegate = self
         messageTableView.dataSource = self
@@ -133,7 +133,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         // Get messages - on response, join room
         // TODO: Paginate messages
-        socket?.emit("get_messages_on_start", groupInformation.id)
+//        socket?.emit("get_messages_on_start", groupInformation.id)
         
         initializeLayout()
     }
@@ -231,10 +231,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.resignFirstResponder()
         messageTextView.text = ""
         
-        socket?.emit("leave_room", [
-            "group_id": groupInformation.id,
-            "username": UserData.username
-            ])
+//        socket?.emit("leave_room", [
+//            "group_id": groupInformation.id,
+//            "username": UserData.username
+//            ])
     }
     
     @IBAction func showGroupInfo(_ sender: Any) {

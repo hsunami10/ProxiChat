@@ -11,6 +11,7 @@ import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 import CoreLocation
+import Firebase
 
 /*
  TODO
@@ -20,8 +21,6 @@ import CoreLocation
  - ADD SEARCH BAR
  
  BUGS
- - going into profile / settings views, then going back to "find groups" view and reloading gets ALL groups?
-    - something wrong with db query!!!
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -32,6 +31,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     private var groupArray: [Group] = [Group]()
     private var selectedGroup = Group()
     private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
+    private var usersDB = Database.database().reference().child("Users")
     
     // MARK: Public Access
     /**
@@ -58,8 +58,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     override func viewDidLoad() {
         super.viewDidLoad()
         UIView.setAnimationsEnabled(true)
-        infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
-        eventHandlers()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
@@ -92,19 +90,36 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
-        // If the user is not already connected, then connect to the server and request location usage.
+        // If the user is not already connected, then get user data and request location usage.
         if !UserData.connected {
-            // TODO: Add reconnecting later - socket.reconnect()
-            socket?.connect(timeoutAfter: 5.0, withHandler: {
-                SVProgressHUD.showError(withStatus: "Connection Failed.")
-                // TODO: Add UIAlertController to reconnect and show failure.
+            // Check if the user exists
+            usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
+                if snapshot.hasChild(self.username) {
+                    let allUsers = snapshot.value as! Dictionary<String, Any>
+                    if let user = allUsers[self.username] as? Dictionary<String, Any> {
+                        // Cache user data
+                        UserData.bio = user["bio"] as! String
+                        UserData.connected = true
+                        UserData.email = user["email"] as! String
+                        UserData.is_online = user["is_online"] as! Bool
+                        UserData.latitude = user["latitude"] as! Double
+                        UserData.longitude = user["longitude"] as! Double
+                        UserData.password = user["password"] as! String
+                        UserData.picture = user["picture"] as! String
+                        UserData.radius = user["radius"] as! Int
+                        UserData.username = self.username
+                        
+                        // Update location
+                        self.locationManager.requestWhenInUseAuthorization()
+                        return
+                    }
+                }
+                SVProgressHUD.showError(withStatus: "The account with the specified username does not exist. Please try again.")
             })
-            socket?.joinNamespace("/proxichat_namespace")
         } else {
             // Update last saved location here
             updateTableWithGroups(LocalGroupsData.data)
         }
-        self.view.layoutIfNeeded()
     }
     
     // MARK: SocketIO Event Handlers
@@ -120,17 +135,17 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             let error_msg = JSON(data[0])["error_msg"].stringValue
             
             if success {
-                let user = JSON(data[0])["data"].dictionaryObject!
+//                let user = JSON(data[0])["data"].dictionaryObject!
                 
-                // Cache user data in global struct
-                UserData.bio = String(describing: user["bio"]!)
-                UserData.coordinates = String(describing: user["coordinates"]!)
-                UserData.email = String(describing: user["email"]!)
-                UserData.is_online = user["is_online"] as! Bool
-                UserData.password = String(describing: user["password"]!)
-                UserData.picture = String(describing: user["picture"]!)
-                UserData.radius = user["radius"] as! Int
-                UserData.username = String(describing: user["username"]!)
+//                // Cache user data in global struct
+//                UserData.bio = String(describing: user["bio"]!)
+//                UserData.coordinates = String(describing: user["coordinates"]!)
+//                UserData.email = String(describing: user["email"]!)
+//                UserData.is_online = user["is_online"] as! Bool
+//                UserData.password = String(describing: user["password"]!)
+//                UserData.picture = String(describing: user["picture"]!)
+//                UserData.radius = user["radius"] as! Int
+//                UserData.username = String(describing: user["username"]!)
                 
                 print("get user radius: " + String(UserData.radius))
                 
@@ -276,13 +291,17 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if let location = locations.last {
             // If the current location (timestamps are the same)
             if String(describing: Date()) == String(describing: location.timestamp) {
-                socket?.emit("update_location_and_get_groups", [
-                    "latitude": location.coordinate.latitude,
-                    "longitude": location.coordinate.longitude,
-                    "username": username,
-                    "radius": UserData.radius
-                    ])
-                UserData.coordinates = "\(location.coordinate.latitude) \(location.coordinate.longitude)"
+                UserData.latitude = location.coordinate.latitude
+                UserData.longitude = location.coordinate.longitude
+                
+                usersDB.child(UserData.username).updateChildValues(
+                    ["latitude" : UserData.latitude, "longitude" : UserData.longitude, "is_online" : true], withCompletionBlock: { (error, ref) in
+                    SVProgressHUD.dismiss()
+                    if error != nil {
+                        SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                    }
+                })
+                
                 manager.stopUpdatingLocation()
             }
         }

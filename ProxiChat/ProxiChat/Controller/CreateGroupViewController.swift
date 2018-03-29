@@ -95,7 +95,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
             let error_msg = JSON(data[0])["error_msg"].stringValue
             if success {
                 self.data = data[0] // Save groups in new proximity
-                self.newGroup.coordinates = UserData.coordinates
+//                self.newGroup.coordinates = UserData.coordinates
                 self.socket?.emit("create_group", [
                     "created_by": self.newGroup.creator,
                     "is_public": self.newGroup.is_public,
@@ -121,7 +121,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                     "username": UserData.username,
                     "radius": UserData.radius
                     ])
-                UserData.coordinates = "\(location.coordinate.latitude) \(location.coordinate.longitude)"
+//                UserData.coordinates = "\(location.coordinate.latitude) \(location.coordinate.longitude)"
                 manager.stopUpdatingLocation()
             }
         }

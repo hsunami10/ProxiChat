@@ -10,6 +10,7 @@ import UIKit
 import SocketIO
 import SwiftyJSON
 import SVProgressHUD
+import Firebase
 
 /*
  Sections: Theme, Notifications & Sounds, Support - then logout/signout & delete account
@@ -97,9 +98,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func logOut(_ sender: Any) {
         let alert = UIAlertController(title: "Log Out", message: "Are you sure you want to log out?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
-            self.removeUserDefaults()
-            self.revealTopToBottomTransition()
-            self.performSegue(withIdentifier: "logOutDelete", sender: self)
+            do {
+                try Auth.auth().signOut()
+                
+                self.removeUserDefaults()
+                self.revealTopToBottomTransition()
+                self.performSegue(withIdentifier: "logOutDelete", sender: self)
+            } catch {
+                SVProgressHUD.showError(withStatus: "There was a problem logging out. Please try again.")
+            }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
@@ -187,11 +194,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             let destinationVC = segue.destination as! ProfileViewController
             destinationVC.socket = socket
         } else if segue.identifier == "logOutDelete" {
-            let destinationVC = segue.destination as! WelcomeViewController
-            destinationVC.socket = socket
             UserData.connected = false
-            socket?.leaveNamespace()
-            removeUserDefaults()
         }
         
         // TODO: Change this later when other features are added

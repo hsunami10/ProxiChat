@@ -7,13 +7,18 @@
 //
 
 import UIKit
-import SocketIO
 import SwiftyJSON
 import SVProgressHUD
+import Firebase
+
+/*
+ TODO
+ 
+ BUGS
+ - fix checking for existing username - observeSingleEvent always runs after???
+ */
 
 class SignUpViewController: UIViewController, UITextFieldDelegate {
-    
-    var socket: SocketIOClient?
     
     @IBOutlet var usernameTextField: UITextField!
     @IBOutlet var passwordTextField: UITextField!
@@ -24,7 +29,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         errorLabel.text = " "
-        eventHandlers()
         emailTextField.delegate = self
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
     }
@@ -32,27 +36,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-    
-    // MARK: SocketIO Event Handlers
-    func eventHandlers() {
-        socket?.on("sign_up_response", callback: { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let error_msg = JSON(data[0])["error_msg"].stringValue
-            
-            // Successfully signed in?
-            if success {
-                UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
-                UserDefaults.standard.set(self.usernameTextField.text!, forKey: "proxiChatUsername")
-                UserDefaults.standard.synchronize()
-                
-                SVProgressHUD.dismiss()
-                self.performSegue(withIdentifier: "goToGroups", sender: self)
-            } else {
-                SVProgressHUD.dismiss()
-                self.errorLabel.text = error_msg
-            }
-        })
     }
     
     // MARK: UITextField Delegate Methods
@@ -69,11 +52,12 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         }
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.socket = socket
             destinationVC.username = usernameTextField.text!
             
-            socket?.off("sign_up_response")
-            socket = nil
+            // Save log in
+            UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
+            UserDefaults.standard.set(self.usernameTextField.text!, forKey: "proxiChatUsername")
+            UserDefaults.standard.synchronize()
         }
     }
     
@@ -107,8 +91,42 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         } else if !Validate.isValidEmail(email) {
             errorLabel.text = "Email address not valid."
         } else {
-            SVProgressHUD.show()
-            socket?.emit("sign_up", username, password, email)
+            let usersDB = Database.database().reference().child("Users")
+            
+            usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
+                if snapshot.hasChild(username) {
+                    self.errorLabel.text = "Username already taken."
+                } else {
+                    SVProgressHUD.show()
+                    
+                    // Email registration
+                    Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
+                        if error != nil {
+                            print(error!.localizedDescription)
+                            self.errorLabel.text = error!.localizedDescription
+                        } else {
+                            // Allows for username log in
+                            usersDB.child(username).setValue([
+                                "email" : email,
+                                "password" : password,
+                                "radius" : 40,
+                                "is_online" : true,
+                                "latitude" : 0,
+                                "longitude" : 0,
+                                "bio" : "",
+                                "picture" : "",
+                                ])
+                            
+                            UserData.username = username
+                            UserData.email = (user?.email)!
+                            UserData.password = password
+                            
+                            self.performSegue(withIdentifier: "goToGroups", sender: self)
+                        }
+                        SVProgressHUD.dismiss()
+                    })
+                }
+            })
         }
     }
 }
