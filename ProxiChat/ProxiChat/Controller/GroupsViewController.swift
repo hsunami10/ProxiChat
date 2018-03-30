@@ -121,17 +121,29 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 SVProgressHUD.showError(withStatus: "The account with the specified username does not exist. Please try again.")
             })
         } else {
-            // Update last saved location here
-            updateTableWithGroups(LocalGroupsData.data)
+            SVProgressHUD.show()
+            
+            // Update table with last snapshot of database
+            DispatchQueue.global().async {
+                let dict = LocalGroupsData.cachedSnapshot.value as! Dictionary<String, Any>
+                self.groupArray = [Group]()
+                
+                LocalGroupsData.lastGroupsKeys.forEach({ (key) in
+                    let group = dict[key] as! Dictionary<String, Any>
+                    let groupObj = Group.init(group["title"], group["num_members"], group["num_online"], group["is_public"], group["password"], group["creator"], group["latitude"], group["longitude"], group["date_created"], group["image"])
+                    self.groupArray.append(groupObj)
+                })
+                
+                DispatchQueue.main.async {
+                    self.groupsTableView.reloadData()
+                    self.stopLoading()
+                }
+            }
         }
     }
     
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
-        // Update array of GroupCell objects to display on uitableview
-        socket?.on("update_location_and_get_groups_response", callback: { (data, ack) in
-            self.updateTableWithGroups(data[0])
-        })
         // Join private group response
         socket?.on("join_private_group_response") { (data, ack) in
             let success = JSON(data[0])["success"].boolValue
@@ -223,6 +235,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 })
                 alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
                     // TODO: Finish group password authentication
+                    
 //                    self.socket?.emit("join_private_group", [
 //                        "id": self.groupArray[indexPath.row].id,
 //                        "passwordEntered": alert.textFields?.first?.text!,
@@ -275,43 +288,41 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         SVProgressHUD.dismiss()
                         SVProgressHUD.showError(withStatus: error?.localizedDescription)
                     } else {
-                        // Get all groups in proximity
+                        // Get all group keys in proximity
                         let groupLocationsDB = GeoFire(firebaseRef: Database.database().reference().child(FirebaseNames.group_locations))
                         let geoQuery = groupLocationsDB.query(at: location, withRadius: UserData.radius)
                         
-                        var groups = [String]()
+                        LocalGroupsData.lastGroupsKeys = [String]()
                         let registration = geoQuery.observe(.keyEntered, with: { (key, location) in
-                            groups.append(key)
+                            LocalGroupsData.lastGroupsKeys.append(key)
                         })
                         geoQuery.observeReady({
                             geoQuery.removeObserver(withFirebaseHandle: registration)
                             
-                            DispatchQueue.global().async {
-                                let groupsDB = Database.database().reference().child(FirebaseNames.groups)
-                                self.groupArray = [Group]()
-                                
-                                groupsDB.observe(.value, with: { (snapshot) in
-                                    for key in groups {
-                                        if snapshot.hasChild(key) {
-                                            let group = (snapshot.value as! Dictionary<String, Any>)[key] as! Dictionary<String, Any>
-                                            
-                                            let groupObj = Group(key, group["num_members"], group["num_online"], group["is_public"], group["password"], group["creator"], group["latitude"], group["longitude"], group["date_created"], group["image"])
-                                            
-                                            print("append :" + key)
-                                            self.groupArray.append(groupObj)
-                                        } else {
-                                            SVProgressHUD.dismiss()
-                                            SVProgressHUD.showError(withStatus: "The \(key) group does not exist.")
-                                        }
+                            let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+                            self.groupArray = [Group]()
+                            
+                            // Get all groups' info - async
+                            groupsDB.observe(.value, with: { (snapshot) in
+                                for key in LocalGroupsData.lastGroupsKeys {
+                                    if snapshot.hasChild(key) {
+                                        let group = (snapshot.value as! Dictionary<String, Any>)[key] as! Dictionary<String, Any>
+                                        
+                                        let groupObj = Group.init(group["title"], group["num_members"], group["num_online"], group["is_public"], group["password"], group["creator"], group["latitude"], group["longitude"], group["date_created"], group["image"])
+                                        
+                                        self.groupArray.append(groupObj)
+                                    } else {
+                                        SVProgressHUD.dismiss()
+                                        SVProgressHUD.showError(withStatus: "The \(key) group does not exist.")
                                     }
-                                })
+                                }
                                 
                                 DispatchQueue.main.async {
-                                    // TODO: Update UI here
+                                    LocalGroupsData.cachedSnapshot = snapshot
                                     self.groupsTableView.reloadData()
                                     self.stopLoading()
                                 }
-                            }
+                            })
                         })
                     }
                 })
@@ -415,45 +426,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.view.window?.layer.add(transition, forKey: nil)
     }
     
-    /// Take JSON data and update UITableView.
-    func updateTableWithGroups(_ data: Any) {
-        let success = JSON(data)["success"].boolValue
-        let groups = JSON(data)["groups"].arrayValue // Array of groups
-        let error_msg = JSON(data)["error_msg"].stringValue
-        
-        // If getting data was successful
-        if success {
-            LocalGroupsData.data = data
-            self.groupArray = [Group]()
-            
-            DispatchQueue.global().async {
-                for group in groups {
-//                    var groupObj = Group()
-//                    let cd = ConvertDate(date: group["date_created"].stringValue)
-//
-//                    groupObj.creator = group["created_by"].stringValue
-//                    groupObj.dateCreated = cd.convert()
-//                    groupObj.is_public = group["is_public"].boolValue
-//                    groupObj.numMembers = group["number_members"].intValue
-//                    groupObj.password = group["password"].stringValue
-//                    groupObj.title = group["title"].stringValue
-//
-//                    self.groupArray.append(groupObj)
-                }
-                
-                DispatchQueue.main.async {
-                    self.groupsTableView.reloadData()
-                    self.stopLoading()
-                }
-            }
-            // TODO: Question - stop loading before or after everything is finished?
-        } else {
-            SVProgressHUD.showError(withStatus: error_msg)
-            self.stopLoading()
-        }
-    }
-    
-    /// Stop refreshing and cancel progress indicator.
+    /// Stop refreshing and cancel SVProgressHUD indicator.
     func stopLoading() {
         refreshControl.endRefreshing()
         if SVProgressHUD.isVisible() {

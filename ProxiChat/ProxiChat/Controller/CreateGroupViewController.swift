@@ -97,7 +97,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                             "latitude": location.coordinate.latitude,
                             "longitude": location.coordinate.longitude,
                             "date_created": self.newGroup.dateCreated,
-                            "image": ""
+                            "image": "",
+                            "title": self.newGroup.title
                             ])
                         
                         // Set the location of the group
@@ -113,8 +114,26 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                                         groupsDB.child(self.newGroup.title).removeValue()
                                         SVProgressHUD.showError(withStatus: error?.localizedDescription)
                                     } else {
-                                        // TODO: Get new groups with new location
-                                        print("TODO: get new groups with new location")
+                                        // Get groups with new location - only update snapshot and keys
+                                        // Get all group keys in proximity
+                                        let groupLocationsDB = GeoFire(firebaseRef: Database.database().reference().child(FirebaseNames.group_locations))
+                                        let geoQuery = groupLocationsDB.query(at: location, withRadius: UserData.radius)
+                                        
+                                        LocalGroupsData.lastGroupsKeys = [String]()
+                                        let registration = geoQuery.observe(.keyEntered, with: { (key, location) in
+                                            LocalGroupsData.lastGroupsKeys.append(key)
+                                        })
+                                        geoQuery.observeReady({
+                                            geoQuery.removeObserver(withFirebaseHandle: registration)
+                                            
+                                            let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+                                            
+                                            // Get all groups' info - async
+                                            groupsDB.observe(.value, with: { (snapshot) in
+                                                LocalGroupsData.cachedSnapshot = snapshot
+                                                self.performSegue(withIdentifier: "goToMessagesAfterCreate", sender: self)
+                                            })
+                                        })
                                     }
                                 })
                             }
