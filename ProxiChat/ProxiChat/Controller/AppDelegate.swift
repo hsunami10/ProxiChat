@@ -79,6 +79,11 @@ extension UITableView {
         }
     }
 }
+extension Character {
+    var asciiValue: UInt32? {
+        return String(self).unicodeScalars.filter{$0.isASCII}.first?.value
+    }
+}
 
 // TODO: background app refresh -> most apps use this - figure out how to use this
 // IMPORTANT BUG - how to wait until FirebaseApp is finished configuring? so error won't pop up
@@ -98,12 +103,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Dimensions.safeAreaHeight = (window?.frame.height)! - UIApplication.shared.statusBarFrame.height
         Dimensions.safeAreaWidth = (window?.frame.width)!
         
-//        FirebaseApp.configure()
-        
         // TODO: Remove later - for testing purposes only
-        let domain = Bundle.main.bundleIdentifier!
-        UserDefaults.standard.removePersistentDomain(forName: domain)
-        UserDefaults.standard.synchronize()
+//        let domain = Bundle.main.bundleIdentifier!
+//        UserDefaults.standard.removePersistentDomain(forName: domain)
+//        UserDefaults.standard.synchronize()
         
         let username = UserDefaults.standard.object(forKey: "proxiChatUsername")
         if username != nil {

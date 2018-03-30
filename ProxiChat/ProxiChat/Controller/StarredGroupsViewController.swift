@@ -17,7 +17,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // MARK: Private Access
     private var groupArray: [Group] = [Group]()
-    private var selectedGroup = Group()
+    private var selectedGroup: Group!
     
     // MARK: Public Access
     var socket: SocketIOClient?
@@ -69,20 +69,20 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
                 let groups = JSON(data[0])["groups"].arrayValue
                 self.groupArray = [Group]()
                 for group in groups {
-                    var groupObj = Group()
-                    let cd = ConvertDate(date: group["date_created"].stringValue)
-                    
-//                    groupObj.coordinates = group["coordinates"].stringValue
-                    groupObj.creator = group["created_by"].stringValue
-                    groupObj.dateCreated = cd.convert()
-//                    groupObj.id = group["id"].stringValue
-                    groupObj.is_public = group["is_public"].boolValue
-                    groupObj.numMembers = group["number_members"].intValue
-                    groupObj.password = group["password"].stringValue
-                    groupObj.title = group["title"].stringValue
+//                    var groupObj = Group()
+//                    let cd = ConvertDate(date: group["date_created"].stringValue)
+//
+////                    groupObj.coordinates = group["coordinates"].stringValue
+//                    groupObj.creator = group["created_by"].stringValue
+//                    groupObj.dateCreated = cd.convert()
+////                    groupObj.id = group["id"].stringValue
+//                    groupObj.is_public = group["is_public"].boolValue
+//                    groupObj.numMembers = group["number_members"].intValue
+//                    groupObj.password = group["password"].stringValue
+//                    groupObj.title = group["title"].stringValue
 //                    groupObj.rawDate = group["date_created"].stringValue
                     
-                    self.groupArray.append(groupObj)
+//                    self.groupArray.append(groupObj)
                 }
                 
                 DispatchQueue.main.async {

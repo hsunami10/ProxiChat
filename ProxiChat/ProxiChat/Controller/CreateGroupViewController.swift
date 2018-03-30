@@ -24,7 +24,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     // MARK: Private Access
     private var locationManager = CLLocationManager()
-    private var newGroup = Group() // Saved for MessageViewController group info
+    private var newGroup: Group! // Saved for MessageViewController group info
     private var data: Any!
     private var coordinates = ""
     private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
@@ -113,11 +113,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                                         groupsDB.child(self.newGroup.title).removeValue()
                                         SVProgressHUD.showError(withStatus: error?.localizedDescription)
                                     } else {
-                                        // Get new groups with new location
-                                        let query = groupLocationsDB.query(at: location, withRadius: UserData.radius)
-                                        query.observe(.keyEntered, with: { (key, location) in
-                                            print("Key '\(key)' entered the search area and is at location '\(location)'")
-                                        })
+                                        // TODO: Get new groups with new location
+                                        print("TODO: get new groups with new location")
                                     }
                                 })
                             }
@@ -149,6 +146,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                         self.showError("Invalid input. Please try again.")
                     } else if self.groupPasswordTextField.text != self.confirmPasswordTextField.text { // Check for matching passwords
                         self.showError("Passwords do not match.")
+                    } else if !self.isValid(self.groupNameTextField.text!) {
+                        self.showError("Group title cannot contain . # $ [ ] / characters.")
                     } else {
                         SVProgressHUD.show()
                         self.storeGroup(UserData.username, false, self.groupNameTextField.text!, self.groupPasswordTextField.text!)
@@ -157,6 +156,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 } else {
                     if Validate.isInvalidInput(self.groupNameTextField.text!) {
                         self.showError("Invalid input. Please try again.")
+                    } else if !self.isValid(self.groupNameTextField.text!) {
+                        self.showError("Group title cannot contain . # $ [ ] / characters.")
                     } else {
                         SVProgressHUD.show()
                         self.storeGroup(UserData.username, true, self.groupNameTextField.text!, "")
@@ -209,6 +210,11 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     
     // MARK: Miscellaneous Methods
     
+    /// Checks text to make sure doesn't contain `. # $ [ ] /`
+    func isValid(_ text: String) -> Bool {
+        return !(text.contains(".") || text.contains("#") || text.contains("$") || text.contains("[") || text.contains("]") || text.contains("/"))
+    }
+    
     /**
      Stores data for the newly created group to use after the user's location has been updated.
      
@@ -220,16 +226,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
      */
 
     func storeGroup(_ created_by: String, _ is_public: Bool, _ group_name: String, _ group_password: String) {
-        newGroup.creator = created_by
-        newGroup.dateCreated = String(describing: Date())
-        newGroup.is_public = is_public
-        newGroup.numMembers = 1
-        if !is_public { // Check for whether is public
-            newGroup.password = group_password
-        } else {
-            newGroup.password = ""
-        }
-        newGroup.title = group_name
+        newGroup = Group.init(group_name, 1, 1, is_public, (!is_public ? group_password : ""), created_by, 0.0, 0.0, String(describing: Date()), "")
     }
     
     /**

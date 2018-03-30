@@ -34,7 +34,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     private var locationManager = CLLocationManager()
     private var refreshControl: UIRefreshControl!
     private var groupArray: [Group] = [Group]()
-    private var selectedGroup = Group()
+    private var selectedGroup: Group!
     private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
     
     // MARK: Public Access
@@ -112,7 +112,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         UserData.password = user["password"] as! String
                         UserData.picture = user["picture"] as! String
                         UserData.radius = user["radius"] as! Double
-
+                        
                         // Update location
                         self.locationManager.requestWhenInUseAuthorization()
                         return
@@ -222,6 +222,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     textField.isSecureTextEntry = true
                 })
                 alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
+                    // TODO: Finish group password authentication
 //                    self.socket?.emit("join_private_group", [
 //                        "id": self.groupArray[indexPath.row].id,
 //                        "passwordEntered": alert.textFields?.first?.text!,
@@ -270,14 +271,48 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 // Update user location
                 usersDB.child(UserData.username).updateChildValues(
                     ["latitude" : UserData.latitude, "longitude" : UserData.longitude, "is_online" : true], withCompletionBlock: { (error, ref) in
-                    SVProgressHUD.dismiss()
                     if error != nil {
+                        SVProgressHUD.dismiss()
                         SVProgressHUD.showError(withStatus: error?.localizedDescription)
                     } else {
-                        // Get all groups
-                        // TODO: Finish this
+                        // Get all groups in proximity
                         let groupLocationsDB = GeoFire(firebaseRef: Database.database().reference().child(FirebaseNames.group_locations))
-                        let query = groupLocationsDB.query(at: location, withRadius: UserData.radius)
+                        let geoQuery = groupLocationsDB.query(at: location, withRadius: UserData.radius)
+                        
+                        var groups = [String]()
+                        let registration = geoQuery.observe(.keyEntered, with: { (key, location) in
+                            groups.append(key)
+                        })
+                        geoQuery.observeReady({
+                            geoQuery.removeObserver(withFirebaseHandle: registration)
+                            
+                            DispatchQueue.global().async {
+                                let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+                                self.groupArray = [Group]()
+                                
+                                groupsDB.observe(.value, with: { (snapshot) in
+                                    for key in groups {
+                                        if snapshot.hasChild(key) {
+                                            let group = (snapshot.value as! Dictionary<String, Any>)[key] as! Dictionary<String, Any>
+                                            
+                                            let groupObj = Group(key, group["num_members"], group["num_online"], group["is_public"], group["password"], group["creator"], group["latitude"], group["longitude"], group["date_created"], group["image"])
+                                            
+                                            print("append :" + key)
+                                            self.groupArray.append(groupObj)
+                                        } else {
+                                            SVProgressHUD.dismiss()
+                                            SVProgressHUD.showError(withStatus: "The \(key) group does not exist.")
+                                        }
+                                    }
+                                })
+                                
+                                DispatchQueue.main.async {
+                                    // TODO: Update UI here
+                                    self.groupsTableView.reloadData()
+                                    self.stopLoading()
+                                }
+                            }
+                        })
                     }
                 })
                 
@@ -393,20 +428,17 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             DispatchQueue.global().async {
                 for group in groups {
-                    var groupObj = Group()
-                    let cd = ConvertDate(date: group["date_created"].stringValue)
-                    
-//                    groupObj.coordinates = group["coordinates"].stringValue
-                    groupObj.creator = group["created_by"].stringValue
-                    groupObj.dateCreated = cd.convert()
-//                    groupObj.id = group["id"].stringValue
-                    groupObj.is_public = group["is_public"].boolValue
-                    groupObj.numMembers = group["number_members"].intValue
-                    groupObj.password = group["password"].stringValue
-//                    groupObj.rawDate = group["date_created"].stringValue
-                    groupObj.title = group["title"].stringValue
-                    
-                    self.groupArray.append(groupObj)
+//                    var groupObj = Group()
+//                    let cd = ConvertDate(date: group["date_created"].stringValue)
+//
+//                    groupObj.creator = group["created_by"].stringValue
+//                    groupObj.dateCreated = cd.convert()
+//                    groupObj.is_public = group["is_public"].boolValue
+//                    groupObj.numMembers = group["number_members"].intValue
+//                    groupObj.password = group["password"].stringValue
+//                    groupObj.title = group["title"].stringValue
+//
+//                    self.groupArray.append(groupObj)
                 }
                 
                 DispatchQueue.main.async {
