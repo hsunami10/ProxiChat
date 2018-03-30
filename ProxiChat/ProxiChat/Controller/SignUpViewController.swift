@@ -52,7 +52,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         }
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.username = usernameTextField.text!
+            UserData.username = usernameTextField.text!
             
             // Save log in
             UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
@@ -91,8 +91,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         } else if !Validate.isValidEmail(email) {
             errorLabel.text = "Email address not valid."
         } else {
-            let usersDB = Database.database().reference().child("Users")
-            
+            let usersDB = Database.database().reference().child(FirebaseNames.users)
             usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
                 if !snapshot.hasChild(username) {
                     SVProgressHUD.show()

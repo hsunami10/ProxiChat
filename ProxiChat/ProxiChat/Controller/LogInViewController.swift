@@ -47,7 +47,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.username = usernameTextField.text!
+            UserData.username = usernameTextField.text!
             
             // Save log in
             UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
@@ -96,7 +96,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                     self.errorLabel.text = "Invalid email."
                 }
             } else { // If username
-                Database.database().reference().child("Users").observeSingleEvent(of: .value, with: { (snapshot) in
+                Database.database().reference().child(FirebaseNames.users).observeSingleEvent(of: .value, with: { (snapshot) in
                     if snapshot.hasChild(username) {
                         self.performSegue(withIdentifier: "goToGroups", sender: self)
                     } else {

@@ -17,4 +17,11 @@ struct LocalGroupsData {
     
     static var groupsContentOffset: CGFloat = CGFloat(MAXFLOAT)
     static var starredGroupsContentOffset: CGFloat = CGFloat(MAXFLOAT)
+    
+    /**
+     This updates the user's location in the database and gets the groups with the new location and specified radius.
+     */
+    static func getNewGroups(_ radius: Int) {
+        
+    }
 }

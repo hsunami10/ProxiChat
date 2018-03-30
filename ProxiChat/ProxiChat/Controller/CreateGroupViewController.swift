@@ -10,8 +10,8 @@ import UIKit
 import CoreLocation
 import SwiftyJSON
 import SVProgressHUD
-import SocketIO
 import Firebase
+import GeoFire
 
 /**
  - TODO:
@@ -28,11 +28,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     private var data: Any!
     private var coordinates = ""
     private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
-    private let usersDB = Database.database().reference().child("Users")
-    private let groupsDB = Database.database().reference().child("Groups")
     
     // MARK: Public Access
-    var socket: SocketIOClient?
     /// Store the groups view controller to set socket to nil if a group is created
     var groupsObj: GroupsViewController?
     var starredGroupsObj: StarredGroupsViewController?
@@ -72,47 +69,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         // Dispose of any resources that can be recreated.
     }
     
-    // MARK: SocketIO Event Handlers
-    func eventHandlers() {
-        // Only update location when group has been successfully created
-        socket?.on("create_group_response") { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let error_msg = JSON(data[0])["error_msg"].stringValue
-            
-            if success {
-                // After updating location and creating group, cache the new location groups
-                LocalGroupsData.data = self.data
-                SVProgressHUD.dismiss()
-                
-                self.slideLeftTransition()
-                self.performSegue(withIdentifier: "goToMessagesAfterCreate", sender: self)
-            } else {
-                SVProgressHUD.dismiss()
-                SVProgressHUD.showError(withStatus: error_msg)
-            }
-        }
-        // Same as update_location_and_get_groups_response, but with data[1] added - socket may be nil
-        socket?.on("update_location_and_get_groups_create_response") { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let error_msg = JSON(data[0])["error_msg"].stringValue
-            if success {
-                self.data = data[0] // Save groups in new proximity
-//                self.newGroup.coordinates = UserData.coordinates
-//                self.socket?.emit("create_group", [
-//                    "created_by": self.newGroup.creator,
-//                    "is_public": self.newGroup.is_public,
-//                    "group_name": self.newGroup.title,
-//                    "group_password": self.newGroup.password,
-//                    "group_coordinates": self.newGroup.coordinates,
-//                    "group_date": self.newGroup.dateCreated
-//                    ])
-            } else {
-                SVProgressHUD.dismiss()
-                SVProgressHUD.showError(withStatus: error_msg)
-            }
-        }
-    }
-    
     // MARK: CLLocationManagerDelegate Methods
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
@@ -123,11 +79,16 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 newGroup.longitude = location.coordinate.longitude
                 
                 // TODO: Finish this - get groups by location and radius
-                // Store group first, then update location, then get new groups
+                // Store group first and update location, then update user location, then get new groups
+                // If an error occurs, then undo what was done before
+                let usersDB = Database.database().reference().child(FirebaseNames.users)
+                let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+                let groupLocationsDB = GeoFire(firebaseRef: Database.database().reference().child(FirebaseNames.group_locations))
+                
                 // Create group only if the group title doesn't already exist
                 groupsDB.observeSingleEvent(of: .value, with: { (snapshot) in
                     if !snapshot.hasChild(self.newGroup.title) {
-                        self.groupsDB.child(self.newGroup.title).setValue([
+                        groupsDB.child(self.newGroup.title).setValue([
                             "num_members": 1,
                             "num_online": 1,
                             "is_public": self.newGroup.is_public,
@@ -139,15 +100,27 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                             "image": ""
                             ])
                         
-                        // Update user's location
-                        self.usersDB.child(UserData.username).updateChildValues(
-                            ["latitude" : UserData.latitude, "longitude" : UserData.longitude], withCompletionBlock: { (error, ref) in
-                                SVProgressHUD.dismiss()
-                                if error != nil {
-                                    SVProgressHUD.showError(withStatus: error?.localizedDescription)
-                                } else {
-                                    // TODO: Get new groups with new location here
-                                }
+                        // Set the location of the group
+                        groupLocationsDB.setLocation(location, forKey: self.newGroup.title, withCompletionBlock: { (error) in
+                            if error != nil {
+                                groupsDB.child(self.newGroup.title).removeValue()
+                                SVProgressHUD.showError(withStatus: "There was a problem with updating the location of the group. Please try again.")
+                            } else {
+                                // Update user's location
+                                usersDB.child(UserData.username).updateChildValues(["latitude" : UserData.latitude, "longitude" : UserData.longitude], withCompletionBlock: { (error, ref) in
+                                    SVProgressHUD.dismiss()
+                                    if error != nil {
+                                        groupsDB.child(self.newGroup.title).removeValue()
+                                        SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                                    } else {
+                                        // Get new groups with new location
+                                        let query = groupLocationsDB.query(at: location, withRadius: UserData.radius)
+                                        query.observe(.keyEntered, with: { (key, location) in
+                                            print("Key '\(key)' entered the search area and is at location '\(location)'")
+                                        })
+                                    }
+                                })
+                            }
                         })
                     } else {
                         SVProgressHUD.showError(withStatus: "Group name already exists. Please try again.")

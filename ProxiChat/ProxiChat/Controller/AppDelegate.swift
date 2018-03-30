@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import GeoFire
 
 /*
  Key things to remember / notes:
@@ -21,6 +22,7 @@ import Firebase
         - when performing segue, set destination view controller's delegate property to self
     - the sender calls delegate's protocol's methods to send data BACK to delegate (delegate property)
  - contentoffset vs contentinset - https://fizzbuzzer.com/understanding-the-contentoffset-and-contentinset-properties-of-the-uiscrollview-class/
+ GeoFire Tutorial - http://kylegoslan.co.uk/firebase-geofire-swift-tutorial/
  */
 
 // MARK: Extensions
@@ -79,10 +81,16 @@ extension UITableView {
 }
 
 // TODO: background app refresh -> most apps use this - figure out how to use this
+// IMPORTANT BUG - how to wait until FirebaseApp is finished configuring? so error won't pop up
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    
+    override init() {
+        super.init()
+        FirebaseApp.configure()
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -90,19 +98,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Dimensions.safeAreaHeight = (window?.frame.height)! - UIApplication.shared.statusBarFrame.height
         Dimensions.safeAreaWidth = (window?.frame.width)!
         
+//        FirebaseApp.configure()
+        
+        // TODO: Remove later - for testing purposes only
         let domain = Bundle.main.bundleIdentifier!
         UserDefaults.standard.removePersistentDomain(forName: domain)
         UserDefaults.standard.synchronize()
+        
+        let username = UserDefaults.standard.object(forKey: "proxiChatUsername")
+        if username != nil {
+            UserData.username = username as! String
+        }
         
         // Go to groups page if already logged in
         let logInStatus = UserDefaults.standard.bool(forKey: "isUserLoggedInProxiChat") // Can be nil
         if logInStatus {
             let mainStoryBoard = UIStoryboard(name: "Main", bundle: nil) // Get Main Storyboard
             let page = mainStoryBoard.instantiateViewController(withIdentifier: "groups") as! GroupsViewController // Cast main storyboard as GroupsViewController
-            
-            if let username = UserDefaults.standard.object(forKey: "proxiChatUsername") {
-                page.username = username as! String // Set saved username
-            }
             window?.rootViewController = page // Set root view controller
             window?.makeKeyAndVisible()
         }
@@ -114,9 +126,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             contentNotSent = [:]
         }
         
-        // Initialize and configure Firebase
-        FirebaseApp.configure()
-        
         return true
     }
 
@@ -124,7 +133,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
-        goOffline()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {

@@ -12,6 +12,7 @@ import SwiftyJSON
 import SVProgressHUD
 import CoreLocation
 import Firebase
+import GeoFire
 
 /*
  TODO
@@ -20,7 +21,11 @@ import Firebase
  - only store in database when starred and delete when unstarred
  - ADD SEARCH BAR
  
+ TODO: Line 306
+ 
  BUGS
+ - app sometimes crashes for no reason - check and rerun later to test
+ Terminating app due to uncaught exception 'InvalidPathValidation', reason: '(child:) Must be a non-empty string and not contain '.' '#' '$' '[' or ']''
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -31,7 +36,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     private var groupArray: [Group] = [Group]()
     private var selectedGroup = Group()
     private let locationErrorAlert = UIAlertController(title: "Oops!", message: AlertMessages.locationError, preferredStyle: .alert)
-    private let usersDB = Database.database().reference().child("Users")
     
     // MARK: Public Access
     /**
@@ -41,7 +45,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var messageObj: MessageViewController?
     var delegate: JoinGroupDelegate?
     var socket: SocketIOClient?
-    var username: String = ""
     
     // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!
@@ -92,12 +95,13 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         // If the user is not already connected, then get user data and request location usage.
         if !UserData.connected {
+            let usersDB = Database.database().reference().child(FirebaseNames.users)
             // Check if the user exists
             usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
-                if snapshot.hasChild(self.username) {
+                if snapshot.hasChild(UserData.username) {
                     let allUsers = snapshot.value as! Dictionary<String, Any>
-                    if let user = allUsers[self.username] as? Dictionary<String, Any> {
-                        
+                    if let user = allUsers[UserData.username] as? Dictionary<String, Any> {
+
                         // Cache user data
                         UserData.bio = user["bio"] as! String
                         UserData.connected = true
@@ -107,9 +111,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         UserData.longitude = user["longitude"] as! Double
                         UserData.password = user["password"] as! String
                         UserData.picture = user["picture"] as! String
-                        UserData.radius = user["radius"] as! Int
-                        UserData.username = self.username
-                        
+                        UserData.radius = user["radius"] as! Double
+
                         // Update location
                         self.locationManager.requestWhenInUseAuthorization()
                         return
@@ -125,38 +128,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
-        // Once you successfully joined the namespace, get user info
-        socket?.on("join_success", callback: { (data, ack) in
-            // TODO: Get the user's profile picture
-            self.socket?.emit("get_user_info", self.username)
-        })
-        // Get user info
-        socket?.on("get_user_info_response", callback: { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let error_msg = JSON(data[0])["error_msg"].stringValue
-            
-            if success {
-//                let user = JSON(data[0])["data"].dictionaryObject!
-                
-//                // Cache user data in global struct
-//                UserData.bio = String(describing: user["bio"]!)
-//                UserData.coordinates = String(describing: user["coordinates"]!)
-//                UserData.email = String(describing: user["email"]!)
-//                UserData.is_online = user["is_online"] as! Bool
-//                UserData.password = String(describing: user["password"]!)
-//                UserData.picture = String(describing: user["picture"]!)
-//                UserData.radius = user["radius"] as! Int
-//                UserData.username = String(describing: user["username"]!)
-                
-                print("get user radius: " + String(UserData.radius))
-                
-                // Only get location AFTER the user data is updated
-                self.locationManager.requestWhenInUseAuthorization()
-            } else {
-                SVProgressHUD.dismiss()
-                SVProgressHUD.showError(withStatus: error_msg)
-            }
-        })
         // Update array of GroupCell objects to display on uitableview
         socket?.on("update_location_and_get_groups_response", callback: { (data, ack) in
             self.updateTableWithGroups(data[0])
@@ -295,11 +266,18 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 UserData.latitude = location.coordinate.latitude
                 UserData.longitude = location.coordinate.longitude
                 
+                let usersDB = Database.database().reference().child(FirebaseNames.users)
+                // Update user location
                 usersDB.child(UserData.username).updateChildValues(
                     ["latitude" : UserData.latitude, "longitude" : UserData.longitude, "is_online" : true], withCompletionBlock: { (error, ref) in
                     SVProgressHUD.dismiss()
                     if error != nil {
                         SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                    } else {
+                        // Get all groups
+                        // TODO: Finish this
+                        let groupLocationsDB = GeoFire(firebaseRef: Database.database().reference().child(FirebaseNames.group_locations))
+                        let query = groupLocationsDB.query(at: location, withRadius: UserData.radius)
                     }
                 })
                 

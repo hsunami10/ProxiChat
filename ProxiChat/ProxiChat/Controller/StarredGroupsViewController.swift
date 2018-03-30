@@ -178,7 +178,6 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         } else if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.socket = socket
-            destinationVC.username = UserData.username
             UserData.createNewMessageViewController = true
         } else if segue.identifier == "goToProfile" {
             let destinationVC = segue.destination as! ProfileViewController

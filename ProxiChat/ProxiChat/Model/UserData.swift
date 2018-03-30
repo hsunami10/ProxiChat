@@ -12,7 +12,7 @@ import Foundation
 struct UserData {
     static var picture = "" // NOTE: This might not work - change to UIImage later?
     static var password = ""
-    static var radius = 0
+    static var radius = 0.0
     static var is_online = true // TODO: Change values later
     static var latitude = 0.0
     static var longitude = 0.0

@@ -24,6 +24,7 @@
 		E4820CA11FEEFF1900D1FC93 /* GroupInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4820C9F1FEEFF1900D1FC93 /* GroupInfoCell.xib */; };
 		E4820CA31FF1F3FF00D1FC93 /* MembersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4820CA21FF1F3FF00D1FC93 /* MembersViewController.swift */; };
 		E4942E781FC4E98C006F0A6E /* CreateGroupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */; };
+		E49B0CCE206DB55500D88527 /* FirebaseNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B0CCD206DB55500D88527 /* FirebaseNames.swift */; };
 		E4B3D7471FBA9D2000F539EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */; };
 		E4B3D74C1FBA9D2000F539EA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4B3D74A1FBA9D2000F539EA /* Main.storyboard */; };
 		E4B3D74E1FBA9D2000F539EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E4B3D74D1FBA9D2000F539EA /* Assets.xcassets */; };
@@ -71,6 +72,7 @@
 		E4820C9F1FEEFF1900D1FC93 /* GroupInfoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GroupInfoCell.xib; sourceTree = "<group>"; };
 		E4820CA21FF1F3FF00D1FC93 /* MembersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembersViewController.swift; sourceTree = "<group>"; };
 		E4942E771FC4E98C006F0A6E /* CreateGroupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupViewController.swift; sourceTree = "<group>"; };
+		E49B0CCD206DB55500D88527 /* FirebaseNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseNames.swift; sourceTree = "<group>"; };
 		E4B3D7431FBA9D2000F539EA /* ProxiChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProxiChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B3D7461FBA9D2000F539EA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E4B3D74B1FBA9D2000F539EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				E434EDDD1FE5CC9300B26F22 /* Dimensions.swift */,
 				E475AB1F2065AC020063C361 /* Font.swift */,
 				E41F2A2220680F3A00C0A807 /* Protocols.swift */,
+				E49B0CCD206DB55500D88527 /* FirebaseNames.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -378,6 +381,7 @@
 				"${SRCROOT}/Pods/Target Support Files/Pods-ProxiChat/Pods-ProxiChat-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/ChameleonFramework/ChameleonFramework.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
+				"${BUILT_PRODUCTS_DIR}/GeoFire/GeoFire.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
 				"${BUILT_PRODUCTS_DIR}/SVProgressHUD/SVProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/Socket.IO-Client-Swift/SocketIO.framework",
@@ -391,6 +395,7 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ChameleonFramework.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GeoFire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SVProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketIO.framework",
@@ -433,6 +438,7 @@
 				E4E259001FDDAEA4006B807C /* AlertMessages.swift in Sources */,
 				E4DCE3521FD25E8000680BBD /* ConvertDate.swift in Sources */,
 				E475AB202065AC020063C361 /* Font.swift in Sources */,
+				E49B0CCE206DB55500D88527 /* FirebaseNames.swift in Sources */,
 				E4CB11921FBEA58B003B627E /* Group.swift in Sources */,
 				E4820CA01FEEFF1900D1FC93 /* GroupInfoCell.swift in Sources */,
 				E40A948E1FDF76FC006097B1 /* Validate.swift in Sources */,

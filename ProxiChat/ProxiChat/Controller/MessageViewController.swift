@@ -522,7 +522,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.delegate = self
             destinationVC.socket = socket
-            destinationVC.username = UserData.username
             destinationVC.messageObj = self // If the user navigates to any other view controller, then set the socket = nil
             UserData.createNewMessageViewController = false
         } else if segue.identifier == "goBackToStarredGroups" {

@@ -383,7 +383,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     /// Locally saves the radius and updates in the database.
     func updateRadius() {
-        UserData.radius = Int(radiusTextField.text!)!
+        UserData.radius = Double(radiusTextField.text!)!
         print("update radius to: ", UserData.radius)
         socket?.emit("update_radius", UserData.username, UserData.radius)
     }

@@ -171,8 +171,6 @@ struct NavigationSideMenu {
                 })
             }
             break
-        default:
-            break
         }
     }
     

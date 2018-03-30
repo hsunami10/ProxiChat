@@ -1,16 +1,18 @@
-platform :ios, '9.0'
+platform :ios, '10.0'
 
 target 'ProxiChat' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+  
   use_frameworks!
 
   # Pods for ProxiChat
-pod 'ChameleonFramework'
-pod 'SwiftyJSON'
-pod 'Socket.IO-Client-Swift'
-pod 'SVProgressHUD'
-pod 'SwiftDate'
-pod 'Firebase'
-pod 'Firebase/Auth'
-pod 'Firebase/Database'
+  pod 'ChameleonFramework'
+  pod 'SwiftyJSON'
+  pod 'Socket.IO-Client-Swift'
+  pod 'SVProgressHUD'
+  pod 'SwiftDate'
+  pod 'Firebase'
+  pod 'Firebase/Auth'
+  pod 'Firebase/Database'
+  pod 'GeoFire', :git => 'https://github.com/firebase/geofire-objc.git'
 end
