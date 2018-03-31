@@ -165,21 +165,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.groupInfoTableView.reloadRows(at: [indexPath], with: .automatic)
             }
         })
-        // Realtime receiving messages
-        socket?.on("receive_message") { (data, ack) in
-            let messageObj = self.createMessageObj(JSON(data[0])["author"].stringValue, JSON(data[0])["content"].stringValue, JSON(data[0])["date_sent"].stringValue, JSON(data[0])["id"].stringValue, JSON(data[0])["group_id"].stringValue, JSON(data[0])["picture"].stringValue)
-            
-            self.messageArray.append(messageObj)
-            
-            DispatchQueue.main.async {
-                self.insertMessage()
-                
-                // If you're at the bottom, scroll (stay at bottom)
-                if self.messageTableView.isAtBottom {
-                    self.messageTableView.scrollToBottom(self.messageArray, true)
-                }
-            }
-        }
     }
     
     // MARK: IBOutlet Actions
@@ -508,6 +493,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getMessagesOnLoad() {
         let messagesDB = Database.database().reference().child(FirebaseNames.messages)
         messagesDB.child(self.groupInformation.title).queryOrdered(byChild: "date_sent").observe(.value) { (snapshot) in
+            // Iterate over snapshot's children
             for child in snapshot.children.allObjects as! [DataSnapshot] {
                 if child.key != "dummy" {
                     let value = JSON(child.value!)
@@ -517,14 +503,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             
             self.lastLoadedDate = self.messageArray[self.messageArray.count-1].dateSent
-            self.messageTableView.reloadData()
-            self.messageTableView.scrollToBottom(self.messageArray, false)
-            messagesDB.child(self.groupInformation.title).removeAllObservers()
-            self.retrieveMessages()
+            
+            DispatchQueue.main.async {
+                self.messageTableView.reloadData()
+                self.messageTableView.scrollToBottom(self.messageArray, false)
+                messagesDB.child(self.groupInformation.title).removeAllObservers()
+                self.retrieveMessages()
+            }
         }
     }
     
-    /// Initializes the firebase observe data event for the current group's messages - gets messages.
+    /// Initializes the firebase observe data event for the current group's messages.
     func retrieveMessages() {
         let messagesDB = Database.database().reference().child(FirebaseNames.messages)
         messagesDB.child(groupInformation.title).queryOrdered(byChild: "date_sent").queryStarting(atValue: lastLoadedDate).observe(.childAdded) { (snapshot) in
@@ -538,7 +527,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     
                     DispatchQueue.main.async {
                         self.insertMessage()
-                        self.messageTableView.scrollToBottom(self.messageArray, true)
+                        
+                        // If you're at the bottom, scroll (stay at bottom)
+                        if self.messageTableView.isAtBottom {
+                            self.messageTableView.scrollToBottom(self.messageArray, true)
+                        }
                     }
                 }
             }
