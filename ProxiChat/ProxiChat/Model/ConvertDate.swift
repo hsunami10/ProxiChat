@@ -56,6 +56,7 @@ struct ConvertDate {
         } else {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+            print(self.date)
             let dateObj = dateFormatter.date(from: self.date)!
             return dateObj.string(format: .custom(format))
         }

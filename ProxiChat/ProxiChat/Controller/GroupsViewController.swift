@@ -99,19 +99,19 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             // Check if the user exists
             usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
                 if snapshot.hasChild(UserData.username) {
-                    let allUsers = snapshot.value as! Dictionary<String, Any>
-                    if let user = allUsers[UserData.username] as? Dictionary<String, Any> {
-
+                    let allUsers = JSON(snapshot.value!)
+                    if let user = allUsers[UserData.username].dictionary {
+                        
                         // Cache user data
-                        UserData.bio = user["bio"] as! String
+                        UserData.bio = (user["bio"]?.stringValue)!
                         UserData.connected = true
-                        UserData.email = user["email"] as! String
-                        UserData.is_online = user["is_online"] as! Bool
-                        UserData.latitude = user["latitude"] as! Double
-                        UserData.longitude = user["longitude"] as! Double
-                        UserData.password = user["password"] as! String
-                        UserData.picture = user["picture"] as! String
-                        UserData.radius = user["radius"] as! Double
+                        UserData.email = (user["email"]?.stringValue)!
+                        UserData.is_online = (user["is_online"]?.boolValue)!
+                        UserData.latitude = (user["latitude"]?.doubleValue)!
+                        UserData.longitude = (user["longitude"]?.doubleValue)!
+                        UserData.password = (user["password"]?.stringValue)!
+                        UserData.picture = (user["picture"]?.stringValue)!
+                        UserData.radius = (user["radius"]?.doubleValue)!
                         
                         // Update location
                         self.locationManager.requestWhenInUseAuthorization()
@@ -125,12 +125,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             // Update table with last snapshot of database
             DispatchQueue.global().async {
-                let dict = LocalGroupsData.cachedSnapshot.value as! Dictionary<String, Any>
+                let dict = JSON(LocalGroupsData.cachedSnapshot.value!)
                 self.groupArray = [Group]()
                 
                 LocalGroupsData.lastGroupsKeys.forEach({ (key) in
-                    let group = dict[key] as! Dictionary<String, Any>
-                    let groupObj = Group.init(group["title"], group["num_members"], group["num_online"], group["is_public"], group["password"], group["creator"], group["latitude"], group["longitude"], group["date_created"], group["image"])
+                    let group = dict[key].dictionaryValue
+                    let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
                     self.groupArray.append(groupObj)
                 })
                 
@@ -234,13 +234,23 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     textField.isSecureTextEntry = true
                 })
                 alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (action) in
-                    // TODO: Finish group password authentication
-                    
-//                    self.socket?.emit("join_private_group", [
-//                        "id": self.groupArray[indexPath.row].id,
-//                        "passwordEntered": alert.textFields?.first?.text!,
-//                        "rowIndex": String(indexPath.row)
-//                        ])
+                    let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+                    groupsDB.observeSingleEvent(of: .value, with: { (snapshot) in
+                        if snapshot.hasChild(self.groupArray[indexPath.row].title) {
+                            // Check if the passwords are the same
+                            let groups = JSON(snapshot.value!)
+                            let group = groups[self.groupArray[indexPath.row].title].dictionaryValue
+                            if let password = alert.textFields?.first?.text {
+                                if password == group["password"]?.stringValue {
+                                    self.joinGroup(indexPath.row)
+                                } else {
+                                    SVProgressHUD.showError(withStatus: "Incorrect password.")
+                                }
+                            }
+                        } else {
+                            SVProgressHUD.showError(withStatus: "\(self.groupArray[indexPath.row].title) does not exist.")
+                        }
+                    })
                 }))
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
                 
@@ -306,9 +316,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                             groupsDB.observe(.value, with: { (snapshot) in
                                 for key in LocalGroupsData.lastGroupsKeys {
                                     if snapshot.hasChild(key) {
-                                        let group = (snapshot.value as! Dictionary<String, Any>)[key] as! Dictionary<String, Any>
+                                        let group = JSON(snapshot.value!)[key].dictionaryValue
                                         
-                                        let groupObj = Group.init(group["title"], group["num_members"], group["num_online"], group["is_public"], group["password"], group["creator"], group["latitude"], group["longitude"], group["date_created"], group["image"])
+                                        let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
                                         
                                         self.groupArray.append(groupObj)
                                     } else {

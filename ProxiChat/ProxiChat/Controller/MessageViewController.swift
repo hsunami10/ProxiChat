@@ -11,6 +11,7 @@ import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 import SwiftDate
+import Firebase
 
 /*
  TODO
@@ -97,8 +98,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.font = Font.getFont(16)
         sendButton.titleLabel?.font = Font.getFont(15)
         
-//        eventHandlers()
-        
         messageTableView.delegate = self
         messageTableView.dataSource = self
         messageTextView.delegate = self
@@ -130,12 +129,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Initialize group info view content
         initializeGroupInfo()
         groupImageViewWidth.constant = groupInfoViewWidth.constant - Dimensions.getPoints(32) // 16 margins on left and right side
-        
-        // Get messages - on response, join room
-        // TODO: Paginate messages
-//        socket?.emit("get_messages_on_start", groupInformation.id)
-        
         initializeLayout()
+        
+        // Get messages
+        getMessagesOnJoin()
     }
     
     deinit {
@@ -429,8 +426,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         initializeGroupInfo()
         initializeLayout()
-        
-        socket?.emit("get_messages_on_start", group.id)
+        getMessagesOnJoin()
     }
     
     // MARK: Keyboard (NotificationCenter) Methods
@@ -538,6 +534,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
+    /// Gets all messages of a certain group on join.
+    func getMessagesOnJoin() {
+        
+    }
+    
     func initializeLayout() {
         messageTextView.text = " " // Used to store default height of 1 line (startingContentHeight)
         startingContentHeight = messageTextView.contentSize.height
@@ -589,6 +590,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         } else {
             groupInfoArray[1] = String(groupInformation.numMembers) + " Stars"
         }
+        
         creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convertWithFormat("MMM d, yyyy"))"
         titleLabel.text = groupInformation.title
         groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture
