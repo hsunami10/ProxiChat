@@ -83,11 +83,13 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 // If an error occurs, then undo what was done before
                 let usersDB = Database.database().reference().child(FirebaseNames.users)
                 let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+                let messagesDB = Database.database().reference().child(FirebaseNames.messages)
                 let groupLocationsDB = GeoFire(firebaseRef: Database.database().reference().child(FirebaseNames.group_locations))
                 
                 // Create group only if the group title doesn't already exist
                 groupsDB.observeSingleEvent(of: .value, with: { (snapshot) in
                     if !snapshot.hasChild(self.newGroup.title) {
+                        // Add group to database
                         groupsDB.child(self.newGroup.title).setValue([
                             "num_members": 1,
                             "num_online": 1,
@@ -100,6 +102,9 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                             "image": "",
                             "title": self.newGroup.title
                             ])
+                        
+                        // Add container for group's messages to database
+                        messagesDB.child(self.newGroup.title).child("dummy").setValue(true)
                         
                         // Set the location of the group
                         groupLocationsDB.setLocation(location, forKey: self.newGroup.title, withCompletionBlock: { (error) in

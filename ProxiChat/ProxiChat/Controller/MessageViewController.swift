@@ -37,6 +37,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var lastLines = 1 // Saves the last number of lines
     private var lastContentHeight: CGFloat = 0
     private var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
+    private var observed = false
+    
+    private var lastLoadedDate = ""
     
     // Storing values for responsive layout
     private var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
@@ -110,6 +113,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         // Add an observer to track whenever the contentSize has changed
         messageTextView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
+        observed = true
         
         // Initialize gestures
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
@@ -132,12 +136,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         initializeLayout()
         
         // Get messages
-        getMessagesOnJoin()
+        getMessagesOnLoad()
+//        retrieveMessages()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        messageTextView.removeObserver(self, forKeyPath: "contentSize")
+        if observed {
+            messageTextView.removeObserver(self, forKeyPath: "contentSize")
+            observed = false
+        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -170,39 +178,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 if self.messageTableView.isAtBottom {
                     self.messageTableView.scrollToBottom(self.messageArray, true)
                 }
-            }
-        }
-        // Get messages from database on join room
-        socket?.on("get_messages_on_start_response") { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let error_msg = JSON(data[0])["error_msg"].stringValue
-            let messages = JSON(data[0])["messages"].arrayValue
-            UIView.setAnimationsEnabled(true)
-        
-            if success {
-                self.messageArray = [Message]()
-                
-                // Load messages on background queue
-                // Perform UI updation on main queue
-                DispatchQueue.global().async {
-                    for message in messages {
-                        let messageObj = self.createMessageObj(message["author"].stringValue, message["content"].stringValue, message["date_sent"].stringValue, message["group_id"].stringValue, message["id"].stringValue, message["picture"].stringValue)
-                        self.messageArray.append(messageObj)
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.messageTableView.reloadData()
-                        self.messageTableView.scrollToBottom(self.messageArray, false)
-                    }
-                }
-                
-                // Join room after you get messages
-//                self.socket?.emit("join_room", [
-//                    "group_id": self.groupInformation.id,
-//                    "username": UserData.username
-//                    ])
-            } else {
-                SVProgressHUD.showError(withStatus: error_msg)
             }
         }
     }
@@ -251,26 +226,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             messageTextView.isEditable = false
             sendButton.isEnabled = false
             
-            let mID = String(describing: UUID())
-            let date = String(describing: Date())
             // TODO: *** Get picture ***
-            socket?.emit("send_message", [
-                "username": UserData.username,
+            
+            // Store message into database
+            let messagesDB = Database.database().reference().child(FirebaseNames.messages)
+            messagesDB.child(groupInformation.title).childByAutoId().setValue([
+                "author": UserData.username,
+                "group": groupInformation.title,
                 "content": messageTextView.text!,
-                "date_sent": date,
-                "group_id": groupInformation.id,
-                "id": mID,
-                "picture": ""
+                "date_sent": String(describing: Date()),
+                "picture": UserData.picture
                 ])
-            
-            // Sent message to yourself
-            let messageObj = createMessageObj(UserData.username, messageTextView.text!, date, groupInformation.id, mID, "")
-            messageArray.append(messageObj)
-            
-            DispatchQueue.main.async {
-                self.insertMessage()
-                self.messageTableView.scrollToBottom(self.messageArray, true)
-            }
             
             // Reset
             messageTextView.isEditable = true
@@ -284,7 +250,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             lastLines = 1
             lastContentHeight = startingContentHeight
-            contentNotSent.removeValue(forKey: groupInformation.id)
+            contentNotSent.removeValue(forKey: groupInformation.title)
         }
     }
     
@@ -370,9 +336,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     func textViewDidChange(_ textView: UITextView) {
         // If not empty text, then save the text left over in text view
         if textView.text!.count == 0 {
-            contentNotSent.removeValue(forKey: groupInformation.id)
+            contentNotSent.removeValue(forKey: groupInformation.title)
         } else {
-            contentNotSent[groupInformation.id] = textView.text!
+            contentNotSent[groupInformation.title] = textView.text!
         }
     }
     
@@ -426,7 +392,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         initializeGroupInfo()
         initializeLayout()
-        getMessagesOnJoin()
+        getMessagesOnLoad()
     }
     
     // MARK: Keyboard (NotificationCenter) Methods
@@ -514,6 +480,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Remove all observers - reset
+        Database.database().reference().child(FirebaseNames.messages).child(groupInformation.title).removeAllObservers()
+        
         if segue.identifier == "goBackToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.delegate = self
@@ -534,9 +503,46 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
+    
     /// Gets all messages of a certain group on join.
-    func getMessagesOnJoin() {
-        
+    func getMessagesOnLoad() {
+        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
+        messagesDB.child(self.groupInformation.title).queryOrdered(byChild: "date_sent").observe(.value) { (snapshot) in
+            for child in snapshot.children.allObjects as! [DataSnapshot] {
+                if child.key != "dummy" {
+                    let value = JSON(child.value!)
+                    let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, child.key, value["picture"].stringValue)
+                    self.messageArray.append(messageObj)
+                }
+            }
+            
+            self.lastLoadedDate = self.messageArray[self.messageArray.count-1].dateSent
+            self.messageTableView.reloadData()
+            self.messageTableView.scrollToBottom(self.messageArray, false)
+            messagesDB.child(self.groupInformation.title).removeAllObservers()
+            self.retrieveMessages()
+        }
+    }
+    
+    /// Initializes the firebase observe data event for the current group's messages - gets messages.
+    func retrieveMessages() {
+        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
+        messagesDB.child(groupInformation.title).queryOrdered(byChild: "date_sent").queryStarting(atValue: lastLoadedDate).observe(.childAdded) { (snapshot) in
+            // Ignore dummy message
+            if snapshot.key != "dummy" {
+                let value = JSON(snapshot.value!).dictionaryValue
+                // Since .queryStarting is >=, ignore the =, only take >
+                if (value["date_sent"]?.stringValue)! != self.lastLoadedDate {
+                    let messageObj = self.createMessageObj((value["author"]?.stringValue)!, (value["content"]?.stringValue)!, (value["date_sent"]?.stringValue)!, (value["group"]?.stringValue)!, snapshot.key, (value["picture"]?.stringValue)!)
+                    self.messageArray.append(messageObj)
+                    
+                    DispatchQueue.main.async {
+                        self.insertMessage()
+                        self.messageTableView.scrollToBottom(self.messageArray, true)
+                    }
+                }
+            }
+        }
     }
     
     func initializeLayout() {
@@ -545,12 +551,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         lastContentHeight = startingContentHeight
         maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
         
-        let keyExists = contentNotSent[groupInformation.id] != nil
+        let keyExists = contentNotSent[groupInformation.title] != nil
         if !keyExists {
             messageTextView.text = placeholder
             messageTextView.textColor = placeholderColor
         } else {
-            messageTextView.text = contentNotSent[groupInformation.id]
+            messageTextView.text = contentNotSent[groupInformation.title]
             messageTextView.textColor = UIColor.black
         }
         
@@ -578,7 +584,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     func initializeGroupInfo() {
         // CHANGE INDICES
         // CHANGE STRING
-        let cd = ConvertDate(date: groupInformation.rawDate)
+        let cd = ConvertDate(date: groupInformation.dateCreated)
         
         if groupInformation.creator == UserData.username {
             groupInfoArray[groupInfoArray.count-1] = "Settings"
@@ -646,12 +652,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         - id: The UUID of this message (unique).
         - picture: The profile picture of the author.
      */
-    func createMessageObj(_ author: String, _ content: String, _ dateSent: String, _ groupID: String, _ id: String, _ picture: String) -> Message {
+    func createMessageObj(_ author: String, _ content: String, _ dateSent: String, _ group: String, _ id: String, _ picture: String) -> Message {
         var messageObj = Message()
         messageObj.author = author
         messageObj.content = content
         messageObj.dateSent = dateSent
-        messageObj.groupID = groupID
+        messageObj.group = group
         messageObj.id = id
         messageObj.picture = picture
         return messageObj

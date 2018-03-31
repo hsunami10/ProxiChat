@@ -12,4 +12,5 @@ struct FirebaseNames {
     static let users = "Users" // usersDB
     static let groups = "Groups" // groupsDB
     static let group_locations = "Group_Locations" // groupLocationsDB
+    static let messages = "Messages" // messagesDB
 }

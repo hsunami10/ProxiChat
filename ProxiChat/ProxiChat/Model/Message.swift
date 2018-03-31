@@ -10,7 +10,7 @@
 struct Message {
     var id = ""
     var author = ""
-    var groupID = ""
+    var group = ""
     var content = ""
     var dateSent = ""
     var picture = ""

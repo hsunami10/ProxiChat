@@ -51,7 +51,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             UIView.setAnimationsEnabled(true)
         }
         if segue.identifier == "goToGroups" {
-            let destinationVC = segue.destination as! GroupsViewController
             UserData.username = usernameTextField.text!
             
             // Save log in

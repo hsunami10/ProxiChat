@@ -21,10 +21,6 @@ struct Group {
     var dateCreated = ""
     var image = ""
     
-    // Delete later
-    var rawDate = ""
-    var id = ""
-    
     /**
      Initialize all group object values.
      
