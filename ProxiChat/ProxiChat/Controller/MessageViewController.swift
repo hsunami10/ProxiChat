@@ -39,6 +39,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
     private var observed = false
     
+    /**
+     The date of the last message loaded.
+     This is used on the initial message loading to mark when to start listening for new messages
+     */
     private var lastLoadedDate = ""
     
     // Storing values for responsive layout
@@ -467,6 +471,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Remove all observers - reset
         Database.database().reference().child(FirebaseNames.messages).child(groupInformation.title).removeAllObservers()
+        lastLoadedDate = ""
         
         if segue.identifier == "goBackToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
@@ -493,7 +498,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     func getMessagesOnLoad() {
         let messagesDB = Database.database().reference().child(FirebaseNames.messages)
         messagesDB.child(self.groupInformation.title).queryOrdered(byChild: "date_sent").observe(.value) { (snapshot) in
-            // Iterate over snapshot's children
+            // Iterate over snapshot's children, skipping dummy message
             for child in snapshot.children.allObjects as! [DataSnapshot] {
                 if child.key != "dummy" {
                     let value = JSON(child.value!)
@@ -502,7 +507,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
             }
             
-            self.lastLoadedDate = self.messageArray[self.messageArray.count-1].dateSent
+            // Account for empty messages
+            if self.messageArray.count == 0 {
+                self.lastLoadedDate = ""
+            } else {
+                self.lastLoadedDate = self.messageArray[self.messageArray.count-1].dateSent
+            }
             
             DispatchQueue.main.async {
                 self.messageTableView.reloadData()
@@ -574,6 +584,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.view.layoutIfNeeded()
     }
     
+    /// Initialize anything in the view that is related to the group.
     func initializeGroupInfo() {
         // CHANGE INDICES
         // CHANGE STRING
@@ -589,6 +600,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         } else {
             groupInfoArray[1] = String(groupInformation.numMembers) + " Stars"
         }
+        groupInfoArray[0] = groupInfoArray[0].replacingOccurrences(of: "#", with: String(groupInformation.numOnline))
         
         creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convertWithFormat("MMM d, yyyy"))"
         titleLabel.text = groupInformation.title

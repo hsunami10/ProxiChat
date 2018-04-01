@@ -111,7 +111,7 @@ class EditProfileViewController: UIViewController {
             singleTextField.text = UserData.email
             
             singleTextFieldHeightConstraint.constant = textFieldHeight
-            subSingleViewHeightConstraint.constant = singleFieldTitleLabel.frame.height + 8 + singleTextFieldHeightConstraint.constant + 8 + singleErrorLabel.frame.height + 8
+            subSingleViewHeightConstraint.constant = singleFieldTitleLabel.frame.height + singleTextFieldHeightConstraint.constant + singleErrorLabel.frame.height + 24
             updateButton.setTitle("Update Email", for: .normal)
             break
         default:

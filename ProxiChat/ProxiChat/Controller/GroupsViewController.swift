@@ -96,6 +96,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // If the user is not already connected, then get user data and request location usage.
         if !UserData.connected {
             let usersDB = Database.database().reference().child(FirebaseNames.users)
+            
             // Check if the user exists
             usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
                 if snapshot.hasChild(UserData.username) {
@@ -104,7 +105,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         
                         // Cache user data
                         UserData.bio = (user["bio"]?.stringValue)!
-                        UserData.connected = true
                         UserData.email = (user["email"]?.stringValue)!
                         UserData.is_online = (user["is_online"]?.boolValue)!
                         UserData.latitude = (user["latitude"]?.doubleValue)!
@@ -315,15 +315,18 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                             // Get all groups' info - async
                             groupsDB.observe(.value, with: { (snapshot) in
                                 for key in LocalGroupsData.lastGroupsKeys {
+                                    // Check if the group still exists
                                     if snapshot.hasChild(key) {
+                                        // Filter out groups created by the current user
                                         let group = JSON(snapshot.value!)[key].dictionaryValue
                                         
-                                        let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
-                                        
-                                        self.groupArray.append(groupObj)
+                                        if group["creator"]?.stringValue != UserData.username {
+                                            let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
+                                            
+                                            self.groupArray.append(groupObj)
+                                        }
                                     } else {
-                                        SVProgressHUD.dismiss()
-                                        SVProgressHUD.showError(withStatus: "The \(key) group does not exist.")
+                                        LocalGroupsData.lastGroupsKeys.remove(at: LocalGroupsData.lastGroupsKeys.index(of: key)!)
                                     }
                                 }
                                 
@@ -384,7 +387,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             destinationVC.fromViewController = 0
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
-//            destinationVC.socket = socket
             destinationVC.groupsObj = self // MessageView - handle which screen to go back to
         }else if segue.identifier == "goToStarred" {
             let destinationVC = segue.destination as! StarredGroupsViewController
