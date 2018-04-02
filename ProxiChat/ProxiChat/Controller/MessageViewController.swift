@@ -308,21 +308,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: SocketIO Event Handlers
-    func eventHandlers() {
-        // Receive number of people online whenever someone joins or leaves
-//        socket?.on("group_stats", callback: { (data, ack) in
-//            // CHANGE INDICES
-//            self.groupInfoArray[0] = String(JSON(data[0])["number_online"].intValue) + " Online"
-//            let indexPath = IndexPath(row: 0, section: 0)
-//
-//            DispatchQueue.main.async {
-//                self.groupInfoTableView.reloadRows(at: [indexPath], with: .automatic)
-//            }
-//        })
+    // MARK: IBOutlet Actions
+    
+    // TODO: Prototype for starring groups
+    func starClicked() {
+        
     }
     
-    // MARK: IBOutlet Actions
     @IBAction func goBack(_ sender: Any) {
         slideRightTransition()
         
@@ -353,6 +345,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         dimView.isUserInteractionEnabled = true
         messageTextView.resignFirstResponder()
         
+        UIView.setAnimationsEnabled(true)
         UIView.animate(withDuration: Durations.showGroupInfoDuration) {
             self.dimView.alpha = 0.5
             self.groupInfoViewRightConstraint.constant = 0
@@ -692,10 +685,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         } else {
             groupInfoArray[groupInfoArray.count-1] = "View Creator Profile"
         }
-        if groupInformation.numMembers == 1 {
-            groupInfoArray[1] = String(groupInformation.numMembers) + " Star"
+        if groupInformation.members.count == 1 {
+            groupInfoArray[1] = String(groupInformation.members.count) + " Star"
         } else {
-            groupInfoArray[1] = String(groupInformation.numMembers) + " Stars"
+            groupInfoArray[1] = String(groupInformation.members.count) + " Stars"
         }
         groupInfoArray[0] = groupInfoArray[0].replacingOccurrences(of: "#", with: String(groupInformation.numOnline))
         

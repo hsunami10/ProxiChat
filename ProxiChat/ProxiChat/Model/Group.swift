@@ -11,7 +11,6 @@ import UIKit
 /// Holds all of a group's data.
 struct Group {
     var title = ""
-    var numMembers = 1
     var numOnline = 1
     var is_public = true
     var password = ""
@@ -37,7 +36,7 @@ struct Group {
          - dateCreated: The date this group was created.
          - image: The group image.
      */
-    init(_ title: Any?, _ numMembers: Any?, _ numOnline: Any?, _ is_public: Any?, _ password: Any?,
+    init(_ title: Any?, _ numOnline: Any?, _ is_public: Any?, _ password: Any?,
          _ creator: Any?, _ latitude: Any?, _ longitude: Any?, _ dateCreated: Any?, _ image: Any?, _ members: Any?) {
         self.creator = creator as! String
         self.dateCreated = dateCreated as! String
@@ -45,7 +44,6 @@ struct Group {
         self.is_public = is_public as! Bool
         self.latitude = latitude as! Double
         self.longitude = longitude as! Double
-        self.numMembers = numMembers as! Int
         self.numOnline = numOnline as! Int
         self.password = password as! String
         self.title = title as! String
