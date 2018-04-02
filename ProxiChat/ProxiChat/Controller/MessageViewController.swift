@@ -270,20 +270,22 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 })
         }
     }
-    
+
     func removePageQuery() {
-        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
         guard let pg = pageQuery else { return }
+        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
         messagesDB.child(groupInformation.title).removeObserver(withHandle: pg)
         pageQuery = nil
     }
+    
+    // MARK: Firebase Observers
     
     /// Initializes the firebase observe data event for the current group's messages. Only runs once **on view load**.
     func listenForNewMessages() {
         let messagesDB = Database.database().reference().child(FirebaseNames.messages)
         
         messagesDB.child(groupInformation.title)
-            .queryOrderedByKey()
+            .queryOrdered(byChild: "date_sent")
             .queryStarting(atValue: dateToStartListening)
             .observe(.childAdded) { (snapshot) in
                 // Ignore dummy message
@@ -296,9 +298,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         
                         DispatchQueue.main.async {
                             self.insertMessage()
-                            
+                            print("insert messages")
                             // If you're at the bottom, scroll (stay at bottom)
-                            if self.messageTableView.isAtBottom {
+                            if self.messageTableView.isAtBottom || value["author"].stringValue == UserData.username {
+                                print("scroll to bottom")
                                 self.messageTableView.scrollToBottom(self.messageArray, true)
                             }
                         }
@@ -397,7 +400,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cellHeightDict[indexPath.row] = cell.frame.size.height
     }
-
+    
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         if let height = cellHeightDict[indexPath.row] {
             return height
@@ -571,6 +574,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                             self.messageTableViewHeight.constant -= keyboardHeight
                             self.messageTableView.contentOffset.y += diffY
                         } else {
+                            self.messageTableViewHeight.constant -= keyboardHeight
                             self.messageViewHeight.constant -= keyboardHeight
                         }
                     } else {
