@@ -90,7 +90,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 groupsDB.observeSingleEvent(of: .value, with: { (snapshot) in
                     if !snapshot.hasChild(self.newGroup.title) {
                         // Add group to database
-                        groupsDB.child(self.newGroup.title).setValue([
+                        groupsDB.child("\(self.newGroup.title)/information").setValue([
                             "num_members": 1,
                             "num_online": 1,
                             "is_public": self.newGroup.is_public,
@@ -102,9 +102,10 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                             "image": "",
                             "title": self.newGroup.title
                             ])
+                        groupsDB.child("\(self.newGroup.title)/members/\(UserData.username)").setValue(true)
                         
                         // Add container for group's messages to database
-                        messagesDB.child(self.newGroup.title).child("dummy").setValue(true)
+                        messagesDB.child("\(self.newGroup.title)/dummy").setValue(true)
                         
                         // Set the location of the group
                         groupLocationsDB.setLocation(location, forKey: self.newGroup.title, withCompletionBlock: { (error) in
@@ -114,8 +115,8 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                             } else {
                                 // Update user's location
                                 usersDB.child(UserData.username).updateChildValues(["latitude" : UserData.latitude, "longitude" : UserData.longitude], withCompletionBlock: { (error, ref) in
-                                    SVProgressHUD.dismiss()
                                     if error != nil {
+                                        SVProgressHUD.dismiss()
                                         groupsDB.child(self.newGroup.title).removeValue()
                                         SVProgressHUD.showError(withStatus: error?.localizedDescription)
                                     } else {
@@ -136,6 +137,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                                             // Get all groups' info - async
                                             groupsDB.observe(.value, with: { (snapshot) in
                                                 LocalGroupsData.cachedSnapshot = snapshot
+                                                SVProgressHUD.dismiss()
                                                 self.performSegue(withIdentifier: "goToMessagesAfterCreate", sender: self)
                                             })
                                         })
@@ -250,7 +252,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
      */
 
     func storeGroup(_ created_by: String, _ is_public: Bool, _ group_name: String, _ group_password: String) {
-        newGroup = Group.init(group_name, 1, 1, is_public, (!is_public ? group_password : ""), created_by, 0.0, 0.0, String(describing: Date()), "")
+        newGroup = Group.init(group_name, 1, 1, is_public, (!is_public ? group_password : ""), created_by, 0.0, 0.0, String(describing: Date()), "", [UserData.username : true])
     }
     
     /**

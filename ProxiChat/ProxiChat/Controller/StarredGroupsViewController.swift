@@ -10,6 +10,7 @@ import UIKit
 import SocketIO
 import SwiftyJSON
 import SVProgressHUD
+import Firebase
 
 // TODO: ADD SEARCH BAR
 
@@ -39,7 +40,6 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         super.viewDidLoad()
         UIView.setAnimationsEnabled(true)
         infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
-        eventHandlers()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
@@ -53,49 +53,41 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         starredGroupsTableView.register(UINib.init(nibName: "GroupCell", bundle: nil), forCellReuseIdentifier: "groupCell")
         
         SVProgressHUD.show()
-        socket?.emit("get_starred_groups", UserData.username)
-        self.view.layoutIfNeeded()
+        
+        // Get groups you're in
+        let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+        groupsDB.observeSingleEvent(of: .value) { (snapshot) in
+            // Get all groups as FIR database snapshots
+            guard let children = snapshot.children.allObjects as? [DataSnapshot] else {
+                SVProgressHUD.showError(withStatus: "There was a problem getting your groups. Please try again.")
+                SVProgressHUD.dismiss()
+                return
+            }
+            
+            // Iterate through groups to find which ones the current user is in
+            for child in children {
+                let group = JSON(child.value!)
+                let groupInfo = group["information"]
+                let groupMembers = group["members"]
+                
+                if groupMembers[UserData.username] != JSON.null {
+                    let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_members"].int, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
+                    self.groupArray.append(groupObj)
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.starredGroupsTableView.reloadData()
+                SVProgressHUD.dismiss()
+            }
+        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    // MARK: SocketIO Event Handlers
-    func eventHandlers() {
-        socket?.on("get_starred_groups_response", callback: { (data, ack) in
-            if JSON(data[0])["success"].boolValue {
-                let groups = JSON(data[0])["groups"].arrayValue
-                self.groupArray = [Group]()
-                for group in groups {
-//                    var groupObj = Group()
-//                    let cd = ConvertDate(date: group["date_created"].stringValue)
-//
-////                    groupObj.coordinates = group["coordinates"].stringValue
-//                    groupObj.creator = group["created_by"].stringValue
-//                    groupObj.dateCreated = cd.convert()
-////                    groupObj.id = group["id"].stringValue
-//                    groupObj.is_public = group["is_public"].boolValue
-//                    groupObj.numMembers = group["number_members"].intValue
-//                    groupObj.password = group["password"].stringValue
-//                    groupObj.title = group["title"].stringValue
-//                    groupObj.rawDate = group["date_created"].stringValue
-                    
-//                    self.groupArray.append(groupObj)
-                }
-                
-                DispatchQueue.main.async {
-                    self.starredGroupsTableView.reloadData()
-                }
-                SVProgressHUD.dismiss()
-            } else {
-                SVProgressHUD.dismiss()
-                SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
-            }
-        })
-    }
-    
+
     // MARK: UITableView Delegate and DataSource Methods
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         joinGroup(indexPath.row)
@@ -159,21 +151,14 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier != "joinGroupStarred" {
-            if let mObj = messageObj {
-                mObj.socket?.off("group_stats")
-                mObj.socket?.off("receive_message")
-                mObj.socket?.off("get_messages_on_start_response")
-                mObj.socket = nil
-            }
+            
         }
         if segue.identifier == "joinGroupStarred" {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
-            destinationVC.socket = socket
             destinationVC.fromViewController = 1
         } else if segue.identifier == "createGroupStarred" {
             let destinationVC = segue.destination as! CreateGroupViewController
-//            destinationVC.socket = socket
             destinationVC.starredGroupsObj = self // MessageView - handle which screen to go back to
         } else if segue.identifier == "goToGroups" {
             let destinationVC = segue.destination as! GroupsViewController

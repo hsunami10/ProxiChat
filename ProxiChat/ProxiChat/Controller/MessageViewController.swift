@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 import SwiftDate
@@ -62,7 +61,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var cellHeightDict: [Int : CGFloat] = [:] // Stores actual cell heights
     
     // Constants
-    private let maxLines = 5 // 5 lines - max number of text view lines
+    private let maxLines = 5 // Max number of text view lines before scrolling
     private let placeholder = "Enter a message..."
     private let placeholderColor: UIColor = UIColor.lightGray
     private let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
@@ -72,7 +71,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     /// Keeps track of which groups view controller to go back to. 0 -- GroupsViewController, 1 -- StarredGroupsViewController.
     var fromViewController = -1
     var groupInformation: Group!
-    var socket: SocketIOClient?
     
     @IBOutlet var groupTitle: UILabel!
     @IBOutlet var sendButton: UIButton!
@@ -300,7 +298,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         DispatchQueue.main.async {
                             self.insertMessage()
                             
-                            // If you're at the bottom, scroll (stay at bottom)
+                            // If you're at the bottom or the sender, scroll (stay at bottom)
                             if self.messageTableView.isAtBottom || value["author"].stringValue == UserData.username {
                                 self.messageTableView.scrollToBottom(self.messageArray, true)
                             }
@@ -313,15 +311,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: SocketIO Event Handlers
     func eventHandlers() {
         // Receive number of people online whenever someone joins or leaves
-        socket?.on("group_stats", callback: { (data, ack) in
-            // CHANGE INDICES
-            self.groupInfoArray[0] = String(JSON(data[0])["number_online"].intValue) + " Online"
-            let indexPath = IndexPath(row: 0, section: 0)
-            
-            DispatchQueue.main.async {
-                self.groupInfoTableView.reloadRows(at: [indexPath], with: .automatic)
-            }
-        })
+//        socket?.on("group_stats", callback: { (data, ack) in
+//            // CHANGE INDICES
+//            self.groupInfoArray[0] = String(JSON(data[0])["number_online"].intValue) + " Online"
+//            let indexPath = IndexPath(row: 0, section: 0)
+//
+//            DispatchQueue.main.async {
+//                self.groupInfoTableView.reloadRows(at: [indexPath], with: .automatic)
+//            }
+//        })
     }
     
     // MARK: IBOutlet Actions
@@ -622,26 +620,25 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
         // Remove all observers - add them back on view load
-        Database.database().reference().child(FirebaseNames.messages).child(groupInformation.title).removeAllObservers()
+        // TODO: Maybe change this to implement notifications?
+        Database.database().reference().child("\(FirebaseNames.messages)/\(groupInformation.title)").removeAllObservers()
         dateToStartListening = ""
         earliestDate = nil
         
         if segue.identifier == "goBackToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
             destinationVC.delegate = self
-            destinationVC.socket = socket
-            destinationVC.messageObj = self // If the user navigates to any other view controller, then set the socket = nil
+            destinationVC.messageObj = self
             UserData.createNewMessageViewController = false
         } else if segue.identifier == "goBackToStarredGroups" {
             let destinationVC = segue.destination as! StarredGroupsViewController
             destinationVC.delegate = self
-            destinationVC.socket = socket
-            destinationVC.messageObj = self // If the user navigates to any other view controller, then set the socket = nil
+            destinationVC.messageObj = self
             UserData.createNewMessageViewController = false
         } else if segue.identifier == "goToMembers" {
             let destinationVC = segue.destination as! MembersViewController
-            destinationVC.socket = socket
             // TODO: Finish this later if needed
         }
     }

@@ -15,7 +15,7 @@ struct Font {
     /// Default font name for **all** text.
     static let fontName: String = "Helvetica"
     
-    /// Font size of the all labels in info views.
+    /// Font size of the all labels in info views. **TODO: Shrink according to text length.**
     static let infoViewFontSize: Float = 20.0
     
     /**

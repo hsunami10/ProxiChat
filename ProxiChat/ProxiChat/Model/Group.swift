@@ -20,6 +20,7 @@ struct Group {
     var longitude = 0.0
     var dateCreated = ""
     var image = ""
+    var members: [String : Bool] = [:]
     
     /**
      Initialize all group object values.
@@ -37,7 +38,7 @@ struct Group {
          - image: The group image.
      */
     init(_ title: Any?, _ numMembers: Any?, _ numOnline: Any?, _ is_public: Any?, _ password: Any?,
-         _ creator: Any?, _ latitude: Any?, _ longitude: Any?, _ dateCreated: Any?, _ image: Any?) {
+         _ creator: Any?, _ latitude: Any?, _ longitude: Any?, _ dateCreated: Any?, _ image: Any?, _ members: Any?) {
         self.creator = creator as! String
         self.dateCreated = dateCreated as! String
         self.image = image as! String
@@ -48,5 +49,6 @@ struct Group {
         self.numOnline = numOnline as! Int
         self.password = password as! String
         self.title = title as! String
+        self.members = members as! Dictionary<String, Bool>
     }
 }

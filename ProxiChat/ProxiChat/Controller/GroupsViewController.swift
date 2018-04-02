@@ -125,14 +125,16 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             // Update table with last snapshot of database
             DispatchQueue.global().async {
-                let dict = JSON(LocalGroupsData.cachedSnapshot.value!)
+                let val = JSON(LocalGroupsData.cachedSnapshot.value!)
                 self.groupArray = [Group]()
                 
                 LocalGroupsData.lastGroupsKeys.forEach({ (key) in
-                    let group = dict[key].dictionaryValue
+                    let group = val[key]
+                    let groupInfo = group["information"]
                     
-                    if group["creator"]?.stringValue != UserData.username {
-                        let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
+                    if groupInfo["creator"].stringValue != UserData.username {
+                        let groupMembers = group["members"]
+                        let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_members"].int, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
                         self.groupArray.append(groupObj)
                     }
                 })
@@ -242,9 +244,11 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         if snapshot.hasChild(self.groupArray[indexPath.row].title) {
                             // Check if the passwords are the same
                             let groups = JSON(snapshot.value!)
-                            let group = groups[self.groupArray[indexPath.row].title].dictionaryValue
+                            let group = groups[self.groupArray[indexPath.row].title]
+                            let groupPassword = group["information"]["password"].stringValue
+                            
                             if let password = alert.textFields?.first?.text {
-                                if password == group["password"]?.stringValue {
+                                if password == groupPassword {
                                     self.joinGroup(indexPath.row)
                                 } else {
                                     SVProgressHUD.showError(withStatus: "Incorrect password.")
@@ -320,12 +324,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                                 for key in LocalGroupsData.lastGroupsKeys {
                                     // Check if the group still exists
                                     if snapshot.hasChild(key) {
-                                        let group = JSON(snapshot.value!)[key].dictionaryValue
+                                        let group = JSON(snapshot.value!)[key]
+                                        let groupInfo = group["information"]
                                         
-                                        // Filter out groups created by the current user
-                                        if group["creator"]?.stringValue != UserData.username {
-                                            let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
-                                            
+                                        if groupInfo["creator"].stringValue != UserData.username {
+                                            let groupMembers = group["members"]
+                                            let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_members"].int, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
                                             self.groupArray.append(groupObj)
                                         }
                                     } else {
@@ -373,20 +377,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Set MessageViewController socket to nil
-        if segue.identifier != "joinGroup" {
-            if let mObj = messageObj {
-                mObj.socket?.off("group_stats")
-                mObj.socket?.off("receive_message")
-                mObj.socket?.off("get_messages_on_start_response")
-                mObj.socket = nil
-            }
-        }
         
         if segue.identifier == "joinGroup" {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
-            destinationVC.socket = socket
             destinationVC.fromViewController = 0
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
