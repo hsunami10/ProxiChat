@@ -12,6 +12,7 @@ import AVFoundation
 import Photos
 import SVProgressHUD
 import SwiftyJSON
+import Firebase
 
 /*
  TODO
@@ -111,7 +112,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         radiusTextField.delegate = self
         radiusTextField.keyboardType = .numberPad
-        radiusTextField.text = String(UserData.radius)
+        radiusTextField.text = String(Int(UserData.radius))
         
         if UserData.radius > 100 {
             radiusSlider.value = radiusSlider.maximumValue
@@ -164,9 +165,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     // MARK: UpdateProfileDelegate Methods
-    func updateProfile(_ type: Int, _ content: String) {
+    func updateProfile(_ type: EditProfile, _ content: String) {
+        // Save to database
+        let users = Database.database().reference().child(FirebaseNames.users)
+        
         switch type {
-        case 1:
+        case .password:
             UserData.password = content
             var i = content.count
             var pwd = ""
@@ -175,20 +179,21 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 i -= 1
             }
             editedContent = pwd
+            users.child(UserData.username).updateChildValues(["password" : UserData.password])
             break
-        case 2:
+        case .bio:
             UserData.bio = content
             editedContent = content
+            users.child(UserData.username).updateChildValues(["bio" : UserData.bio])
             break
-        case 3:
+        case .email:
             UserData.email = content
             editedContent = content
-            break
-        default:
+            users.child(UserData.username).updateChildValues(["email" : UserData.email])
             break
         }
-        socket?.emit("update_profile", UserData.username, type, content)
-        let indexPath = IndexPath(row: type, section: 0)
+        
+        let indexPath = IndexPath(row: type.hashValue + 1, section: 0)
         profileTableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
@@ -384,8 +389,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     /// Locally saves the radius and updates in the database.
     func updateRadius() {
         UserData.radius = Double(radiusTextField.text!)!
-        print("update radius to: ", UserData.radius)
-        socket?.emit("update_radius", UserData.username, UserData.radius)
+        let users = Database.database().reference().child(FirebaseNames.users)
+        users.child(UserData.username).updateChildValues(["radius" : UserData.radius])
     }
     
     /// Save and update the radius ONLY when the slider has finished sliding.

@@ -146,7 +146,7 @@ class EditProfileViewController: UIViewController {
         case 1:
             if doubleTextFieldOne.text! == doubleTextFieldTwo.text! {
                 if Validate.isOneWord(doubleTextFieldOne.text!) {
-                    delegate?.updateProfile(row, doubleTextFieldOne.text!)
+                    delegate?.updateProfile(EditProfile.password, doubleTextFieldOne.text!)
                     valid = true
                 } else {
                     doubleErrorLabel.text = "Invalid password."
@@ -156,12 +156,12 @@ class EditProfileViewController: UIViewController {
             }
             break
         case 2:
-            delegate?.updateProfile(row, singleTextView.text!)
+            delegate?.updateProfile(EditProfile.bio, singleTextView.text!)
             valid = true
             break
         case 3:
             if Validate.isValidEmail(singleTextField.text!) {
-                delegate?.updateProfile(row, singleTextField.text!)
+                delegate?.updateProfile(EditProfile.email, singleTextField.text!)
                 valid = true
             } else {
                 singleErrorLabel.text = "Invalid email."

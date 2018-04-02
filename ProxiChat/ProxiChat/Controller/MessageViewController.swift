@@ -23,6 +23,7 @@ import Firebase
  - maybe find a way to cache whether or not the keyboard is showing / hiding?
  
  BUGS
+ - FIX -> messages just down when paginating - keep the content in the same position
  - when scrolling and showing keyboard at same time, quick drop at top of messagetableview
  */
 
@@ -50,7 +51,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     /// The date of earliest message retrieved - used for pagination.
     private var earliestDate: String!
     /// The max number of messages to page each time.
-    private var numMessages: UInt = 1
+    private var numMessages: UInt = 20
     
     // Storing values for responsive layout
     private var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
@@ -198,7 +199,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 .observe(.value) { (snapshot) in
                     guard let children = snapshot.children.allObjects as? [DataSnapshot] else {
                         SVProgressHUD.showError(withStatus: "There was a problem getting messages. Please try again.")
-                        self.messageTableView.refreshControl?.endRefreshing()
                         return
                     }
                     
@@ -291,6 +291,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 // Ignore dummy message
                 if snapshot.key != "dummy" {
                     let value = JSON(snapshot.value!)
+                    
                     // Since .queryStarting is >=, ignore the =, only take >
                     if value["date_sent"].stringValue != self.dateToStartListening {
                         let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, snapshot.key, value["picture"].stringValue)
@@ -298,10 +299,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         
                         DispatchQueue.main.async {
                             self.insertMessage()
-                            print("insert messages")
+                            
                             // If you're at the bottom, scroll (stay at bottom)
                             if self.messageTableView.isAtBottom || value["author"].stringValue == UserData.username {
-                                print("scroll to bottom")
                                 self.messageTableView.scrollToBottom(self.messageArray, true)
                             }
                         }

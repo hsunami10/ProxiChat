@@ -85,6 +85,11 @@ extension Character {
     }
 }
 
+// MARK: Enums
+enum EditProfile {
+    case password, bio, email
+}
+
 // TODO: background app refresh -> most apps use this - figure out how to use this
 // IMPORTANT BUG - how to wait until FirebaseApp is finished configuring? so error won't pop up
 @UIApplicationMain
