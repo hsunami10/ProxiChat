@@ -92,7 +92,10 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         } else {
             let usersDB = Database.database().reference().child(FirebaseNames.users)
             usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
+                
+                // Check if it has username
                 if !snapshot.hasChild(username) {
+                    
                     SVProgressHUD.show()
                     
                     // Email registration
@@ -100,6 +103,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                         if error != nil {
                             print(error!.localizedDescription)
                             self.errorLabel.text = error!.localizedDescription
+                            SVProgressHUD.dismiss()
                         } else {
                             // Store default user data
                             usersDB.child(username).setValue([
@@ -112,9 +116,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                                 "bio" : "",
                                 "picture" : "",
                                 ])
-                            self.performSegue(withIdentifier: "goToGroups", sender: self)
+                            
+                            Auth.auth().signIn(withEmail: email, password: password, completion: { (user, error) in
+                                if error != nil {
+                                    print(error!.localizedDescription)
+                                    self.errorLabel.text = error!.localizedDescription
+                                } else {
+                                    self.performSegue(withIdentifier: "goToGroups", sender: self)
+                                }
+                                SVProgressHUD.dismiss()
+                            })
                         }
-                        SVProgressHUD.dismiss()
                     })
                 } else {
                     self.errorLabel.text = "Username already taken."

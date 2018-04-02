@@ -44,7 +44,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
-        eventHandlers()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
@@ -65,27 +64,20 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    // MARK: SocketIO Event Handlers
-    func eventHandlers() {
-        socket?.on("delete_account_response", callback: { (data, ack) in
-            SVProgressHUD.dismiss()
-            if JSON(data[0])["success"].boolValue {
-                self.removeUserDefaults()
-                self.revealTopToBottomTransition()
-                self.performSegue(withIdentifier: "logOutDelete", sender: self)
-            } else {
-                SVProgressHUD.showError(withStatus: "There was a problem deleting your account. Please try again.")
-            }
-        })
-    }
-    
+
     // MARK: IBOutlet Actions
     @IBAction func deleteAccount(_ sender: Any) {
         let alert = UIAlertController(title: "Delete Account", message: "Are you sure you want to remove your account? This action cannot be reversed.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (action) in
-            self.socket?.emit("delete_account", UserData.username)
-            SVProgressHUD.show()
+            do {
+                try Auth.auth().signOut()
+                
+                self.removeUserDefaults()
+                self.revealTopToBottomTransition()
+                self.performSegue(withIdentifier: "logOutDelete", sender: self)
+            } catch {
+                SVProgressHUD.showError(withStatus: "There was a problem deleting your account. Please try again.")
+            }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         

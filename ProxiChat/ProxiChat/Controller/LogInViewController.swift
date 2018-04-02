@@ -46,12 +46,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroups" {
-            let destinationVC = segue.destination as! GroupsViewController
-            UserData.username = usernameTextField.text!
-            
             // Save log in
             UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
-            UserDefaults.standard.set(self.usernameTextField.text!, forKey: "proxiChatUsername")
+            UserDefaults.standard.set(UserData.username, forKey: "proxiChatUsername")
             UserDefaults.standard.synchronize()
         }
     }
@@ -82,27 +79,46 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         } else {
             SVProgressHUD.show()
             
-            // If valid email
-            if username.contains("@") {
-                if Validate.isValidEmail(username) {
-                    Auth.auth().signIn(withEmail: username, password: password, completion: { (user, error) in
-                        if error != nil {
-                            self.errorLabel.text = error?.localizedDescription
-                        } else {
+            let usersDB = Database.database().reference().child(FirebaseNames.users)
+            
+            // If email
+            if Validate.isValidEmail(username) {
+                usersDB
+                    .queryOrdered(byChild: "email")
+                    .queryEqual(toValue: username)
+                    .observeSingleEvent(of: .value) { (snapshot) in
+                        if snapshot.childrenCount != 1 {
+                            self.errorLabel.text = "Email / password is incorrect. Please try again."
+                            return
+                        }
+                        
+                        guard let children = snapshot.children.allObjects as? [DataSnapshot] else {
+                            self.errorLabel.text = "Email / password is incorrect. Please try again."
+                            return
+                        }
+                        UserData.username = children.first!.key
+                        
+                        Auth.auth().signIn(withEmail: username, password: password, completion: { (user, error) in
+                            if error != nil {
+                                self.errorLabel.text = error?.localizedDescription
+                            } else {
+                                self.performSegue(withIdentifier: "goToGroups", sender: self)
+                            }
+                        })
+                }
+            } else { // If username
+                if username.isValidFIRKey() {
+                    usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
+                        if snapshot.hasChild(username) {
+                            UserData.username = username
                             self.performSegue(withIdentifier: "goToGroups", sender: self)
+                        } else {
+                            self.errorLabel.text = "Username does not exist."
                         }
                     })
                 } else {
-                    self.errorLabel.text = "Invalid email."
+                    self.errorLabel.text = "Username / email does not exist."
                 }
-            } else { // If username
-                Database.database().reference().child(FirebaseNames.users).observeSingleEvent(of: .value, with: { (snapshot) in
-                    if snapshot.hasChild(username) {
-                        self.performSegue(withIdentifier: "goToGroups", sender: self)
-                    } else {
-                        self.errorLabel.text = "Username does not exist."
-                    }
-                })
             }
             SVProgressHUD.dismiss()
         }

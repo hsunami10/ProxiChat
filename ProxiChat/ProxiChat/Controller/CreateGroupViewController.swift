@@ -171,7 +171,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                         self.showError("Invalid input. Please try again.")
                     } else if self.groupPasswordTextField.text != self.confirmPasswordTextField.text { // Check for matching passwords
                         self.showError("Passwords do not match.")
-                    } else if !self.isValid(self.groupNameTextField.text!) {
+                    } else if !self.groupNameTextField.text!.isValidFIRKey() {
                         self.showError("Group title cannot contain . # $ [ ] / characters.")
                     } else {
                         SVProgressHUD.show()
@@ -181,7 +181,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                 } else {
                     if Validate.isInvalidInput(self.groupNameTextField.text!) {
                         self.showError("Invalid input. Please try again.")
-                    } else if !self.isValid(self.groupNameTextField.text!) {
+                    } else if !self.groupNameTextField.text!.isValidFIRKey() {
                         self.showError("Group title cannot contain . # $ [ ] / characters.")
                     } else {
                         SVProgressHUD.show()
@@ -234,11 +234,6 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     // MARK: Miscellaneous Methods
-    
-    /// Checks text to make sure doesn't contain `. # $ [ ] /`
-    func isValid(_ text: String) -> Bool {
-        return !(text.contains(".") || text.contains("#") || text.contains("$") || text.contains("[") || text.contains("]") || text.contains("/"))
-    }
     
     /**
      Stores data for the newly created group to use after the user's location has been updated.

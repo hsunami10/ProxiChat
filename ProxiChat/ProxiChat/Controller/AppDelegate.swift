@@ -43,6 +43,11 @@ extension String {
         
         return ceil(boundingBox.width)
     }
+    
+    /// Checks text to make sure doesn't contain `. # $ [ ] /` (for firebase keys).
+    func isValidFIRKey() -> Bool {
+        return !(self.contains(".") || self.contains("#") || self.contains("$") || self.contains("[") || self.contains("]") || self.contains("/"))
+    }
 }
 extension UITextView {
     func centerVertically() {
@@ -109,9 +114,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Dimensions.safeAreaWidth = (window?.frame.width)!
         
         // TODO: Remove later - for testing purposes only
-//        let domain = Bundle.main.bundleIdentifier!
-//        UserDefaults.standard.removePersistentDomain(forName: domain)
-//        UserDefaults.standard.synchronize()
+        let domain = Bundle.main.bundleIdentifier!
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        UserDefaults.standard.synchronize()
         
         let username = UserDefaults.standard.object(forKey: "proxiChatUsername")
         if username != nil {
@@ -166,6 +171,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func goOffline() {
         guard let username = UserDefaults.standard.value(forKey: "proxiChatUsername") as? String else { return }
         Database.database().reference().child("Users").child(username).updateChildValues(["is_online" : false])
+        try! Auth.auth().signOut()
     }
     
 }

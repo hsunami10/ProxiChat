@@ -345,7 +345,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         dimView.isUserInteractionEnabled = true
         messageTextView.resignFirstResponder()
         
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         UIView.animate(withDuration: Durations.showGroupInfoDuration) {
             self.dimView.alpha = 0.5
             self.groupInfoViewRightConstraint.constant = 0

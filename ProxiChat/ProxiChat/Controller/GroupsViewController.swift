@@ -24,8 +24,6 @@ import GeoFire
  TODO: Line 306
  
  BUGS
- - app sometimes crashes for no reason - check and rerun later to test
- Terminating app due to uncaught exception 'InvalidPathValidation', reason: '(child:) Must be a non-empty string and not contain '.' '#' '$' '[' or ']''
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
