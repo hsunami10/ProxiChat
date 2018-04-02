@@ -90,48 +90,68 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         } else if !Validate.isValidEmail(email) {
             errorLabel.text = "Email address not valid."
         } else {
+            SVProgressHUD.show()
             let usersDB = Database.database().reference().child(FirebaseNames.users)
-            usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
-                
-                // Check if it has username
-                if !snapshot.hasChild(username) {
-                    
-                    SVProgressHUD.show()
-                    
-                    // Email registration
-                    Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
-                        if error != nil {
-                            print(error!.localizedDescription)
-                            self.errorLabel.text = error!.localizedDescription
-                            SVProgressHUD.dismiss()
-                        } else {
-                            // Store default user data
-                            usersDB.child(username).setValue([
-                                "email" : email,
-                                "password" : password,
-                                "radius" : 40,
-                                "is_online" : true,
-                                "latitude" : 0,
-                                "longitude" : 0,
-                                "bio" : "",
-                                "picture" : "",
-                                ])
-                            
-                            Auth.auth().signIn(withEmail: email, password: password, completion: { (user, error) in
-                                if error != nil {
-                                    print(error!.localizedDescription)
-                                    self.errorLabel.text = error!.localizedDescription
-                                } else {
-                                    self.performSegue(withIdentifier: "goToGroups", sender: self)
-                                }
-                                SVProgressHUD.dismiss()
-                            })
-                        }
-                    })
-                } else {
-                    self.errorLabel.text = "Username already taken."
-                }
+            usersDB
+                .queryOrdered(byChild: "email")
+                .queryEqual(toValue: email)
+                .observeSingleEvent(of: .value, with: { (snapshot) in
+                    // Check if email exists
+                    if snapshot.childrenCount != 0 {
+                        SVProgressHUD.dismiss()
+                        self.errorLabel.text = "Email already exists."
+                        return
+                    }
+                    self.findUsername(username, password, email)
             })
+        }
+    }
+    
+    /// Find a username with the specified string in the firebase database. If it doesn't exist, then create the user and log in.
+    func findUsername(_ username: String, _ password: String, _ email: String) {
+        let usersDB = Database.database().reference().child(FirebaseNames.users)
+        usersDB
+            .queryOrderedByKey()
+            .queryEqual(toValue: username)
+            .observeSingleEvent(of: .value) { (snapshot) in
+                // Check if username exists
+                if snapshot.childrenCount != 0 {
+                    SVProgressHUD.dismiss()
+                    self.errorLabel.text = "Username already taken."
+                    return
+                }
+                SVProgressHUD.show()
+                
+                // Email registration
+                Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
+                    if error != nil {
+                        print(error!.localizedDescription)
+                        self.errorLabel.text = error!.localizedDescription
+                        SVProgressHUD.dismiss()
+                    } else {
+                        // Store default user data
+                        usersDB.child(username).setValue([
+                            "email" : email,
+                            "password" : password,
+                            "radius" : 40,
+                            "is_online" : true,
+                            "latitude" : 0,
+                            "longitude" : 0,
+                            "bio" : "",
+                            "picture" : "",
+                            ])
+
+                        Auth.auth().signIn(withEmail: email, password: password, completion: { (user, error) in
+                            if error != nil {
+                                print(error!.localizedDescription)
+                                self.errorLabel.text = error!.localizedDescription
+                            } else {
+                                self.performSegue(withIdentifier: "goToGroups", sender: self)
+                            }
+                            SVProgressHUD.dismiss()
+                        })
+                    }
+                })
         }
     }
 }
