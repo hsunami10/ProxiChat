@@ -130,8 +130,11 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 
                 LocalGroupsData.lastGroupsKeys.forEach({ (key) in
                     let group = dict[key].dictionaryValue
-                    let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
-                    self.groupArray.append(groupObj)
+                    
+                    if group["creator"]?.stringValue != UserData.username {
+                        let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
+                        self.groupArray.append(groupObj)
+                    }
                 })
                 
                 DispatchQueue.main.async {
@@ -317,9 +320,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                                 for key in LocalGroupsData.lastGroupsKeys {
                                     // Check if the group still exists
                                     if snapshot.hasChild(key) {
-                                        // Filter out groups created by the current user
                                         let group = JSON(snapshot.value!)[key].dictionaryValue
                                         
+                                        // Filter out groups created by the current user
                                         if group["creator"]?.stringValue != UserData.username {
                                             let groupObj = Group.init(group["title"]?.string, group["num_members"]?.int, group["num_online"]?.int, group["is_public"]?.bool, group["password"]?.string, group["creator"]?.string, group["latitude"]?.double, group["longitude"]?.double, group["date_created"]?.string, group["image"]?.string)
                                             

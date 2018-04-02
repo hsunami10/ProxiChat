@@ -38,12 +38,19 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var lastContentHeight: CGFloat = 0
     private var isMessageSent = false // Tag for whether or not a message has been sent - don't hide keyboard on message send
     private var observed = false
+    private var refreshControl: UIRefreshControl!
+    private var pageQuery: UInt?
     
+    // For pagination and getting messages
     /**
-     The date of the last message loaded.
-     This is used on the initial message loading to mark when to start listening for new messages
+     The date of the last (most recent) message loaded on join.
+     This is used on the message loading to mark when to start listening for new messages.
      */
-    private var lastLoadedDate = ""
+    private var dateToStartListening = ""
+    /// The date of earliest message retrieved - used for pagination.
+    private var earliestDate: String!
+    /// The max number of messages to page each time.
+    private var numMessages: UInt = 1
     
     // Storing values for responsive layout
     private var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
@@ -111,6 +118,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         groupInfoTableView.delegate = self
         groupInfoTableView.dataSource = self
         
+        refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: "More")
+        refreshControl.addTarget(self, action: #selector(getMoreMessages(_:)), for: .valueChanged)
+        
         // Set up action on keyboard show and hide
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
@@ -130,6 +141,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         groupInfoTableView.register(UINib.init(nibName: "GroupInfoCell", bundle: nil), forCellReuseIdentifier: "groupInfoCell")
         messageTableView.separatorStyle = .none
         
+        if #available(iOS 10.0, *) {
+            messageTableView.refreshControl = refreshControl
+        } else {
+            messageTableView.addSubview(refreshControl)
+        }
+        
         messageTextView.keyboardType = .alphabet
         messageTextView.isScrollEnabled = true
         messageTextView.alwaysBounceVertical = false
@@ -140,8 +157,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         initializeLayout()
         
         // Get messages
-        getMessagesOnLoad()
-//        retrieveMessages()
+        getMessages(onLoad: true)
     }
     
     deinit {
@@ -155,6 +171,140 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK: Firebase Queries
+    
+    /// Paginates the messages.
+    @objc func getMoreMessages(_ sender: AnyObject) {
+        // TODO: Disable listening to messages or no?
+        getMessages(onLoad: false)
+    }
+    
+    /**
+     Gets messages of a certain group on join or on refresh.
+    
+     - parameters:
+        - onLoad: Determines whether or not the user is getting messages on join (view load) or on refresh.
+     */
+    func getMessages(onLoad: Bool) {
+        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
+        
+        if onLoad {
+            messageArray = [Message]()
+            messagesDB.child(groupInformation.title)
+                .queryOrdered(byChild: "date_sent") // Ascending order
+                .queryLimited(toLast: numMessages)
+                .observe(.value) { (snapshot) in
+                    guard let children = snapshot.children.allObjects as? [DataSnapshot] else {
+                        SVProgressHUD.showError(withStatus: "There was a problem getting messages. Please try again.")
+                        self.messageTableView.refreshControl?.endRefreshing()
+                        return
+                    }
+                    
+                    // Store the latest date (first element of children)
+                    self.earliestDate = JSON((children.first?.value)!)["date_sent"].stringValue
+                    
+                    // Iterate over snapshot's children, skipping dummy message - earliest message first
+                    for child in children {
+                        if child.key != "dummy" {
+                            let value = JSON(child.value!)
+                            let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, child.key, value["picture"].stringValue)
+                            self.messageArray.append(messageObj)
+                        }
+                    }
+                    
+                    // Account for empty messages
+                    if self.messageArray.count == 0 {
+                        self.dateToStartListening = ""
+                    } else {
+                        self.dateToStartListening = self.messageArray[self.messageArray.count-1].dateSent
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.messageTableView.reloadData()
+                        self.messageTableView.scrollToBottom(self.messageArray, false)
+                        messagesDB.child(self.groupInformation.title).removeAllObservers()
+                        self.listenForNewMessages()
+                    }
+            }
+        } else {
+            self.pageQuery = messagesDB.child(groupInformation.title)
+                .queryOrdered(byChild: "date_sent")
+                .queryEnding(atValue: earliestDate) // <=
+                .queryLimited(toLast: numMessages + 1) // Adjust for ignoring the = to keep the number of messages the same
+                .observe(.value, with: { (snapshot) in
+                    guard let children = snapshot.children.allObjects as? [DataSnapshot] else {
+                        SVProgressHUD.showError(withStatus: "There was a problem getting messages. Please try again.")
+                        self.messageTableView.refreshControl?.endRefreshing()
+                        return
+                    }
+                    
+//                    var indexPaths = [IndexPath]()
+                    
+                    // Iterate from end -> beginning of array, and insert backwards to keep order
+                    for index in stride(from: children.count-1, through: 0, by: -1) {
+                        let child = children[index]
+                        if child.key != "dummy" {
+                            let value = JSON(child.value!)
+                            
+                            // Adjust for <=, ignore the =
+                            if self.earliestDate != value["date_sent"].stringValue {
+                                let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, child.key, value["picture"].stringValue)
+                                self.messageArray.insert(messageObj, at: 0)
+                                
+//                                indexPaths.insert(IndexPath(row: index, section: 0), at: 0)
+                            }
+                        }
+                    }
+                    
+                    // Store the earliest date (first element of children)
+                    self.earliestDate = JSON((children.first?.value)!)["date_sent"].stringValue
+                    
+                    DispatchQueue.main.async {
+//                        self.insertMessage(indexPaths)
+                        self.removePageQuery()
+                        self.messageTableView.reloadData()
+                        self.messageTableView.refreshControl?.endRefreshing()
+                    }
+                })
+        }
+    }
+    
+    func removePageQuery() {
+        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
+        guard let pg = pageQuery else { return }
+        messagesDB.child(groupInformation.title).removeObserver(withHandle: pg)
+        pageQuery = nil
+    }
+    
+    /// Initializes the firebase observe data event for the current group's messages. Only runs once **on view load**.
+    func listenForNewMessages() {
+        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
+        
+        messagesDB.child(groupInformation.title)
+            .queryOrderedByKey()
+            .queryStarting(atValue: dateToStartListening)
+            .observe(.childAdded) { (snapshot) in
+                // Ignore dummy message
+                if snapshot.key != "dummy" {
+                    let value = JSON(snapshot.value!)
+                    // Since .queryStarting is >=, ignore the =, only take >
+                    if value["date_sent"].stringValue != self.dateToStartListening {
+                        let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, snapshot.key, value["picture"].stringValue)
+                        self.messageArray.append(messageObj)
+                        
+                        DispatchQueue.main.async {
+                            self.insertMessage()
+                            
+                            // If you're at the bottom, scroll (stay at bottom)
+                            if self.messageTableView.isAtBottom {
+                                self.messageTableView.scrollToBottom(self.messageArray, true)
+                            }
+                        }
+                    }
+                }
+        }
     }
     
     // MARK: SocketIO Event Handlers
@@ -374,14 +524,13 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     func joinGroup(_ group: Group) {
         UIView.setAnimationsEnabled(true)
         
-        messageArray = [Message]()
         groupInformation = group
         groupTitle.text = group.title
         lastLines = 1
         
         initializeGroupInfo()
         initializeLayout()
-        getMessagesOnLoad()
+        getMessages(onLoad: true)
     }
     
     // MARK: Keyboard (NotificationCenter) Methods
@@ -469,9 +618,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Remove all observers - reset
+        // Remove all observers - add them back on view load
         Database.database().reference().child(FirebaseNames.messages).child(groupInformation.title).removeAllObservers()
-        lastLoadedDate = ""
+        dateToStartListening = ""
+        earliestDate = nil
         
         if segue.identifier == "goBackToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
@@ -493,60 +643,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
-    
-    /// Gets all messages of a certain group on join.
-    func getMessagesOnLoad() {
-        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
-        messagesDB.child(self.groupInformation.title).queryOrdered(byChild: "date_sent").observe(.value) { (snapshot) in
-            // Iterate over snapshot's children, skipping dummy message
-            for child in snapshot.children.allObjects as! [DataSnapshot] {
-                if child.key != "dummy" {
-                    let value = JSON(child.value!)
-                    let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, child.key, value["picture"].stringValue)
-                    self.messageArray.append(messageObj)
-                }
-            }
-            
-            // Account for empty messages
-            if self.messageArray.count == 0 {
-                self.lastLoadedDate = ""
-            } else {
-                self.lastLoadedDate = self.messageArray[self.messageArray.count-1].dateSent
-            }
-            
-            DispatchQueue.main.async {
-                self.messageTableView.reloadData()
-                self.messageTableView.scrollToBottom(self.messageArray, false)
-                messagesDB.child(self.groupInformation.title).removeAllObservers()
-                self.retrieveMessages()
-            }
-        }
-    }
-    
-    /// Initializes the firebase observe data event for the current group's messages.
-    func retrieveMessages() {
-        let messagesDB = Database.database().reference().child(FirebaseNames.messages)
-        messagesDB.child(groupInformation.title).queryOrdered(byChild: "date_sent").queryStarting(atValue: lastLoadedDate).observe(.childAdded) { (snapshot) in
-            // Ignore dummy message
-            if snapshot.key != "dummy" {
-                let value = JSON(snapshot.value!).dictionaryValue
-                // Since .queryStarting is >=, ignore the =, only take >
-                if (value["date_sent"]?.stringValue)! != self.lastLoadedDate {
-                    let messageObj = self.createMessageObj((value["author"]?.stringValue)!, (value["content"]?.stringValue)!, (value["date_sent"]?.stringValue)!, (value["group"]?.stringValue)!, snapshot.key, (value["picture"]?.stringValue)!)
-                    self.messageArray.append(messageObj)
-                    
-                    DispatchQueue.main.async {
-                        self.insertMessage()
-                        
-                        // If you're at the bottom, scroll (stay at bottom)
-                        if self.messageTableView.isAtBottom {
-                            self.messageTableView.scrollToBottom(self.messageArray, true)
-                        }
-                    }
-                }
-            }
-        }
-    }
     
     func initializeLayout() {
         messageTextView.text = " " // Used to store default height of 1 line (startingContentHeight)
@@ -668,12 +764,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         return messageObj
     }
     
-    /// Adds a row to the messageTableView at the bottom.
-    func insertMessage() {
+    /**
+     Adds rows to the messageTableView.
+     
+     - parameters:
+        - indexArray: Array of `IndexPath` objects. Determines where to add the rows to the table view. The default value is `[]`.
+     */
+    func insertMessage(_ indexArray: [IndexPath] = []) {
         let indexPath = IndexPath(row: messageArray.count-1, section: 0)
         UIView.setAnimationsEnabled(false)
         messageTableView.beginUpdates()
-        messageTableView.insertRows(at: [indexPath], with: UITableViewRowAnimation.none)
+        messageTableView.insertRows(at: indexArray.count == 0 ? [indexPath] : indexArray, with: UITableViewRowAnimation.none)
         messageTableView.endUpdates()
         UIView.setAnimationsEnabled(true)
     }
