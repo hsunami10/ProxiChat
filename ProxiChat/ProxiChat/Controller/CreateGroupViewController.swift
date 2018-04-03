@@ -109,12 +109,14 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
                         // Set the location of the group
                         groupLocationsDB.setLocation(location, forKey: self.newGroup.title, withCompletionBlock: { (error) in
                             if error != nil {
+                                print(error!.localizedDescription)
                                 groupsDB.child(self.newGroup.title).removeValue()
                                 SVProgressHUD.showError(withStatus: "There was a problem with updating the location of the group. Please try again.")
                             } else {
                                 // Update user's location
                                 usersDB.child(UserData.username).updateChildValues(["latitude" : UserData.latitude, "longitude" : UserData.longitude], withCompletionBlock: { (error, ref) in
                                     if error != nil {
+                                        print(error!.localizedDescription)
                                         SVProgressHUD.dismiss()
                                         groupsDB.child(self.newGroup.title).removeValue()
                                         SVProgressHUD.showError(withStatus: error?.localizedDescription)

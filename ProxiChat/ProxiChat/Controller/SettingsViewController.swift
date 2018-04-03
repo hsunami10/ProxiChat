@@ -69,15 +69,18 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func deleteAccount(_ sender: Any) {
         let alert = UIAlertController(title: "Delete Account", message: "Are you sure you want to remove your account? This action cannot be reversed.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (action) in
-            do {
-                try Auth.auth().signOut()
-                
-                self.removeUserDefaults()
-                self.revealTopToBottomTransition()
-                self.performSegue(withIdentifier: "logOutDelete", sender: self)
-            } catch {
-                SVProgressHUD.showError(withStatus: "There was a problem deleting your account. Please try again.")
-            }
+            
+            // TODO: Delete everything else with it
+            Auth.auth().currentUser?.delete(completion: { (error) in
+                if error != nil {
+                    print(error!.localizedDescription)
+                    SVProgressHUD.showError(withStatus: "There was a problem deleting your account. Please try again.")
+                } else {
+                    self.removeUserDefaults()
+                    self.revealTopToBottomTransition()
+                    self.performSegue(withIdentifier: "logOutDelete", sender: self)
+                }
+            })
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
@@ -90,15 +93,28 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func logOut(_ sender: Any) {
         let alert = UIAlertController(title: "Log Out", message: "Are you sure you want to log out?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
-            do {
-                try Auth.auth().signOut()
-                
-                self.removeUserDefaults()
-                self.revealTopToBottomTransition()
-                self.performSegue(withIdentifier: "logOutDelete", sender: self)
-            } catch {
-                SVProgressHUD.showError(withStatus: "There was a problem logging out. Please try again.")
-            }
+            SVProgressHUD.show()
+            
+            // Set is_online to false, then sign out
+            let usersDB = Database.database().reference().child(FirebaseNames.users)
+            usersDB.child(UserData.username).updateChildValues(["is_online" : false], withCompletionBlock: { (error, ref) in
+                if error != nil {
+                    SVProgressHUD.dismiss()
+                    SVProgressHUD.showError(withStatus: error!.localizedDescription)
+                } else {
+                    do {
+                        try Auth.auth().signOut()
+                        
+                        SVProgressHUD.dismiss()
+                        self.removeUserDefaults()
+                        self.revealTopToBottomTransition()
+                        self.performSegue(withIdentifier: "logOutDelete", sender: self)
+                    } catch {
+                        SVProgressHUD.dismiss()
+                        SVProgressHUD.showError(withStatus: "There was a problem logging out. Please try again.")
+                    }
+                }
+            })
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         

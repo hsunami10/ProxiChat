@@ -101,6 +101,7 @@ enum EditProfile {
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    var isBackground = false
     
     override init() {
         super.init()
@@ -114,9 +115,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Dimensions.safeAreaWidth = (window?.frame.width)!
         
         // TODO: Remove later - for testing purposes only
-        let domain = Bundle.main.bundleIdentifier!
-        UserDefaults.standard.removePersistentDomain(forName: domain)
-        UserDefaults.standard.synchronize()
+//        let domain = Bundle.main.bundleIdentifier!
+//        UserDefaults.standard.removePersistentDomain(forName: domain)
+//        UserDefaults.standard.synchronize()
         
         let username = UserDefaults.standard.object(forKey: "proxiChatUsername")
         if username != nil {
@@ -145,33 +146,60 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
-        UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
+        print("resign active")
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        print("enter background")
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
+        goOffline()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+        print("enter foreground")
+        goOnline()
+        createAnon()
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        print("become active")
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        print("will terminate")
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
         goOffline()
+    }
+    
+    func goOnline() {
+        guard let username = UserDefaults.standard.value(forKey: "proxiChatUsername") as? String else { return }
+        Database.database().reference().child("Users").child(username).updateChildValues(["is_online" : true])
     }
     
     func goOffline() {
         guard let username = UserDefaults.standard.value(forKey: "proxiChatUsername") as? String else { return }
         Database.database().reference().child("Users").child(username).updateChildValues(["is_online" : false])
-        try! Auth.auth().signOut()
+    }
+    
+    func deleteAnon() {
+        // If current user exists and is anonymous, then delete
+        if Auth.auth().currentUser != nil {
+            if (Auth.auth().currentUser?.isAnonymous)! {
+                Auth.auth().currentUser?.delete(completion: nil)
+            }
+        }
+    }
+    
+    func createAnon() {
+        // If no existing user, then create and sign in as an anonymous user
+        if Auth.auth().currentUser == nil {
+            Auth.auth().signInAnonymously(completion: nil)
+        }
     }
     
 }

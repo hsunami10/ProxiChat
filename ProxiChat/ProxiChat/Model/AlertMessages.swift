@@ -15,4 +15,5 @@ struct AlertMessages {
     static let deniedPhotoLibrary = "You have not allowed this app to access the photo library. Please go to Settings to update permissions."
     static let deniedCamera = "You have not allowed this app to access the camera. Please go to Settings to update permissions."
     static let locationError = "There was a problem getting your location. Please check your permissions in Settings and/or internet connection."
+    static let authError = "Something went wrong. Please exit the app and try again."
 }

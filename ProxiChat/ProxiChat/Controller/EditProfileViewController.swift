@@ -152,11 +152,13 @@ class EditProfileViewController: UIViewController {
                     
                     Auth.auth().currentUser?.updatePassword(to: doubleTextFieldOne.text!, completion: { (error) in
                         if error != nil {
+                            print(error!.localizedDescription)
                             SVProgressHUD.dismiss()
                             SVProgressHUD.showError(withStatus: error?.localizedDescription)
                         } else {
                             usersDB.child(UserData.username).updateChildValues(["password" : self.doubleTextFieldOne.text!], withCompletionBlock: { (error, ref) in
                                 if error != nil {
+                                    print(error!.localizedDescription)
                                     SVProgressHUD.dismiss()
                                     SVProgressHUD.showError(withStatus: error?.localizedDescription)
                                 } else {
@@ -169,15 +171,18 @@ class EditProfileViewController: UIViewController {
                         }
                     })
                 } else {
+                    SVProgressHUD.dismiss()
                     doubleErrorLabel.text = "Invalid password."
                 }
             } else {
+                SVProgressHUD.dismiss()
                 doubleErrorLabel.text = "Passwords do not match."
             }
             break
         case 2:
             usersDB.child(UserData.username).updateChildValues(["bio" : singleTextView.text!]) { (error, ref) in
                 if error != nil {
+                    print(error!.localizedDescription)
                     SVProgressHUD.dismiss()
                     SVProgressHUD.showError(withStatus: error?.localizedDescription)
                 } else {
@@ -192,11 +197,13 @@ class EditProfileViewController: UIViewController {
             if Validate.isValidEmail(singleTextField.text!) {
                 Auth.auth().currentUser?.updateEmail(to: singleTextField.text!, completion: { (error) in
                     if error != nil {
+                        print(error!.localizedDescription)
                         SVProgressHUD.dismiss()
                         SVProgressHUD.showError(withStatus: error?.localizedDescription)
                     } else {
                         usersDB.child(UserData.username).updateChildValues(["email" : self.singleTextField.text!], withCompletionBlock: { (error, ref) in
                             if error != nil {
+                                print(error!.localizedDescription)
                                 SVProgressHUD.dismiss()
                                 SVProgressHUD.showError(withStatus: error?.localizedDescription)
                             } else {

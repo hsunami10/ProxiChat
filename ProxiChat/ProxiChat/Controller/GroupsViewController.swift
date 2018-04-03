@@ -24,6 +24,7 @@ import GeoFire
  TODO: Line 306
  
  BUGS
+ - LOCATION NOT UPDATING CORRECTLY???
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -91,6 +92,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
+        SVProgressHUD.show()
+        
         // If the user is not already connected, then get user data and request location usage.
         if !UserData.connected {
             let usersDB = Database.database().reference().child(FirebaseNames.users)
@@ -99,28 +102,29 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
                 if snapshot.hasChild(UserData.username) {
                     let allUsers = JSON(snapshot.value!)
-                    if let user = allUsers[UserData.username].dictionary {
-                        
-                        // Cache user data
-                        UserData.bio = (user["bio"]?.stringValue)!
-                        UserData.email = (user["email"]?.stringValue)!
-                        UserData.is_online = (user["is_online"]?.boolValue)!
-                        UserData.latitude = (user["latitude"]?.doubleValue)!
-                        UserData.longitude = (user["longitude"]?.doubleValue)!
-                        UserData.password = (user["password"]?.stringValue)!
-                        UserData.picture = (user["picture"]?.stringValue)!
-                        UserData.radius = (user["radius"]?.doubleValue)!
-                        
-                        // Update location
-                        self.locationManager.requestWhenInUseAuthorization()
+                    guard let user = allUsers[UserData.username].dictionary else {
+                        SVProgressHUD.dismiss()
+                        SVProgressHUD.showError(withStatus: "Unable to get user information. Please restart the app.")
                         return
                     }
+                    // Cache user data
+                    UserData.bio = (user["bio"]?.stringValue)!
+                    UserData.email = (user["email"]?.stringValue)!
+                    UserData.is_online = (user["is_online"]?.boolValue)!
+                    UserData.latitude = (user["latitude"]?.doubleValue)!
+                    UserData.longitude = (user["longitude"]?.doubleValue)!
+                    UserData.password = (user["password"]?.stringValue)!
+                    UserData.picture = (user["picture"]?.stringValue)!
+                    UserData.radius = (user["radius"]?.doubleValue)!
+                    
+                    // Update location
+                    self.locationManager.requestWhenInUseAuthorization()
+                } else {
+                    SVProgressHUD.dismiss()
+                    SVProgressHUD.showError(withStatus: "The account with the specified username does not exist. Please try again.")
                 }
-                SVProgressHUD.showError(withStatus: "The account with the specified username does not exist. Please try again.")
             })
         } else {
-            SVProgressHUD.show()
-            
             // Update table with last snapshot of database
             DispatchQueue.global().async {
                 let val = JSON(LocalGroupsData.cachedSnapshot.value!)
@@ -136,35 +140,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         self.groupArray.append(groupObj)
                     }
                 })
-                
                 DispatchQueue.main.async {
                     self.groupsTableView.reloadData()
                     self.stopLoading()
-                }
-            }
-        }
-    }
-    
-    // MARK: SocketIO Event Handlers
-    func eventHandlers() {
-        // Join private group response
-        socket?.on("join_private_group_response") { (data, ack) in
-            let success = JSON(data[0])["success"].boolValue
-            let error_msg = JSON(data[0])["error_msg"].stringValue
-            
-            if success {
-                let row = JSON(data[0])["row_index"].intValue
-                self.joinGroup(row)
-            } else {
-                DispatchQueue.main.async {
-                    // TODO: Maybe have a "try again" option
-                    let alert = UIAlertController(title: "Oops!", message: error_msg, preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
-                    
-                    if !UIView.areAnimationsEnabled {
-                        UIView.setAnimationsEnabled(true)
-                    }
-                    self.present(alert, animated: true, completion: nil)
                 }
             }
         }
@@ -353,11 +331,13 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // Start updating location if the user is not connected and if the user authorized location when in use. This happens ONLY on start up.
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse && !UserData.connected {
-            SVProgressHUD.show()
             UserData.connected = true
             manager.startUpdatingLocation()
         } else if status == .denied {
             // TODO: Should I have this here, or is it too annoying?
+            if SVProgressHUD.isVisible() {
+                SVProgressHUD.dismiss()
+            }
             DispatchQueue.main.async {
                 self.present(self.locationErrorAlert, animated: true, completion: nil)
             }
@@ -435,7 +415,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     /// Stop refreshing and cancel SVProgressHUD indicator.
     func stopLoading() {
-        refreshControl.endRefreshing()
+        if (groupsTableView.refreshControl?.isRefreshing)! {
+            refreshControl.endRefreshing()
+        }
         if SVProgressHUD.isVisible() {
             SVProgressHUD.dismiss()
         }

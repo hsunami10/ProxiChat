@@ -9,6 +9,7 @@
 import UIKit
 import SwiftyJSON
 import SVProgressHUD
+import Firebase
 
 class WelcomeViewController: UIViewController {
     
@@ -19,6 +20,21 @@ class WelcomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         statusLabel.text = ""
+        
+        // Only delete anonymous users, other users shouldn't happen
+        // Sign up and Log in SHOULD always have currentUser as nil
+        if Auth.auth().currentUser != nil {
+            if (Auth.auth().currentUser?.isAnonymous)! {
+                Auth.auth().currentUser?.delete(completion: { (error) in
+                    if error != nil {
+                        SVProgressHUD.showError(withStatus: error!.localizedDescription)
+                    }
+                })
+            } else {
+                try! Auth.auth().signOut()
+                SVProgressHUD.showError(withStatus: AlertMessages.authError)
+            }
+        }
     }
     
     override func didReceiveMemoryWarning() {

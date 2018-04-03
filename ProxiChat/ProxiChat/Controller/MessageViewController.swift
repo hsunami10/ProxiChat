@@ -296,10 +296,16 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         self.messageArray.append(messageObj)
                         
                         DispatchQueue.main.async {
+                            // If at bottom before receiving message, then stay at bottom
+                            let atBottom = self.messageTableView.isAtBottom
+                            print(atBottom)
+                            
+                            // BUG: NOT SCROLLING TO BOTTOM WHEN AT THE BOTTOM???
                             self.insertMessage()
                             
                             // If you're at the bottom or the sender, scroll (stay at bottom)
-                            if self.messageTableView.isAtBottom || value["author"].stringValue == UserData.username {
+                            if atBottom /*|| value["author"].stringValue == UserData.username*/ {
+                                print("at bottom, so scroll")
                                 self.messageTableView.scrollToBottom(self.messageArray, true)
                             }
                         }
