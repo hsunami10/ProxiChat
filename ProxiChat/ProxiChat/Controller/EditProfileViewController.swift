@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import Firebase
+import SVProgressHUD
 
 /* TODO / BUGS
  - fix layout for editing bio page
@@ -140,14 +142,32 @@ class EditProfileViewController: UIViewController {
     
     // MARK: IBOutlet Actions
     @IBAction func submitUpdateField(_ sender: UIButton) {
-        var valid = false
+        let usersDB = Database.database().reference().child(FirebaseNames.users)
+        SVProgressHUD.show()
         
         switch row {
         case 1:
             if doubleTextFieldOne.text! == doubleTextFieldTwo.text! {
                 if Validate.isOneWord(doubleTextFieldOne.text!) {
-                    delegate?.updateProfile(EditProfile.password, doubleTextFieldOne.text!)
-                    valid = true
+                    
+                    Auth.auth().currentUser?.updatePassword(to: doubleTextFieldOne.text!, completion: { (error) in
+                        if error != nil {
+                            SVProgressHUD.dismiss()
+                            SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                        } else {
+                            usersDB.child(UserData.username).updateChildValues(["password" : self.doubleTextFieldOne.text!], withCompletionBlock: { (error, ref) in
+                                if error != nil {
+                                    SVProgressHUD.dismiss()
+                                    SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                                } else {
+                                    SVProgressHUD.dismiss()
+                                    self.delegate?.updateProfile(EditProfile.password, self.doubleTextFieldOne.text!)
+                                    self.slideRightTransition()
+                                    self.dismiss(animated: false, completion: nil)
+                                }
+                            })
+                        }
+                    })
                 } else {
                     doubleErrorLabel.text = "Invalid password."
                 }
@@ -156,24 +176,44 @@ class EditProfileViewController: UIViewController {
             }
             break
         case 2:
-            delegate?.updateProfile(EditProfile.bio, singleTextView.text!)
-            valid = true
+            usersDB.child(UserData.username).updateChildValues(["bio" : singleTextView.text!]) { (error, ref) in
+                if error != nil {
+                    SVProgressHUD.dismiss()
+                    SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                } else {
+                    SVProgressHUD.dismiss()
+                    self.delegate?.updateProfile(EditProfile.bio, self.singleTextView.text!)
+                    self.slideRightTransition()
+                    self.dismiss(animated: false, completion: nil)
+                }
+            }
             break
         case 3:
             if Validate.isValidEmail(singleTextField.text!) {
-                delegate?.updateProfile(EditProfile.email, singleTextField.text!)
-                valid = true
+                Auth.auth().currentUser?.updateEmail(to: singleTextField.text!, completion: { (error) in
+                    if error != nil {
+                        SVProgressHUD.dismiss()
+                        SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                    } else {
+                        usersDB.child(UserData.username).updateChildValues(["email" : self.singleTextField.text!], withCompletionBlock: { (error, ref) in
+                            if error != nil {
+                                SVProgressHUD.dismiss()
+                                SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                            } else {
+                                SVProgressHUD.dismiss()
+                                self.delegate?.updateProfile(EditProfile.email, self.singleTextField.text!)
+                                self.slideRightTransition()
+                                self.dismiss(animated: false, completion: nil)
+                            }
+                        })
+                    }
+                })
             } else {
                 singleErrorLabel.text = "Invalid email."
             }
             break
         default:
             break
-        }
-        
-        if valid {
-            slideRightTransition()
-            self.dismiss(animated: false, completion: nil)
         }
     }
     

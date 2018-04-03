@@ -167,7 +167,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     // MARK: UpdateProfileDelegate Methods
     func updateProfile(_ type: EditProfile, _ content: String) {
         // Save to database
-        let users = Database.database().reference().child(FirebaseNames.users)
+        let usersDB = Database.database().reference().child(FirebaseNames.users)
         
         switch type {
         case .password:
@@ -179,17 +179,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 i -= 1
             }
             editedContent = pwd
-            users.child(UserData.username).updateChildValues(["password" : UserData.password])
             break
         case .bio:
             UserData.bio = content
             editedContent = content
-            users.child(UserData.username).updateChildValues(["bio" : UserData.bio])
             break
         case .email:
             UserData.email = content
             editedContent = content
-            users.child(UserData.username).updateChildValues(["email" : UserData.email])
             break
         }
         

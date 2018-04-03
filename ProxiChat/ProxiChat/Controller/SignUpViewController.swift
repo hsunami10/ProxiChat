@@ -120,14 +120,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     self.errorLabel.text = "Username already taken."
                     return
                 }
-                SVProgressHUD.show()
                 
                 // Email registration
                 Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
                     if error != nil {
                         print(error!.localizedDescription)
-                        self.errorLabel.text = error!.localizedDescription
                         SVProgressHUD.dismiss()
+                        self.errorLabel.text = error!.localizedDescription
                     } else {
                         // Store default user data
                         usersDB.child(username).setValue([
@@ -140,16 +139,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                             "bio" : "",
                             "picture" : "",
                             ])
-
-                        Auth.auth().signIn(withEmail: email, password: password, completion: { (user, error) in
-                            if error != nil {
-                                print(error!.localizedDescription)
-                                self.errorLabel.text = error!.localizedDescription
-                            } else {
-                                self.performSegue(withIdentifier: "goToGroups", sender: self)
-                            }
-                            SVProgressHUD.dismiss()
-                        })
                     }
                 })
         }

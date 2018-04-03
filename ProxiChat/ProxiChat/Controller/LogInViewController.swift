@@ -78,7 +78,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             errorLabel.text = "Invalid username and/or password."
         } else {
             SVProgressHUD.show()
-            
             let usersDB = Database.database().reference().child(FirebaseNames.users)
             
             // If email
@@ -87,12 +86,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                     .queryOrdered(byChild: "email")
                     .queryEqual(toValue: username)
                     .observeSingleEvent(of: .value) { (snapshot) in
+                        // Should give back one result - unique email
                         if snapshot.childrenCount != 1 {
+                            SVProgressHUD.dismiss()
                             self.errorLabel.text = "Email / password is incorrect. Please try again."
                             return
                         }
                         
                         guard let children = snapshot.children.allObjects as? [DataSnapshot] else {
+                            SVProgressHUD.dismiss()
                             self.errorLabel.text = "Email / password is incorrect. Please try again."
                             return
                         }
@@ -104,6 +106,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                             } else {
                                 self.performSegue(withIdentifier: "goToGroups", sender: self)
                             }
+                            SVProgressHUD.dismiss()
                         })
                 }
             } else { // If username
@@ -111,16 +114,28 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                     usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
                         if snapshot.hasChild(username) {
                             UserData.username = username
-                            self.performSegue(withIdentifier: "goToGroups", sender: self)
+                            let val = JSON(snapshot.value!)
+                            
+                            Auth.auth().signIn(withEmail: val[username]["email"].stringValue, password: password, completion: { (user, error) in
+                                if error != nil {
+                                    SVProgressHUD.dismiss()
+                                    SVProgressHUD.showError(withStatus: error?.localizedDescription)
+                                    self.errorLabel.text = error?.localizedDescription
+                                } else {
+                                    SVProgressHUD.dismiss()
+                                    self.performSegue(withIdentifier: "goToGroups", sender: self)
+                                }
+                            })
                         } else {
+                            SVProgressHUD.dismiss()
                             self.errorLabel.text = "Username does not exist."
                         }
                     })
                 } else {
+                    SVProgressHUD.dismiss()
                     self.errorLabel.text = "Username / email does not exist."
                 }
             }
-            SVProgressHUD.dismiss()
         }
     }
 }
