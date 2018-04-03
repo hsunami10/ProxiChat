@@ -6,9 +6,7 @@ target 'ProxiChat' do
   use_frameworks!
 
   # Pods for ProxiChat
-  pod 'ChameleonFramework'
   pod 'SwiftyJSON'
-  pod 'Socket.IO-Client-Swift'
   pod 'SVProgressHUD'
   pod 'SwiftDate'
   pod 'Firebase'

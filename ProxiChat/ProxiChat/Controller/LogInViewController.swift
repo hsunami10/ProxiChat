@@ -27,6 +27,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         usernameTextField.placeholder = "Username / Email"
         errorLabel.text = " "
         passwordTextField.delegate = self
@@ -68,7 +71,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroups" {
-            UserData.signInGroups = false
+            UserData.signedIn = true
             
             // Save log in
             UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")

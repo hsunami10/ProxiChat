@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 import Firebase
@@ -28,7 +27,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     private let sectionTitles: [String] = ["Color Theme", "Notifications & Sounds", "Support"]
     
     // MARK: Public Access
-    var socket: SocketIOClient?
     
     @IBOutlet var settingsView: UIView!
     @IBOutlet var settingsViewLeftConstraint: NSLayoutConstraint!
@@ -69,14 +67,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func deleteAccount(_ sender: Any) {
         let alert = UIAlertController(title: "Delete Account", message: "Are you sure you want to remove your account? This action cannot be reversed.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (action) in
+            SVProgressHUD.show()
             
             // TODO: Delete everything else with it
             Auth.auth().currentUser?.delete(completion: { (error) in
                 if error != nil {
                     print(error!.localizedDescription)
+                    SVProgressHUD.dismiss()
                     SVProgressHUD.showError(withStatus: "There was a problem deleting your account. Please try again.")
                 } else {
-                    self.removeUserDefaults()
+                    SVProgressHUD.dismiss()
                     self.revealTopToBottomTransition()
                     self.performSegue(withIdentifier: "logOutDelete", sender: self)
                 }
@@ -106,7 +106,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         try Auth.auth().signOut()
                         
                         SVProgressHUD.dismiss()
-                        self.removeUserDefaults()
                         self.revealTopToBottomTransition()
                         self.performSegue(withIdentifier: "logOutDelete", sender: self)
                     } catch {
@@ -192,22 +191,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "goToGroups" {
-            let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.socket = socket
-        } else if segue.identifier == "goToStarred" {
-            let destinationVC = segue.destination as! StarredGroupsViewController
-            destinationVC.socket = socket
-        } else if segue.identifier == "goToProfile" {
-            let destinationVC = segue.destination as! ProfileViewController
-            destinationVC.socket = socket
-        } else if segue.identifier == "logOutDelete" {
+        if segue.identifier == "logOutDelete" {
             UserData.connected = false
+            UserData.signedIn = false
+            self.removeUserDefaults()
         }
-        
-        // TODO: Change this later when other features are added
-        socket?.off("delete_account_response")
-        socket = nil
     }
     
     // MARK: Miscellaneous Methods

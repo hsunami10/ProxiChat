@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 import Firebase
@@ -21,7 +20,6 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     private var selectedGroup: Group!
     
     // MARK: Public Access
-    var socket: SocketIOClient?
     var delegate: JoinGroupDelegate?
     var messageObj: MessageViewController?
     
@@ -38,7 +36,9 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
         
         // Initialize navigation menu layout and gestures
@@ -115,7 +115,9 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // MARK: IBOutlet Actions
     @IBAction func createGroup(_ sender: Any) {
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         performSegue(withIdentifier: "createGroupStarred", sender: self)
     }
     @IBAction func showNavMenu(_ sender: Any) {
@@ -150,9 +152,11 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier != "joinGroupStarred" {
-            
+        // Make new message view controller
+        if segue.identifier != "joinGroupStarred" && segue.identifier != "createGroupStarred" {
+            UserData.createNewMessageViewController = true
         }
+        
         if segue.identifier == "joinGroupStarred" {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
@@ -160,23 +164,6 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         } else if segue.identifier == "createGroupStarred" {
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.starredGroupsObj = self // MessageView - handle which screen to go back to
-        } else if segue.identifier == "goToGroups" {
-            let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.socket = socket
-            UserData.createNewMessageViewController = true
-        } else if segue.identifier == "goToProfile" {
-            let destinationVC = segue.destination as! ProfileViewController
-            destinationVC.socket = socket
-            UserData.createNewMessageViewController = true
-        } else if segue.identifier == "goToSettings" {
-            let destinationVC = segue.destination as! SettingsViewController
-            destinationVC.socket = socket
-            UserData.createNewMessageViewController = true
-        }
-        
-        if segue.identifier != "createGroupStarred" {
-            socket?.off("get_starred_groups_response")
-            socket = nil // Won't receive duplicate events
         }
     }
     
@@ -188,7 +175,6 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         } else { // Pass chosen group data back to the same MessageViewController and dismiss
             delegate?.joinGroup(selectedGroup)
             slideLeftTransition()
-            socket = nil // Won't receive duplicate events
             self.dismiss(animated: false, completion: nil)
         }
     }

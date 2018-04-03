@@ -28,9 +28,9 @@ struct UserData {
      */
     static var createNewMessageViewController = true
     
-    /// Shows whether or not the user is connected to the server.
+    /// Determines whether or not the user has gotten user and group data for the first time. If `true`, then in GroupsViewController onViewDidLoad, load cached groups. If `false`, then grab user data, update location, and get new groups.
     static var connected = false
     
-    /// Determines whether or not to sign in in the GroupsViewController. Default is `true`. If `true`, then sign in, otherwise, already signed in.
-    static var signInGroups = true
+    /// Determines whether or not the user is already signed in from sign up or log in. Default is `false`.
+    static var signedIn = false
 }

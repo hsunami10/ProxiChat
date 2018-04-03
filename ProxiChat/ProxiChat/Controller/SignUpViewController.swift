@@ -30,6 +30,9 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         errorLabel.text = " "
         emailTextField.delegate = self
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
@@ -73,7 +76,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             UIView.setAnimationsEnabled(true)
         }
         if segue.identifier == "goToGroups" {
-            UserData.signInGroups = false
+            UserData.signedIn = true
             
             // Save log in
             UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")

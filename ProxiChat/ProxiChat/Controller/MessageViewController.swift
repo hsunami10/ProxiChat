@@ -104,6 +104,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         groupTitle.text = groupInformation.title
         groupTitle.font = Font.getFont(Font.infoViewFontSize)
         titleLabel.font = Font.getFont(17, "\(Font.fontName)-Bold")
@@ -475,6 +478,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func textViewDidChange(_ textView: UITextView) {
+        print(self.messageTableView.isAtBottom)
         // If not empty text, then save the text left over in text view
         if textView.text!.count == 0 {
             contentNotSent.removeValue(forKey: groupInformation.title)
@@ -524,7 +528,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: JoinGroupDelegate Methods
     func joinGroup(_ group: Group) {
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         
         groupInformation = group
         groupTitle.text = group.title
@@ -540,7 +546,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         if let userInfo = aNotification.userInfo {
             // Only show keyboard if it's NOT shown
             if messageViewHeight.constant == heightMessageView {
-                
                 // Get keyboard animation duration
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
                 
@@ -548,6 +553,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
                 
                 let changeInHeight = getHeightChange()
+                
+                if !UIView.areAnimationsEnabled {
+                    UIView.setAnimationsEnabled(true)
+                }
                 
                 UIView.animate(withDuration: duration) {
                     /*

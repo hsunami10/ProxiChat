@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import SocketIO
 import AVFoundation
 import Photos
 import SVProgressHUD
@@ -44,7 +43,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     let unavailableAlert = UIAlertController(title: "Sorry!", message: "", preferredStyle: .alert)
     
     // MARK: Public Access
-    var socket: SocketIOClient?
     
     @IBOutlet var navigationLeftConstraint: NSLayoutConstraint!
     @IBOutlet var profileViewLeftConstraint: NSLayoutConstraint!
@@ -73,8 +71,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         infoViewLabel.font = Font.getFont(Font.infoViewFontSize)
-        eventHandlers()
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
@@ -144,17 +142,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-    
-    // MARK: SocketIO Event Handlers
-    /// These are only received when an error has occurred.
-    func eventHandlers() {
-        socket?.on("update_radius_response", callback: { (data, ack) in
-            SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
-        })
-        socket?.on("update_profile_response", callback: { (data, ack) in
-            SVProgressHUD.showError(withStatus: JSON(data[0])["error_msg"].stringValue)
-        })
     }
     
     // MARK: UpdatePictureDelegate Methods
@@ -350,16 +337,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "goToGroups" {
-            let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.socket = socket
-        } else if segue.identifier == "goToStarred" {
-            let destinationVC = segue.destination as! StarredGroupsViewController
-            destinationVC.socket = socket
-        } else if segue.identifier == "goToSettings" {
-            let destinationVC = segue.destination as! SettingsViewController
-            destinationVC.socket = socket
-        } else if segue.identifier == "goToEditProfile" {
+        if segue.identifier == "goToEditProfile" {
             let destinationVC = segue.destination as! EditProfileViewController
             destinationVC.row = rowSelected
             destinationVC.delegate = self // UpdateProfileDelegate
@@ -368,12 +346,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             let destinationVC = segue.destination as! EditPictureViewController
             destinationVC.image = image
             destinationVC.delegate = self
-        }
-        
-        if segue.identifier != "goToEditProfile" && segue.identifier != "goToEditPicture" {
-            socket?.off("update_radius_response")
-            socket?.off("update_profile_response")
-            socket = nil
         }
     }
     

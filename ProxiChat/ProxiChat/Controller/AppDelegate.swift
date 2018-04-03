@@ -13,7 +13,6 @@ import SVProgressHUD
 
 /*
  Key things to remember / notes:
- - Even if you dismiss a ViewController, it still exists, so those socket events will still be run unless socket = nil
  - To fully customize segue animations:
     - Uncheck "Animates" in Main.storyboard
     - Dismiss without animation
@@ -129,6 +128,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let email = UserDefaults.standard.object(forKey: "proxiChatEmail") {
             UserData.email = email as! String
         }
+        UserData.connected = false
+        UserData.signedIn = false
         
         // Go to groups page if already logged in
         let logInStatus = UserDefaults.standard.bool(forKey: "isUserLoggedInProxiChat") // Can be nil

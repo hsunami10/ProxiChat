@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import SocketIO
 import SwiftyJSON
 import SVProgressHUD
 import CoreLocation
@@ -24,7 +23,6 @@ import GeoFire
  TODO: Line 306
  
  BUGS
- - LOCATION NOT UPDATING CORRECTLY???
  - get groups that you're NOT a member of
  */
 
@@ -44,7 +42,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
      */
     var messageObj: MessageViewController?
     var delegate: JoinGroupDelegate?
-    var socket: SocketIOClient?
     
     // TODO: Add label in order to change label text?
     @IBOutlet var groupsTableView: UITableView!
@@ -60,7 +57,9 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         
         // Initialize navigation menu layout and gestures
         _ = NavigationSideMenu.init(self)
@@ -89,86 +88,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             groupsTableView.addSubview(refreshControl)
         }
         
-        // CoreLocation initialization
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        
         SVProgressHUD.show()
         
-        if UserData.signInGroups {
-            Auth.auth().signIn(withEmail: UserData.email, password: UserData.password) { (user, error) in
-                if error != nil {
-                    SVProgressHUD.dismiss()
-                    SVProgressHUD.showError(withStatus: error!.localizedDescription)
-                } else {
-                    print("sign in to: " + (user?.email)!)
-                    UserData.signInGroups = false
-                    self.getGroups()
-                }
-            }
-        } else {
-            print("already signed in")
-            getGroups()
-        }
-    }
-    
-    /**
-     Handles **2 things**:
-     1. If viewing for the first time, get user data and update location and groups.
-     2. If not viewing for the first time, update the table view with the cached groups.
-     */
-    func getGroups() {
-        // If the user is not already connected, then sign in, get user data and request location usage.
-        if !UserData.connected {
-            let usersDB = Database.database().reference().child(FirebaseNames.users)
-            
-            // Check if the user exists
-            usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
-                if snapshot.hasChild(UserData.username) {
-                    let allUsers = JSON(snapshot.value!)
-                    guard let user = allUsers[UserData.username].dictionary else {
-                        SVProgressHUD.dismiss()
-                        SVProgressHUD.showError(withStatus: "Unable to get user information. Please restart the app.")
-                        return
-                    }
-                    
-                    // Cache other user data
-                    UserData.bio = (user["bio"]?.stringValue)!
-                    UserData.is_online = (user["is_online"]?.boolValue)!
-                    UserData.latitude = (user["latitude"]?.doubleValue)!
-                    UserData.longitude = (user["longitude"]?.doubleValue)!
-                    UserData.picture = (user["picture"]?.stringValue)!
-                    UserData.radius = (user["radius"]?.doubleValue)!
-                    
-                    // Update location
-                    self.locationManager.requestWhenInUseAuthorization()
-                } else {
-                    SVProgressHUD.dismiss()
-                    SVProgressHUD.showError(withStatus: "The account with the specified username does not exist. Please try again.")
-                }
-            })
-        } else {
-            // Update table with last snapshot of database
-            DispatchQueue.global().async {
-                let val = JSON(LocalGroupsData.cachedSnapshot.value!)
-                self.groupArray = [Group]()
-                
-                LocalGroupsData.lastGroupsKeys.forEach({ (key) in
-                    let group = val[key]
-                    let groupInfo = group["information"]
-                    
-                    if groupInfo["creator"].stringValue != UserData.username {
-                        let groupMembers = group["members"]
-                        let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
-                        self.groupArray.append(groupObj)
-                    }
-                })
-                DispatchQueue.main.async {
-                    self.groupsTableView.reloadData()
-                    self.stopLoading()
-                }
-            }
-        }
+        // CoreLocation initialization
+        // didChangeAuthorization runs every time these values are set
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
     
     override func didReceiveMemoryWarning() {
@@ -178,13 +103,14 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // MARK: IBOutlet Actions
     @IBAction func createGroup(_ sender: Any) {
-        UIView.setAnimationsEnabled(true)
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
         performSegue(withIdentifier: "createGroup", sender: self)
     }
     
     @IBAction func showNavMenu(_ sender: Any) {
         if UserData.username.count > 0 {
-            UIView.setAnimationsEnabled(true)
             // If navigation menu isn't showing
             if navigationLeftConstraint.constant != 0 {
                 NavigationSideMenu.toggleSideNav(show: true)
@@ -227,6 +153,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // MARK: UITableView Delegate and DataSource Methods
     // When a group is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if !UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(true)
+        }
+        
         // Check public or private
         if groupArray[indexPath.row].is_public {
             joinGroup(indexPath.row)
@@ -259,10 +189,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     })
                 }))
                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-                
-                if !UIView.areAnimationsEnabled {
-                    UIView.setAnimationsEnabled(true)
-                }
                 self.present(alert, animated: true, completion: nil)
             }
         }
@@ -338,6 +264,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                                 
                                 DispatchQueue.main.async {
                                     LocalGroupsData.cachedSnapshot = snapshot
+                                    UserData.connected = true
                                     self.groupsTableView.reloadData()
                                     self.stopLoading()
                                 }
@@ -351,19 +278,53 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
-    // Start updating location if the user is not connected and if the user authorized location when in use. This happens ONLY on start up.
+    // Start updating location on change authorization. This happens every time the delegate is set - so every time this view loads
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        if status == .authorizedWhenInUse && !UserData.connected {
-            UserData.connected = true
-            manager.startUpdatingLocation()
-        } else if status == .denied {
-            // TODO: Should I have this here, or is it too annoying?
-            if SVProgressHUD.isVisible() {
-                SVProgressHUD.dismiss()
+        if status == .authorizedWhenInUse && !UserData.connected { // Very first view load, when user data hasn't been fetched yet
+            // If not signed in from sign up or log in
+            if !UserData.signedIn {
+                Auth.auth().signIn(withEmail: UserData.email, password: UserData.password) { (user, error) in
+                    if error != nil {
+                        print(error!.localizedDescription)
+                        SVProgressHUD.dismiss()
+                        SVProgressHUD.showError(withStatus: error!.localizedDescription)
+                    } else {
+                        UserData.signedIn = true
+                        self.getGroups()
+                    }
+                }
+            } else {
+                getGroups()
             }
+        } else if status == .authorizedWhenInUse && UserData.connected { // Rest of the view loads, when there's already existing data
+            // Update table with last snapshot of database
+            DispatchQueue.global().async {
+                let val = JSON(LocalGroupsData.cachedSnapshot.value!)
+                self.groupArray = [Group]()
+                
+                LocalGroupsData.lastGroupsKeys.forEach({ (key) in
+                    let group = val[key]
+                    let groupInfo = group["information"]
+                    
+                    if groupInfo["creator"].stringValue != UserData.username {
+                        let groupMembers = group["members"]
+                        let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
+                        self.groupArray.append(groupObj)
+                    }
+                })
+                DispatchQueue.main.async {
+                    self.groupsTableView.reloadData()
+                    self.stopLoading()
+                }
+            }
+            
+        } else if status == .denied {
+            SVProgressHUD.dismiss()
             DispatchQueue.main.async {
                 self.present(self.locationErrorAlert, animated: true, completion: nil)
             }
+        } else if status == .notDetermined {
+            manager.requestWhenInUseAuthorization()
         }
     }
     
@@ -378,6 +339,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // If user navigates to any other view besides message view, then must create new message view controller
+        if segue.identifier != "joinGroup" {
+            UserData.createNewMessageViewController = true
+        }
         
         if segue.identifier == "joinGroup" {
             let destinationVC = segue.destination as! MessageViewController
@@ -386,27 +351,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else if segue.identifier == "createGroup" {
             let destinationVC = segue.destination as! CreateGroupViewController
             destinationVC.groupsObj = self // MessageView - handle which screen to go back to
-        }else if segue.identifier == "goToStarred" {
-            let destinationVC = segue.destination as! StarredGroupsViewController
-            destinationVC.socket = socket
-            UserData.createNewMessageViewController = true
-        } else if segue.identifier == "goToProfile" {
-            let destinationVC = segue.destination as! ProfileViewController
-            destinationVC.socket = socket
-            UserData.createNewMessageViewController = true
-        } else if segue.identifier == "goToSettings" {
-            let destinationVC = segue.destination as! SettingsViewController
-            destinationVC.socket = socket
-            UserData.createNewMessageViewController = true
-        }
-        
-        // Remove sockets for all but create group
-        if segue.identifier != "createGroup" {
-            socket?.off("join_private_group_response")
-            socket?.off("update_location_and_get_groups_response")
-            socket?.off("get_user_info_response")
-            socket?.off("join_success")
-            socket = nil // Won't receive duplicate events
         }
     }
     
@@ -419,12 +363,70 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         } else { // Pass chosen group data back to the same MessageViewController and dismiss
             delegate?.joinGroup(selectedGroup)
             slideLeftTransition()
-            socket = nil // Won't receive duplicate events
             self.dismiss(animated: false, completion: nil)
         }
     }
     
     // MARK: Miscellaneous Methods
+    
+    /**
+     Handles **2 things**:
+     1. If viewing for the first time, get user data and update location and groups.
+     2. If not viewing for the first time, update the table view with the cached groups.
+     */
+    func getGroups() {
+        // If the user is not already connected, then sign in, get user data and request location usage.
+        if !UserData.connected {
+            let usersDB = Database.database().reference().child(FirebaseNames.users)
+            
+            // Check if the user exists
+            usersDB.observeSingleEvent(of: .value, with: { (snapshot) in
+                if snapshot.hasChild(UserData.username) {
+                    let allUsers = JSON(snapshot.value!)
+                    guard let user = allUsers[UserData.username].dictionary else {
+                        SVProgressHUD.dismiss()
+                        SVProgressHUD.showError(withStatus: "Unable to get user information. Please restart the app.")
+                        return
+                    }
+                    
+                    // Cache other user data
+                    UserData.bio = (user["bio"]?.stringValue)!
+                    UserData.is_online = (user["is_online"]?.boolValue)!
+                    UserData.latitude = (user["latitude"]?.doubleValue)!
+                    UserData.longitude = (user["longitude"]?.doubleValue)!
+                    UserData.picture = (user["picture"]?.stringValue)!
+                    UserData.radius = (user["radius"]?.doubleValue)!
+                    
+                    // Update location
+                    self.locationManager.startUpdatingLocation()
+                } else {
+                    SVProgressHUD.dismiss()
+                    SVProgressHUD.showError(withStatus: "The account with the specified username does not exist. Please try again.")
+                }
+            })
+        } else {
+            // Update table with last snapshot of database
+            DispatchQueue.global().async {
+                let val = JSON(LocalGroupsData.cachedSnapshot.value!)
+                self.groupArray = [Group]()
+                
+                LocalGroupsData.lastGroupsKeys.forEach({ (key) in
+                    let group = val[key]
+                    let groupInfo = group["information"]
+                    
+                    if groupInfo["creator"].stringValue != UserData.username {
+                        let groupMembers = group["members"]
+                        let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
+                        self.groupArray.append(groupObj)
+                    }
+                })
+                DispatchQueue.main.async {
+                    self.groupsTableView.reloadData()
+                    self.stopLoading()
+                }
+            }
+        }
+    }
     
     /// Edit UIViewController transition right -> left.
     func slideLeftTransition() {
@@ -448,6 +450,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     /// Refresh groups in proximity.
     @objc func refreshGroups(_ sender: AnyObject) {
+        refreshControl.beginRefreshing()
         locationManager.startUpdatingLocation()
     }
     

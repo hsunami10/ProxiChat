@@ -127,8 +127,6 @@ class EditProfileViewController: UIViewController {
             singleErrorLabel.text = " "
             subSingleView.isHidden = false
         }
-        
-        self.view.layoutIfNeeded()
     }
     
     deinit {
@@ -186,6 +184,7 @@ class EditProfileViewController: UIViewController {
                     SVProgressHUD.dismiss()
                     SVProgressHUD.showError(withStatus: error?.localizedDescription)
                 } else {
+                    SVProgressHUD.dismiss()
                     self.delegate?.updateProfile(EditProfile.bio, self.singleTextView.text!)
                     self.slideRightTransition()
                     SVProgressHUD.dismiss()
@@ -207,15 +206,16 @@ class EditProfileViewController: UIViewController {
                                 SVProgressHUD.dismiss()
                                 SVProgressHUD.showError(withStatus: error?.localizedDescription)
                             } else {
+                                SVProgressHUD.dismiss()
                                 self.delegate?.updateProfile(EditProfile.email, self.singleTextField.text!)
                                 self.slideRightTransition()
-                                SVProgressHUD.dismiss()
                                 self.dismiss(animated: false, completion: nil)
                             }
                         })
                     }
                 })
             } else {
+                SVProgressHUD.dismiss()
                 singleErrorLabel.text = "Invalid email."
             }
             break
