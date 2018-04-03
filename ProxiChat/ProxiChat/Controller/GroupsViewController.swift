@@ -23,7 +23,6 @@ import GeoFire
  TODO: Line 306
  
  BUGS
- - get groups that you're NOT a member of
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -221,7 +220,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             if String(describing: Date()) == String(describing: location.timestamp) {
                 UserData.latitude = location.coordinate.latitude
                 UserData.longitude = location.coordinate.longitude
-                
+
                 let usersDB = Database.database().reference().child(FirebaseNames.users)
                 // Update user location
                 usersDB.child(UserData.username).updateChildValues(
@@ -232,11 +231,14 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     } else {
                         // Get all group keys in proximity
                         let groupLocationsDB = GeoFire(firebaseRef: Database.database().reference().child(FirebaseNames.group_locations))
-                        let geoQuery = groupLocationsDB.query(at: location, withRadius: UserData.radius)
+                        let geoQuery = groupLocationsDB.query(at: location, withRadius: UserData.radius / 1000)
                         
                         LocalGroupsData.lastGroupsKeys = [String]()
                         let registration = geoQuery.observe(.keyEntered, with: { (key, location) in
-                            LocalGroupsData.lastGroupsKeys.append(key)
+                            // No repeated keys
+                            if !LocalGroupsData.lastGroupsKeys.contains(key) {
+                                LocalGroupsData.lastGroupsKeys.append(key)
+                            }
                         })
                         geoQuery.observeReady({
                             geoQuery.removeObserver(withFirebaseHandle: registration)
@@ -251,9 +253,10 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                                     if snapshot.hasChild(key) {
                                         let group = JSON(snapshot.value!)[key]
                                         let groupInfo = group["information"]
+                                        let groupMembers = group["members"]
                                         
-                                        if groupInfo["creator"].stringValue != UserData.username {
-                                            let groupMembers = group["members"]
+                                        // If not a member (not starred)
+                                        if groupMembers[UserData.username] == JSON.null {
                                             let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
                                             self.groupArray.append(groupObj)
                                         }
@@ -450,7 +453,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     /// Refresh groups in proximity.
     @objc func refreshGroups(_ sender: AnyObject) {
-        refreshControl.beginRefreshing()
         locationManager.startUpdatingLocation()
     }
     

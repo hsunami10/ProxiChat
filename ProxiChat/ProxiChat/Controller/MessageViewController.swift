@@ -301,14 +301,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         DispatchQueue.main.async {
                             // If at bottom before receiving message, then stay at bottom
                             let atBottom = self.messageTableView.isAtBottom
-                            print(atBottom)
                             
-                            // BUG: NOT SCROLLING TO BOTTOM WHEN AT THE BOTTOM???
                             self.insertMessage()
                             
                             // If you're at the bottom or the sender, scroll (stay at bottom)
-                            if atBottom /*|| value["author"].stringValue == UserData.username*/ {
-                                print("at bottom, so scroll")
+                            if atBottom || value["author"].stringValue == UserData.username {
                                 self.messageTableView.scrollToBottom(self.messageArray, true)
                             }
                         }
@@ -478,7 +475,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func textViewDidChange(_ textView: UITextView) {
-        print(self.messageTableView.isAtBottom)
         // If not empty text, then save the text left over in text view
         if textView.text!.count == 0 {
             contentNotSent.removeValue(forKey: groupInformation.title)

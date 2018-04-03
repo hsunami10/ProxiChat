@@ -59,12 +59,30 @@ extension UITextView {
     }
 }
 extension UIScrollView {
-    /// A Bool value that determines whether the scroll view is at the bottom.
-    var isAtBottom: Bool {
-        let distanceFromBottom = contentSize.height - contentOffset.y
-        return distanceFromBottom < frame.size.height
+    
+    /// A Bool value that determines whether the scroll view is at the top.
+    var isAtTop: Bool {
+        return contentOffset.y <= verticalOffsetForTop
     }
     
+    /// A Bool value that determines whether the scroll view is at the bottom.
+    var isAtBottom: Bool {
+        return contentOffset.y >= verticalOffsetForBottom
+    }
+    
+    var verticalOffsetForTop: CGFloat {
+        let topInset = contentInset.top
+        return -topInset
+    }
+    
+    var verticalOffsetForBottom: CGFloat {
+        let scrollViewHeight = bounds.height
+        let scrollContentSizeHeight = contentSize.height
+        let bottomInset = contentInset.bottom
+        let scrollViewBottomOffset = scrollContentSizeHeight + bottomInset - scrollViewHeight
+        return scrollViewBottomOffset
+    }
+
     /// A Bool value that determines whether the scroll view needs to scroll.
     var needToScroll: Bool {
         return contentSize.height > frame.size.height
