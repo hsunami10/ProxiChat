@@ -162,9 +162,9 @@ class EditProfileViewController: UIViewController {
                                     SVProgressHUD.dismiss()
                                     SVProgressHUD.showError(withStatus: error?.localizedDescription)
                                 } else {
-                                    SVProgressHUD.dismiss()
                                     self.delegate?.updateProfile(EditProfile.password, self.doubleTextFieldOne.text!)
                                     self.slideRightTransition()
+                                    SVProgressHUD.dismiss()
                                     self.dismiss(animated: false, completion: nil)
                                 }
                             })
@@ -186,9 +186,9 @@ class EditProfileViewController: UIViewController {
                     SVProgressHUD.dismiss()
                     SVProgressHUD.showError(withStatus: error?.localizedDescription)
                 } else {
-                    SVProgressHUD.dismiss()
                     self.delegate?.updateProfile(EditProfile.bio, self.singleTextView.text!)
                     self.slideRightTransition()
+                    SVProgressHUD.dismiss()
                     self.dismiss(animated: false, completion: nil)
                 }
             }
@@ -207,9 +207,9 @@ class EditProfileViewController: UIViewController {
                                 SVProgressHUD.dismiss()
                                 SVProgressHUD.showError(withStatus: error?.localizedDescription)
                             } else {
-                                SVProgressHUD.dismiss()
                                 self.delegate?.updateProfile(EditProfile.email, self.singleTextField.text!)
                                 self.slideRightTransition()
+                                SVProgressHUD.dismiss()
                                 self.dismiss(animated: false, completion: nil)
                             }
                         })

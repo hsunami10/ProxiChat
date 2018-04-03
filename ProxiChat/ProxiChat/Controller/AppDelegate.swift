@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import GeoFire
+import SVProgressHUD
 
 /*
  Key things to remember / notes:
@@ -119,9 +120,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        UserDefaults.standard.removePersistentDomain(forName: domain)
 //        UserDefaults.standard.synchronize()
         
-        let username = UserDefaults.standard.object(forKey: "proxiChatUsername")
-        if username != nil {
+        if let username = UserDefaults.standard.object(forKey: "proxiChatUsername") {
             UserData.username = username as! String
+        }
+        if let password = UserDefaults.standard.object(forKey: "proxiChatPassword") {
+            UserData.password = password as! String
+        }
+        if let email = UserDefaults.standard.object(forKey: "proxiChatEmail") {
+            UserData.email = email as! String
         }
         
         // Go to groups page if already logged in
@@ -155,6 +161,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("enter background")
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
         goOffline()
+        deleteAnon()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -174,6 +181,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("will terminate")
         UserDefaults.standard.set(contentNotSent, forKey: "proxiChatContentNotSent")
         goOffline()
+        deleteAnon()
     }
     
     func goOnline() {
@@ -189,8 +197,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func deleteAnon() {
         // If current user exists and is anonymous, then delete
         if Auth.auth().currentUser != nil {
+            print("user exists")
             if (Auth.auth().currentUser?.isAnonymous)! {
-                Auth.auth().currentUser?.delete(completion: nil)
+                print("delete anonymous user")
+                Auth.auth().currentUser?.delete(completion: { (error) in
+                    print(error)
+                    if error != nil {
+                        print(error!.localizedDescription)
+                        try! Auth.auth().signOut()
+                    } else {
+                        print("delete success")
+                    }
+                })
             }
         }
     }
@@ -198,7 +216,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func createAnon() {
         // If no existing user, then create and sign in as an anonymous user
         if Auth.auth().currentUser == nil {
-            Auth.auth().signInAnonymously(completion: nil)
+            Auth.auth().signInAnonymously { (user, error) in
+                if error != nil {
+                    print(error!.localizedDescription)
+                    SVProgressHUD.showError(withStatus: error!.localizedDescription)
+                } else {
+                    print("sign in success")
+                }
+            }
         }
     }
     

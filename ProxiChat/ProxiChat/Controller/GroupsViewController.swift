@@ -25,6 +25,7 @@ import GeoFire
  
  BUGS
  - LOCATION NOT UPDATING CORRECTLY???
+ - get groups that you're NOT a member of
  */
 
 class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
@@ -94,7 +95,30 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
         SVProgressHUD.show()
         
-        // If the user is not already connected, then get user data and request location usage.
+        if UserData.signInGroups {
+            Auth.auth().signIn(withEmail: UserData.email, password: UserData.password) { (user, error) in
+                if error != nil {
+                    SVProgressHUD.dismiss()
+                    SVProgressHUD.showError(withStatus: error!.localizedDescription)
+                } else {
+                    print("sign in to: " + (user?.email)!)
+                    UserData.signInGroups = false
+                    self.getGroups()
+                }
+            }
+        } else {
+            print("already signed in")
+            getGroups()
+        }
+    }
+    
+    /**
+     Handles **2 things**:
+     1. If viewing for the first time, get user data and update location and groups.
+     2. If not viewing for the first time, update the table view with the cached groups.
+     */
+    func getGroups() {
+        // If the user is not already connected, then sign in, get user data and request location usage.
         if !UserData.connected {
             let usersDB = Database.database().reference().child(FirebaseNames.users)
             
@@ -107,13 +131,12 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         SVProgressHUD.showError(withStatus: "Unable to get user information. Please restart the app.")
                         return
                     }
-                    // Cache user data
+                    
+                    // Cache other user data
                     UserData.bio = (user["bio"]?.stringValue)!
-                    UserData.email = (user["email"]?.stringValue)!
                     UserData.is_online = (user["is_online"]?.boolValue)!
                     UserData.latitude = (user["latitude"]?.doubleValue)!
                     UserData.longitude = (user["longitude"]?.doubleValue)!
-                    UserData.password = (user["password"]?.stringValue)!
                     UserData.picture = (user["picture"]?.stringValue)!
                     UserData.radius = (user["radius"]?.doubleValue)!
                     

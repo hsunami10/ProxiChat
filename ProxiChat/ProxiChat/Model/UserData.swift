@@ -30,4 +30,7 @@ struct UserData {
     
     /// Shows whether or not the user is connected to the server.
     static var connected = false
+    
+    /// Determines whether or not to sign in in the GroupsViewController. Default is `true`. If `true`, then sign in, otherwise, already signed in.
+    static var signInGroups = true
 }

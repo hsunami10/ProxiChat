@@ -41,11 +41,17 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     print(error!.localizedDescription)
                     SVProgressHUD.showError(withStatus: AlertMessages.authError)
                 } else {
+                    print("successfully signed in anon")
                     self.canSignUp = true
                 }
             }
         } else {
-            SVProgressHUD.showError(withStatus: AlertMessages.authError)
+            if (Auth.auth().currentUser?.isAnonymous)! {
+                print("existing anon")
+                self.canSignUp = true
+            } else {
+                SVProgressHUD.showError(withStatus: AlertMessages.authError)
+            }
         }
     }
     
@@ -67,9 +73,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             UIView.setAnimationsEnabled(true)
         }
         if segue.identifier == "goToGroups" {
+            UserData.signInGroups = false
+            
             // Save log in
             UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
-            UserDefaults.standard.set(self.usernameTextField.text!, forKey: "proxiChatUsername")
+            UserDefaults.standard.set(UserData.username, forKey: "proxiChatUsername")
+            UserDefaults.standard.set(UserData.password, forKey: "proxiChatPassword")
+            UserDefaults.standard.set(UserData.email, forKey: "proxiChatEmail")
             UserDefaults.standard.synchronize()
         }
     }
@@ -197,7 +207,10 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                                                 SVProgressHUD.showError(withStatus: error!.localizedDescription)
                                             } else {
                                                 SVProgressHUD.dismiss()
-                                                UserData.username = self.usernameTextField.text!
+                                                UserData.username = username
+                                                UserData.email = email
+                                                UserData.password = password
+                                                
                                                 self.performSegue(withIdentifier: "goToGroups", sender: self)
                                             }
                                         })

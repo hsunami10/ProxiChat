@@ -39,11 +39,17 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                     print(error!.localizedDescription)
                     SVProgressHUD.showError(withStatus: AlertMessages.authError)
                 } else {
+                    print("successfully signed in anon")
                     self.canSignIn = true
                 }
             }
         } else {
-            SVProgressHUD.showError(withStatus: AlertMessages.authError)
+            if (Auth.auth().currentUser?.isAnonymous)! {
+                print("existing anon")
+                self.canSignIn = true
+            } else {
+                SVProgressHUD.showError(withStatus: AlertMessages.authError)
+            }
         }
     }
     
@@ -62,9 +68,13 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToGroups" {
+            UserData.signInGroups = false
+            
             // Save log in
             UserDefaults.standard.set(true, forKey: "isUserLoggedInProxiChat")
             UserDefaults.standard.set(UserData.username, forKey: "proxiChatUsername")
+            UserDefaults.standard.set(UserData.password, forKey: "proxiChatPassword")
+            UserDefaults.standard.set(UserData.email, forKey: "proxiChatEmail")
             UserDefaults.standard.synchronize()
         }
     }
@@ -130,7 +140,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                         UserData.username = children.first!.key
                         
                         Auth.auth().signIn(withEmail: username, password: password, completion: { (user, error) in
-                            self.handleSignIn(user, error, anonUser)
+                            self.handleSignIn(user, error, anonUser, password)
                         })
                 }
             } else { // If username
@@ -141,7 +151,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                             let val = JSON(snapshot.value!)
                             
                             Auth.auth().signIn(withEmail: val[username]["email"].stringValue, password: password, completion: { (user, error) in
-                                self.handleSignIn(user, error, anonUser)
+                                self.handleSignIn(user, error, anonUser, password)
                             })
                         } else {
                             SVProgressHUD.dismiss()
@@ -163,8 +173,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
          - user: The user object returned from the sign in query.
          - error: The error returned from the sign in query.
          - anonUser: The anonymous user needed to deleted after everything succeeds.
+         - password: The password of the user.
      */
-    func handleSignIn(_ user: User?, _ error: Error?, _ anonUser: User) {
+    func handleSignIn(_ user: User?, _ error: Error?, _ anonUser: User, _ password: String) {
         if error != nil {
             print(error!.localizedDescription)
             self.errorLabel.text = error?.localizedDescription
@@ -183,6 +194,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                             SVProgressHUD.showError(withStatus: error!.localizedDescription)
                         } else {
                             SVProgressHUD.dismiss()
+                            UserData.email = (user?.email)!
+                            UserData.password = password
+                            
                             self.performSegue(withIdentifier: "goToGroups", sender: self)
                         }
                     })

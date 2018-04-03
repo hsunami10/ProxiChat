@@ -166,8 +166,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     // MARK: UpdateProfileDelegate Methods
     func updateProfile(_ type: EditProfile, _ content: String) {
-        // Save to database
-        let usersDB = Database.database().reference().child(FirebaseNames.users)
         
         switch type {
         case .password:
@@ -179,6 +177,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 i -= 1
             }
             editedContent = pwd
+            
+            UserDefaults.standard.set(UserData.password, forKey: "proxiChatPassword")
+            UserDefaults.standard.synchronize()
             break
         case .bio:
             UserData.bio = content
@@ -187,6 +188,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         case .email:
             UserData.email = content
             editedContent = content
+            
+            UserDefaults.standard.set(UserData.email, forKey: "proxiChatEmail")
+            UserDefaults.standard.synchronize()
             break
         }
         
