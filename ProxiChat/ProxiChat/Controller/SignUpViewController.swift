@@ -196,7 +196,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                                 usersDB.child(username).setValue([
                                     "email" : email,
                                     "password" : password,
-                                    "radius" : 40,
+                                    "radius" : 400,
                                     "is_online" : true,
                                     "latitude" : 0,
                                     "longitude" : 0,
