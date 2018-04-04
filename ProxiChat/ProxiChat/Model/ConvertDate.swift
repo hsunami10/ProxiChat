@@ -15,50 +15,28 @@ import SwiftDate
  */
 struct ConvertDate {
     
-    var date = ""
-    let date_format = "MMM d, yyyy h:mm a" // Ex: Dec 5, 1998 4:19 PM
+    var unixTime = 0.0
     
-    init(date: String) {
-        self.date = date
+    init(date: TimeInterval) {
+        self.unixTime = date
     }
     
-    /**
-     Convert 2 date formats (UTC) to local time
-     - 2017-12-02 22:57:06 +0000 - Dec 2, 2017 4:57 PM
-     - 2017-12-02T22:38:20.878Z - Dec 2, 2017 4:38 PM
-     
-     Format is: ```MMM d, yyyy h:mm a```.
-     */
+    /// Converts a unix timestamp to the device's locale's formatted date.
     func convert() -> String {
-        let arr = date.split(separator: " ")
+        let dateFormatter = DateFormatter()
         
-        // If from database
-        if arr.count == 1 {
-            let d = self.date.date(format: .custom("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"), fromRegion: Region.GMT())! // Convert string to DateRegion object
-            let localDate = d.toRegion(Region.Local()) // Convert to local region
-            return localDate.string(custom: date_format) // Customize & add new format
-        } else { // If realtime (swift)
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z" // Choose original date format
-            let dateObj = dateFormatter.date(from: self.date)! // Convert string to Date object
-            return dateObj.string(format: .custom(date_format)) // Customize & add new format
-        }
+        dateFormatter.locale = getLocale()
+        dateFormatter.dateStyle = .long
+        dateFormatter.timeStyle = .short
+        
+        return dateFormatter.string(from: Date(timeIntervalSince1970: self.unixTime))
     }
     
-    /// Convert a date with a custom format.
-    func convertWithFormat(_ format: String) -> String {
-        let arr = date.split(separator: " ")
-        
-        if arr.count == 1 {
-            let d = self.date.date(format: .custom("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"), fromRegion: Region.GMT())!
-            let localDate = d.toRegion(Region.Local())
-            return localDate.string(custom: format)
-        } else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-            print(self.date)
-            let dateObj = dateFormatter.date(from: self.date)!
-            return dateObj.string(format: .custom(format))
+    /// Gets the current locale based on the device's preferred language. If unavailable, then return the current locale.
+    func getLocale() -> Locale {
+        guard let language = Locale.preferredLanguages.first else {
+            return Locale.current
         }
+        return Locale(identifier: language)
     }
 }

@@ -17,7 +17,7 @@ struct Group {
     var creator = ""
     var latitude = 0.0
     var longitude = 0.0
-    var dateCreated = ""
+    var dateCreated: TimeInterval = 0.0
     var image = ""
     var members: [String : Bool] = [:]
     
@@ -39,7 +39,7 @@ struct Group {
     init(_ title: Any?, _ numOnline: Any?, _ is_public: Any?, _ password: Any?,
          _ creator: Any?, _ latitude: Any?, _ longitude: Any?, _ dateCreated: Any?, _ image: Any?, _ members: Any?) {
         self.creator = creator as! String
-        self.dateCreated = dateCreated as! String
+        self.dateCreated = dateCreated as! TimeInterval
         self.image = image as! String
         self.is_public = is_public as! Bool
         self.latitude = latitude as! Double

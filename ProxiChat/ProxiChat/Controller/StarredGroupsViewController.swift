@@ -71,7 +71,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
                 let groupMembers = group["members"]
                 
                 if groupMembers[UserData.username] != JSON.null {
-                    let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].string, groupInfo["image"].string, groupMembers.dictionaryObject)
+                    let groupObj = Group.init(groupInfo["title"].string, groupInfo["num_online"].int, groupInfo["is_public"].bool, groupInfo["password"].string, groupInfo["creator"].string, groupInfo["latitude"].double, groupInfo["longitude"].double, groupInfo["date_created"].double, groupInfo["image"].string, groupMembers.dictionaryObject)
                     self.groupArray.append(groupObj)
                 }
             }

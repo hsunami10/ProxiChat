@@ -103,7 +103,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         // Initialize slider
         radiusSlider.minimumValue = 1
-        radiusSlider.maximumValue = 1000
+        radiusSlider.maximumValue = 500
         radiusSlider.isContinuous = true
         radiusSlider.addTarget(self, action: #selector(endSliding(_:)), for: UIControlEvents.touchUpInside)
         radiusSlider.addTarget(self, action: #selector(endSliding(_:)), for: UIControlEvents.touchUpOutside)
@@ -112,7 +112,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         radiusTextField.keyboardType = .numberPad
         radiusTextField.text = String(Int(UserData.radius))
         
-        if UserData.radius > 1000 {
+        if UserData.radius > 500 {
             radiusSlider.value = radiusSlider.maximumValue
         } else {
             radiusSlider.value = Float(UserData.radius)

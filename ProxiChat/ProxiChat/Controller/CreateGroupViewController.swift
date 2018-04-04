@@ -247,7 +247,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
      */
 
     func storeGroup(_ created_by: String, _ is_public: Bool, _ group_name: String, _ group_password: String) {
-        newGroup = Group.init(group_name, 1, is_public, (!is_public ? group_password : ""), created_by, 0.0, 0.0, String(describing: Date()), "", [UserData.username : true])
+        newGroup = Group.init(group_name, 1, is_public, (!is_public ? group_password : ""), created_by, 0.0, 0.0, Date().timeIntervalSince1970, "", [UserData.username : true])
     }
     
     /**

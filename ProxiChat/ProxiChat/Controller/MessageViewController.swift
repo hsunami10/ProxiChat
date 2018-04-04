@@ -23,13 +23,13 @@ import Firebase
  
  BUGS
  - FIX -> messages just down when paginating - keep the content in the same position
- - when scrolling and showing keyboard at same time, quick drop at top of messagetableview
+ - when scrolling and showing keyboard at same time, quick drop at top of messagetableview - ui pan recognizer
  */
 
 /// Holds the text left over in a certain conversation whenever the user goes back to the groups page. [group_id : text view content]
 var contentNotSent: [String : String] = [:]
 
-class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, JoinGroupDelegate {
+class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, JoinGroupDelegate {
     
     // MARK: Private Access
     private var messageArray: [Message] = [Message]()
@@ -40,15 +40,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var observed = false
     private var refreshControl: UIRefreshControl!
     private var pageQuery: UInt?
+    private var tapGesture: UITapGestureRecognizer?
+    private var panGesture: UIPanGestureRecognizer?
     
     // For pagination and getting messages
     /**
      The date of the last (most recent) message loaded on join.
      This is used on the message loading to mark when to start listening for new messages.
      */
-    private var dateToStartListening = ""
+    private var dateToStartListening: TimeInterval = 0.0
     /// The date of earliest message retrieved - used for pagination.
-    private var earliestDate: String!
+    private var earliestDate: TimeInterval!
     /// The max number of messages to page each time.
     private var numMessages: UInt = 20
     
@@ -132,9 +134,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         observed = true
         
-        // Initialize gestures
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
-        messageTableView.addGestureRecognizer(tapGesture)
+        // Detects when to close the group info
         let dimTap = UITapGestureRecognizer(target: self, action: #selector(closeGroupInfo))
         dimView.addGestureRecognizer(dimTap)
         
@@ -153,6 +153,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTextView.isScrollEnabled = true
         messageTextView.alwaysBounceVertical = false
         
+        // Enable keyboard drag
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
+        messageTableView.addGestureRecognizer(tapGesture)
+        messageTableView.keyboardDismissMode = .interactive
+        
         // Initialize group info view content
         initializeGroupInfo()
         groupImageViewWidth.constant = groupInfoViewWidth.constant - Dimensions.getPoints(32) // 16 margins on left and right side
@@ -162,7 +167,23 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         getMessages(onLoad: true)
     }
     
-    deinit {
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if !observed {
+            // Set up action on keyboard show and hide
+            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+            
+            // Add an observer to track whenever the contentSize has changed
+            messageTextView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
+            observed = true
+        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
         NotificationCenter.default.removeObserver(self)
         if observed {
             messageTextView.removeObserver(self, forKeyPath: "contentSize")
@@ -204,20 +225,20 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     }
                     
                     // Store the latest date (first element of children)
-                    self.earliestDate = JSON((children.first?.value)!)["date_sent"].stringValue
+                    self.earliestDate = JSON((children.first?.value)!)["date_sent"].doubleValue
                     
                     // Iterate over snapshot's children, skipping dummy message - earliest message first
                     for child in children {
                         if child.key != "dummy" {
                             let value = JSON(child.value!)
-                            let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, child.key, value["picture"].stringValue)
+                            let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].doubleValue, value["group"].stringValue, child.key, value["picture"].stringValue)
                             self.messageArray.append(messageObj)
                         }
                     }
                     
                     // Account for empty messages
                     if self.messageArray.count == 0 {
-                        self.dateToStartListening = ""
+                        self.dateToStartListening = 0.0
                     } else {
                         self.dateToStartListening = self.messageArray[self.messageArray.count-1].dateSent
                     }
@@ -250,8 +271,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                             let value = JSON(child.value!)
                             
                             // Adjust for <=, ignore the =
-                            if self.earliestDate != value["date_sent"].stringValue {
-                                let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, child.key, value["picture"].stringValue)
+                            if self.earliestDate != value["date_sent"].doubleValue {
+                                let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].doubleValue, value["group"].stringValue, child.key, value["picture"].stringValue)
                                 self.messageArray.insert(messageObj, at: 0)
                                 
 //                                indexPaths.insert(IndexPath(row: index, section: 0), at: 0)
@@ -260,7 +281,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     }
                     
                     // Store the earliest date (first element of children)
-                    self.earliestDate = JSON((children.first?.value)!)["date_sent"].stringValue
+                    self.earliestDate = JSON((children.first?.value)!)["date_sent"].doubleValue
                     
                     DispatchQueue.main.async {
 //                        self.insertMessage(indexPaths)
@@ -294,8 +315,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     let value = JSON(snapshot.value!)
                     
                     // Since .queryStarting is >=, ignore the =, only take >
-                    if value["date_sent"].stringValue != self.dateToStartListening {
-                        let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].stringValue, value["group"].stringValue, snapshot.key, value["picture"].stringValue)
+                    if value["date_sent"].doubleValue != self.dateToStartListening {
+                        let messageObj = self.createMessageObj(value["author"].stringValue, value["content"].stringValue, value["date_sent"].doubleValue, value["group"].stringValue, snapshot.key, value["picture"].stringValue)
                         self.messageArray.append(messageObj)
                         
                         DispatchQueue.main.async {
@@ -340,11 +361,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         isMessageSent = false
         messageTextView.resignFirstResponder()
         messageTextView.text = ""
-        
-//        socket?.emit("leave_room", [
-//            "group_id": groupInformation.id,
-//            "username": UserData.username
-//            ])
     }
     
     @IBAction func showGroupInfo(_ sender: Any) {
@@ -375,7 +391,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 "author": UserData.username,
                 "group": groupInformation.title,
                 "content": messageTextView.text!,
-                "date_sent": String(describing: Date()),
+                "date_sent": Date().timeIntervalSince1970,
                 "picture": UserData.picture
                 ])
             
@@ -450,9 +466,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             messageTableView.deselectRow(at: indexPath, animated: true)
         } else {
             // CHANGE STRING
-            if groupInfoArray[indexPath.row].contains("Star") || groupInfoArray[indexPath.row].contains("Online") {
-                performSegue(withIdentifier: "goToMembers", sender: self)
-            }
+//            if groupInfoArray[indexPath.row].contains("Star") || groupInfoArray[indexPath.row].contains("Online") {
+//                performSegue(withIdentifier: "goToMembers", sender: self)
+//            }
             groupInfoTableView.deselectRow(at: indexPath, animated: true)
         }
     }
@@ -539,6 +555,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Keyboard (NotificationCenter) Methods
     @objc func keyboardWillShow(_ aNotification: NSNotification) {
+        print("show keyboard")
         if let userInfo = aNotification.userInfo {
             // Only show keyboard if it's NOT shown
             if messageViewHeight.constant == heightMessageView {
@@ -554,6 +571,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     UIView.setAnimationsEnabled(true)
                 }
                 
+//                addKeyboardRecognizers()
                 UIView.animate(withDuration: duration) {
                     /*
                      2018-03-15 23:12:34.860010-0500 ProxiChat[11441:433028] [Snapshotting] Snapshotting a view (0x7fc0c844a840, UIInputSetHostView)
@@ -596,6 +614,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
+        print("hide keyboard")
         if let userInfo = aNotification.userInfo {
             // Only move views down if a message is not sent
             if !isMessageSent {
@@ -604,6 +623,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
                 let leftOverSpace = heightMessageTableView - self.messageTableView.contentSize.height
                 
+//                removeKeyboardRecognizers()
                 UIView.animate(withDuration: duration) {
                     if leftOverSpace > 0 {
                         if leftOverSpace < keyboardHeight + self.heightTypingView + changeInHeight {
@@ -624,13 +644,70 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
+    // MARK: UIGestureRecognizer Methods
+    
+    /// Adds a `UITapGestureRecognizer` and a `UIPanGestureRecognizer` to hide keyboard. This is run when the keyboard will show.
+    func addKeyboardRecognizers() {
+        // This should never happen
+        if tapGesture != nil || panGesture != nil {
+            SVProgressHUD.showError(withStatus: AlertMessages.authError)
+            fatalError()
+        }
+        
+        tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
+        tapGesture?.delegate = self
+        messageTableView.addGestureRecognizer(tapGesture!)
+        
+        panGesture = UIPanGestureRecognizer(target: self, action: #selector(viewPanned(_:)))
+        panGesture?.minimumNumberOfTouches = 1
+        panGesture?.maximumNumberOfTouches = 1
+        panGesture?.delegate = self
+        self.view.addGestureRecognizer(panGesture!)
+    }
+    
+    /// Removes the `UITapGestureRecognizer` and the `UIPanGestureRecognizer`. This is run when the keyboard will hide.
+    func removeKeyboardRecognizers() {
+        if let tg = tapGesture {
+            messageTableView.removeGestureRecognizer(tg)
+            tg.delegate = nil
+            tapGesture = nil
+        } else {
+            SVProgressHUD.showError(withStatus: AlertMessages.authError)
+        }
+        if let pg = panGesture {
+            self.view.removeGestureRecognizer(pg)
+            pg.delegate = nil
+            panGesture = nil
+        } else {
+            SVProgressHUD.showError(withStatus: AlertMessages.authError)
+        }
+    }
+    
+    @objc func tableViewTapped() {
+        messageTextView.endEditing(true)
+    }
+    
+    @objc func viewPanned(_ aPan: UIPanGestureRecognizer) {
+        if aPan.velocity(in: self.view).y != 0 {
+            print("some vertical")
+//            let point = aPan.location(in: self.view)
+//            print(point)
+        } else {
+            print("some horizontal")
+        }
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         // Remove all observers - add them back on view load
         // TODO: Maybe change this to implement notifications?
         Database.database().reference().child("\(FirebaseNames.messages)/\(groupInformation.title)").removeAllObservers()
-        dateToStartListening = ""
+        dateToStartListening = 0.0
         earliestDate = nil
         
         if segue.identifier == "goBackToGroups" {
@@ -644,7 +721,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             destinationVC.messageObj = self
             UserData.createNewMessageViewController = false
         } else if segue.identifier == "goToMembers" {
-            let destinationVC = segue.destination as! MembersViewController
+//            let destinationVC = segue.destination as! MembersViewController
             // TODO: Finish this later if needed
         }
     }
@@ -705,7 +782,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         groupInfoArray[0] = groupInfoArray[0].replacingOccurrences(of: "#", with: String(groupInformation.numOnline))
         
-        creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convertWithFormat("MMM d, yyyy"))"
+        print("initialize group info date: ", cd.convert())
+        creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convert())"
         titleLabel.text = groupInformation.title
         groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture
     }
@@ -730,11 +808,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    @objc func tableViewTapped() {
-        messageTextView.endEditing(true)
-    }
-    
-    /// Gets the change in height of the text view relative to one line of text.
+    /// Gets the change in height of the text view relative to one line of text. If there are 3 lines of text, then this method would return the height of 2 lines of text.
     func getHeightChange() -> CGFloat {
         // Get the number of lines to calculate the height of the typing view
         var numLines = floorf(Float(messageTextView.contentSize.height / (messageTextView.font?.lineHeight)!))
@@ -760,7 +834,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         - id: The UUID of this message (unique).
         - picture: The profile picture of the author.
      */
-    func createMessageObj(_ author: String, _ content: String, _ dateSent: String, _ group: String, _ id: String, _ picture: String) -> Message {
+    func createMessageObj(_ author: String, _ content: String, _ dateSent: TimeInterval, _ group: String, _ id: String, _ picture: String) -> Message {
         var messageObj = Message()
         messageObj.author = author
         messageObj.content = content
