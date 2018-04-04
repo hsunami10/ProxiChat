@@ -183,9 +183,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        
-        NotificationCenter.default.removeObserver(self)
+
         if observed {
+            NotificationCenter.default.removeObserver(self)
             messageTextView.removeObserver(self, forKeyPath: "contentSize")
             observed = false
         }

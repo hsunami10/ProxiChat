@@ -20,6 +20,7 @@ class EditProfileViewController: UIViewController {
     // MARK: Private Access
     private let textFieldHeight: CGFloat = Dimensions.getPoints(30)
     private let textViewHeight: CGFloat = Dimensions.getPoints(90)
+    private var observed = false
     
     // MARK: Public Access
     var row = -1
@@ -67,6 +68,7 @@ class EditProfileViewController: UIViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+        observed = true
         
         // Hide everything first
         subSingleView.isHidden = true
@@ -129,8 +131,21 @@ class EditProfileViewController: UIViewController {
         }
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if !observed {
+            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        if observed {
+            NotificationCenter.default.removeObserver(self)
+        }
     }
     
     override func didReceiveMemoryWarning() {
