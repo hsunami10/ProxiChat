@@ -49,7 +49,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
         }
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight, true)
         
         // Initialize error alert
         locationErrorAlert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { (action) in
@@ -227,7 +227,7 @@ class CreateGroupViewController: UIViewController, CLLocationManagerDelegate {
     /// Edit UIViewController transition right -> left
     func slideLeftTransition() {
         let transition = CATransition()
-        transition.duration = Durations.messageTransitionDuration
+        transition.duration = Durations.navigationDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromRight

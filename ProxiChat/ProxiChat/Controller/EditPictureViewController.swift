@@ -37,8 +37,8 @@ class EditPictureViewController: UIViewController, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let lineThickness = Dimensions.getPoints(2) // Thickness of circle outline
-        circleLeftMargin = Dimensions.getPoints(32)
+        let lineThickness = Dimensions.getPoints(2, true) // Thickness of circle outline
+        circleLeftMargin = Dimensions.getPoints(32, true)
         let radius = (self.view.frame.width - circleLeftMargin * 2) / 2 // Radius of circle
         circleTopMargin = self.view.center.y - radius - lineThickness
         diameter = radius * 2

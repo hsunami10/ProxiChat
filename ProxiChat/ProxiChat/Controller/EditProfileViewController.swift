@@ -18,8 +18,8 @@ import SVProgressHUD
 class EditProfileViewController: UIViewController {
     
     // MARK: Private Access
-    private let textFieldHeight: CGFloat = Dimensions.getPoints(30)
-    private let textViewHeight: CGFloat = Dimensions.getPoints(90)
+    private let textFieldHeight: CGFloat = Dimensions.getPoints(30, true)
+    private let textViewHeight: CGFloat = Dimensions.getPoints(90, true)
     private var observed = false
     
     // MARK: Public Access
@@ -64,7 +64,7 @@ class EditProfileViewController: UIViewController {
         singleFieldTitleLabel.font = Font.getFont(15)
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight, true)
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
@@ -270,7 +270,7 @@ class EditProfileViewController: UIViewController {
     // MARK: Miscellaneous Methods
     func slideRightTransition() {
         let transition = CATransition()
-        transition.duration = Durations.messageTransitionDuration
+        transition.duration = Durations.navigationDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromLeft

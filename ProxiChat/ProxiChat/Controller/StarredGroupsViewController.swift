@@ -45,7 +45,7 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         _ = NavigationSideMenu.init(self)
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight, true)
         
         // Initialize table view
         starredGroupsTableView.delegate = self
@@ -55,6 +55,8 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
         SVProgressHUD.show()
         
         // Get groups you're in
+        // TODO: Make this more efficient - figure out to how do something different - instead of getting all groups
+        // Maybe have a list of the user's groups in the user's profile?
         let groupsDB = Database.database().reference().child(FirebaseNames.groups)
         groupsDB.observeSingleEvent(of: .value) { (snapshot) in
             // Get all groups as FIR database snapshots
@@ -152,11 +154,6 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Make new message view controller
-        if segue.identifier != "joinGroupStarred" && segue.identifier != "createGroupStarred" {
-            UserData.createNewMessageViewController = true
-        }
-        
         if segue.identifier == "joinGroupStarred" {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
@@ -169,20 +166,14 @@ class StarredGroupsViewController: UIViewController, UITableViewDelegate, UITabl
     
     func joinGroup(_ row: Int) {
         selectedGroup = groupArray[row]
-        if UserData.createNewMessageViewController { // Create MessageViewController
-            slideLeftTransition()
-            performSegue(withIdentifier: "joinGroupStarred", sender: self)
-        } else { // Pass chosen group data back to the same MessageViewController and dismiss
-            delegate?.joinGroup(selectedGroup)
-            slideLeftTransition()
-            self.dismiss(animated: false, completion: nil)
-        }
+        slideLeftTransition()
+        performSegue(withIdentifier: "joinGroupStarred", sender: self)
     }
     
     // MARK: Miscellaneous Methods
     func slideLeftTransition() {
         let transition = CATransition()
-        transition.duration = Durations.messageTransitionDuration
+        transition.duration = Durations.navigationDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromRight

@@ -53,7 +53,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         settingsTableView.isScrollEnabled = false
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight, true)
         
         self.view.layoutIfNeeded()
     }

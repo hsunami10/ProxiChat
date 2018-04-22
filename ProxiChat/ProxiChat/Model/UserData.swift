@@ -20,14 +20,6 @@ struct UserData {
     static var bio = ""
     static var email = ""
     
-    /**
-     Shows whether or not the user visited the "groups" view controllers for the first time, without visiting "messages" before.
-     For example, this would be true if the user visited "find groups", but then false when the user visits "messages" and back.
-     
-     This is set to `true` whenever the user leaves the "groups" view controllers.
-     */
-    static var createNewMessageViewController = true
-    
     /// Determines whether or not the user has gotten user and group data for the first time. If `true`, then in GroupsViewController onViewDidLoad, load cached groups. If `false`, then grab user data, update location, and get new groups.
     static var connected = false
     

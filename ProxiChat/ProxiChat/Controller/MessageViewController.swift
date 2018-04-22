@@ -12,24 +12,24 @@ import SVProgressHUD
 import SwiftDate
 import Firebase
 
+// TODO: FIGURE OUT HOW TO SET UP AND CHANGE CONSTRAINTS
+
 /*
  TODO
- - paginate - add UIRefreshControl to message table view & paginate PostgreSQL
  - dragging to hide keyboard
  - display images (find how to show images uploaded from phone - url? path?)
- - figure out what to do with starred joining and leaving
- - when terminating app, request from database, if no results, then send leave group event
- - maybe find a way to cache whether or not the keyboard is showing / hiding?
+ - find a way to cache whether or not the keyboard is showing / hiding when leaving view - like facebook
  
  BUGS
- - FIX -> messages just down when paginating - keep the content in the same position
- - when scrolling and showing keyboard at same time, quick drop at top of messagetableview - ui pan recognizer
+ - FIX -> on first keyboard show, can see inputAccessoryView sliding up
+ - FIX -> messages jump down when paginating - keep the content in the same position
+ - FIX -> hide inputAccessoryView when leaving view - smoothly
  */
 
 /// Holds the text left over in a certain conversation whenever the user goes back to the groups page. [group_id : text view content]
 var contentNotSent: [String : String] = [:]
 
-class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, JoinGroupDelegate {
+class MessageViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate {
     
     // MARK: Private Access
     private var messageArray: [Message] = [Message]()
@@ -42,6 +42,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var pageQuery: UInt?
     private var tapGesture: UITapGestureRecognizer?
     private var panGesture: UIPanGestureRecognizer?
+    private var messageTextViewValue = ""
+    private var numberOfKeyboardShows = 0 // Keep track of whether or not the fake or real text view is showing
     
     // For pagination and getting messages
     /**
@@ -55,9 +57,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var numMessages: UInt = 20
     
     // Storing values for responsive layout
-    private var heightTypingView: CGFloat = 0 // Starting height of typing view - Only change in viewDidLoad
-    private var startingContentHeight: CGFloat = 0 // Only change in viewDidLoad
-    private var maxContentHeight: CGFloat = 0 // Max height of text view, Only change in viewDidLoad
+    private var heightTypingView: CGFloat = 0 // Starting height of typing view
+    private var startingContentHeight: CGFloat = 0
+    private var maxContentHeight: CGFloat = 0 // Max height of text view before scrolling
     private var heightMessageView: CGFloat = 0 // Starting height of message view
     private var heightMessageTableView: CGFloat = 0 // Starting height of message table view
     private var cellHeightDict: [Int : CGFloat] = [:] // Stores actual cell heights
@@ -67,7 +69,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private let placeholder = "Enter a message..."
     private let placeholderColor: UIColor = UIColor.lightGray
     private let groupInfoRatio: CGFloat = 0.66 // Proportion of the screeen the group info view takes up
-    private let paddingTextView = Dimensions.getPoints(10) // Top and bottom padding of text view
+    private let paddingTextView = Dimensions.getPoints(10, true) // Top and bottom padding of text view
     
     // MARK: Public Access
     /// Keeps track of which groups view controller to go back to. 0 -- GroupsViewController, 1 -- StarredGroupsViewController.
@@ -75,13 +77,11 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     var groupInformation: Group!
     
     @IBOutlet var groupTitle: UILabel!
-    @IBOutlet var sendButton: UIButton!
     @IBOutlet var dimView: UIView!
+    @IBOutlet var groupInfoView: UIView!
     
     @IBOutlet var messageTableView: UITableView!
     @IBOutlet var messageTableViewHeight: NSLayoutConstraint!
-    
-    @IBOutlet var messageTextView: UITextView!
     
     @IBOutlet var messageView: UIView!
     @IBOutlet var messageViewHeight: NSLayoutConstraint!
@@ -89,9 +89,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var infoView: UIView!
     @IBOutlet var infoViewHeight: NSLayoutConstraint!
     @IBOutlet var infoViewLabel: UILabel!
-    
-    @IBOutlet var typingView: UIView!
-    @IBOutlet var typingViewHeight: NSLayoutConstraint!
     
     @IBOutlet var groupInfoViewWidth: NSLayoutConstraint!
     @IBOutlet var groupInfoViewRightConstraint: NSLayoutConstraint!
@@ -104,6 +101,36 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet var groupImageView: UIImageView!
     @IBOutlet var groupImageViewWidth: NSLayoutConstraint!
     
+    // Constant constraints for fake and real typing views to use
+    private let topBottomTextView: CGFloat = Dimensions.getPoints(10, true)
+    private let leftTextView: CGFloat = Dimensions.getPoints(10, false)
+    private let widthTextView: CGFloat = Dimensions.getPoints(352, false)
+    private let rightSendButton: CGFloat = Dimensions.getPoints(8, false)
+    private let widthHeightSendButton: CGFloat = Dimensions.getPoints(36, false)
+    private let bottomSendButton: CGFloat = Dimensions.getPoints(10, true)
+    
+    // Properties for the fake typing view - stays at bottom and doesn't move - must be changed if the actual one used for input accessory view is changed
+    @IBOutlet var fakeTypingView: UIView!
+    @IBOutlet var fakeTypingViewHeight: NSLayoutConstraint!
+    
+    @IBOutlet var fakeMessageTextView: UITextView!
+    @IBOutlet var fakeMessageTextViewTop: NSLayoutConstraint!
+    @IBOutlet var fakeMessageTextViewBottom: NSLayoutConstraint!
+    @IBOutlet var fakeMessageTextViewLeft: NSLayoutConstraint!
+    @IBOutlet var fakeMessageTextViewWidth: NSLayoutConstraint!
+    
+    @IBOutlet var fakeSendButton: UIButton!
+    @IBOutlet var fakeSendButtonWidth: NSLayoutConstraint!
+    @IBOutlet var fakeSendButtonHeight: NSLayoutConstraint!
+    @IBOutlet var fakeSendButtonBottom: NSLayoutConstraint!
+    @IBOutlet var fakeSendButtonRight: NSLayoutConstraint!
+    
+    // Properties for programmatically created typing view
+    var typingView: UIView!
+    var typingViewHeight: NSLayoutConstraint?
+    var messageTextView: UITextView!
+    var sendButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         if !UIView.areAnimationsEnabled {
@@ -113,26 +140,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         groupTitle.font = Font.getFont(Font.infoViewFontSize)
         titleLabel.font = Font.getFont(17, "\(Font.fontName)-Bold")
         creatorLabel.font = Font.getFont(17)
-        messageTextView.font = Font.getFont(16)
-        sendButton.titleLabel?.font = Font.getFont(15)
         
         messageTableView.delegate = self
         messageTableView.dataSource = self
-        messageTextView.delegate = self
         groupInfoTableView.delegate = self
         groupInfoTableView.dataSource = self
         
         refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: "More")
         refreshControl.addTarget(self, action: #selector(getMoreMessages(_:)), for: .valueChanged)
-        
-        // Set up action on keyboard show and hide
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
-        
-        // Add an observer to track whenever the contentSize has changed
-        messageTextView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
-        observed = true
         
         // Detects when to close the group info
         let dimTap = UITapGestureRecognizer(target: self, action: #selector(closeGroupInfo))
@@ -143,49 +159,115 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         groupInfoTableView.register(UINib.init(nibName: "GroupInfoCell", bundle: nil), forCellReuseIdentifier: "groupInfoCell")
         messageTableView.separatorStyle = .none
         
-        if #available(iOS 10.0, *) {
-            messageTableView.refreshControl = refreshControl
-        } else {
-            messageTableView.addSubview(refreshControl)
-        }
+        messageTableView.refreshControl = refreshControl
         
-        messageTextView.keyboardType = .alphabet
-        messageTextView.isScrollEnabled = true
-        messageTextView.alwaysBounceVertical = false
-        
-        // Enable keyboard drag
+        // Enable keyboard tap and drag
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
         messageTableView.addGestureRecognizer(tapGesture)
         messageTableView.keyboardDismissMode = .interactive
         
-        // Initialize group info view content
+        // Initialize layouts and elements
+        initializeFakeTypingView()
+        
+        // Run this code after the segue animation finishes
+        DispatchQueue.main.asyncAfter(deadline: .now() + Durations.navigationDuration) {
+            self.typingView.isHidden = false
+            self.typingView.isUserInteractionEnabled = true
+        }
+        
         initializeGroupInfo()
-        groupImageViewWidth.constant = groupInfoViewWidth.constant - Dimensions.getPoints(32) // 16 margins on left and right side
-        initializeLayout()
+        initializeGeneralLayout()
         
         // Get messages
         getMessages(onLoad: true)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    lazy var typingViewContainer: UIView = {
+        // Set up typing view
+        typingView = UIView(frame: CGRect(x: 0, y: 0, width: fakeTypingView.frame.width, height: fakeTypingViewHeight.constant))
+        typingView.backgroundColor = UIColor.darkGray
+        typingView.translatesAutoresizingMaskIntoConstraints = false
+        typingView.isHidden = true
+        typingView.isUserInteractionEnabled = false
+        
+        // Set up animated constraints
+        typingViewHeight = typingView.heightAnchor.constraint(equalToConstant: typingView.frame.height)
+        typingViewHeight?.isActive = true
+        
+        // Set up text view
+        messageTextView = UITextView()
+        messageTextView.translatesAutoresizingMaskIntoConstraints = false
+        messageTextView.font = fakeMessageTextView.font
+        messageTextView.keyboardType = fakeMessageTextView.keyboardType
+        messageTextView.isScrollEnabled = fakeMessageTextView.isScrollEnabled
+        messageTextView.alwaysBounceVertical = fakeMessageTextView.alwaysBounceVertical
+        messageTextView.accessibilityIdentifier = "real"
+        messageTextView.text = fakeMessageTextView.text
+        messageTextView.textColor = fakeMessageTextView.textColor
+        messageTextView.delegate = self
+        typingView.addSubview(messageTextView)
+        
+        // Constraints
+        messageTextView.bottomAnchor.constraint(equalTo: typingView.bottomAnchor, constant: -fakeMessageTextViewBottom.constant).isActive = true
+        messageTextView.topAnchor.constraint(equalTo: typingView.topAnchor, constant: fakeMessageTextViewTop.constant).isActive = true
+        messageTextView.leftAnchor.constraint(equalTo: typingView.leftAnchor, constant: fakeMessageTextViewBottom.constant).isActive = true
+        messageTextView.widthAnchor.constraint(equalToConstant: fakeMessageTextViewWidth.constant).isActive = true
+        
+        // Observers
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
         
         if !observed {
-            // Set up action on keyboard show and hide
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
-            
             // Add an observer to track whenever the contentSize has changed
             messageTextView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
             observed = true
         }
+        
+        // Set up send button
+        sendButton = UIButton(type: fakeSendButton.buttonType)
+        sendButton.translatesAutoresizingMaskIntoConstraints = false
+        sendButton.setTitle(fakeSendButton.titleLabel?.text!, for: .normal)
+        sendButton.titleLabel?.font = fakeSendButton.titleLabel?.font
+        sendButton.titleLabel?.shadowColor = fakeSendButton.titleLabel?.shadowColor
+        sendButton.addTarget(self, action: #selector(sendPressed(_:)), for: .touchUpInside)
+        typingView.addSubview(sendButton)
+        
+        // Constraints
+        sendButton.heightAnchor.constraint(equalToConstant: fakeSendButtonHeight.constant).isActive = true
+        sendButton.widthAnchor.constraint(equalToConstant: fakeSendButtonWidth.constant).isActive = true
+        sendButton.bottomAnchor.constraint(equalTo: typingView.bottomAnchor, constant: -fakeSendButtonBottom.constant).isActive = true
+        sendButton.rightAnchor.constraint(equalTo: typingView.rightAnchor, constant: -fakeSendButtonRight.constant).isActive = true
+        
+        return typingView
+    }()
+
+    override var inputAccessoryView: UIView? {
+        get {
+            return typingViewContainer
+        }
+    }
+
+    override var canBecomeFirstResponder: Bool {
+        get {
+            return true
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Set up action on keyboard show and hide
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+        
+        self.becomeFirstResponder()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
 
+        NotificationCenter.default.removeObserver(self)
         if observed {
-            NotificationCenter.default.removeObserver(self)
             messageTextView.removeObserver(self, forKeyPath: "contentSize")
             observed = false
         }
@@ -194,6 +276,93 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK: Layout Methods
+    
+    /// Sets the static typing view the user sees on view load.
+    func initializeFakeTypingView() {
+        // Configure fake message text view
+        fakeMessageTextView.font = Font.getFont(16)
+        fakeMessageTextView.keyboardType = .alphabet
+        fakeMessageTextView.isScrollEnabled = true
+        fakeMessageTextView.alwaysBounceVertical = false
+        fakeMessageTextView.accessibilityIdentifier = "fake"
+        fakeMessageTextView.delegate = self
+        
+        // Get height of typing view, relative to padding and message text view height
+        fakeMessageTextView.text = " "
+        startingContentHeight = fakeMessageTextView.contentSize.height // Get height of one line
+        lastContentHeight = startingContentHeight
+        maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (fakeMessageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
+        
+        heightTypingView = startingContentHeight + paddingTextView * 2
+        messageTableViewHeight.constant = messageViewHeight.constant - heightTypingView
+        
+        // Set constraints
+        fakeTypingViewHeight.constant = heightTypingView
+        
+        fakeMessageTextViewTop.constant = topBottomTextView
+        fakeMessageTextViewBottom.constant = topBottomTextView
+        fakeMessageTextViewLeft.constant = leftTextView
+        fakeMessageTextViewWidth.constant = widthTextView
+        
+        fakeSendButtonWidth.constant = widthHeightSendButton
+        fakeSendButtonHeight.constant = widthHeightSendButton
+        fakeSendButtonBottom.constant = bottomSendButton
+        fakeSendButtonRight.constant = rightSendButton
+        
+        let keyExists = contentNotSent[groupInformation.title] != nil
+        if !keyExists {
+            fakeMessageTextView.text = placeholder
+            fakeMessageTextView.textColor = placeholderColor
+        } else {
+            fakeMessageTextView.text = contentNotSent[groupInformation.title]
+            fakeMessageTextView.textColor = UIColor.black
+        }
+    }
+    
+    func initializeGeneralLayout() {
+        // Responsive layout
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight, true)
+        messageViewHeight.constant = Dimensions.safeAreaHeight - infoViewHeight.constant
+        
+        // Store starter dimensions / layout values
+        heightMessageView = messageViewHeight.constant
+        heightMessageTableView = messageTableViewHeight.constant
+        
+        // Initialize group info view
+        groupInfoViewWidth.constant = self.view.frame.width * groupInfoRatio
+        groupInfoViewRightConstraint.constant = -groupInfoViewWidth.constant
+        groupInfoTableView.rowHeight = Dimensions.getPoints(60, true) // Height of each row - TODO: Change row height later for better UI
+        groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count)
+        groupInfoTableView.isScrollEnabled = false
+        groupImageViewWidth.constant = groupInfoViewWidth.constant - Dimensions.getPoints(32, false) // 16 margins on left and right side
+        
+        self.view.layoutIfNeeded()
+    }
+    
+    /// Initialize anything in the view that is related to the group.
+    func initializeGroupInfo() {
+        // CHANGE INDICES
+        // CHANGE STRING
+        let cd = ConvertDate(date: groupInformation.dateCreated)
+        
+        if groupInformation.creator == UserData.username {
+            groupInfoArray[groupInfoArray.count-1] = "Settings"
+        } else {
+            groupInfoArray[groupInfoArray.count-1] = "View Creator Profile"
+        }
+        if groupInformation.members.count == 1 {
+            groupInfoArray[1] = String(groupInformation.members.count) + " Star"
+        } else {
+            groupInfoArray[1] = String(groupInformation.members.count) + " Stars"
+        }
+        groupInfoArray[0] = groupInfoArray[0].replacingOccurrences(of: "#", with: String(groupInformation.numOnline))
+        
+        creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convert())"
+        titleLabel.text = groupInformation.title
+        groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture
     }
     
     // MARK: Firebase Queries
@@ -336,14 +505,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: IBOutlet Actions
-    
-    // TODO: Prototype for starring groups
-    func starClicked() {
-        
-    }
-    
     @IBAction func goBack(_ sender: Any) {
         slideRightTransition()
+        messageTextView.inputAccessoryView?.isHidden = true
         
         // Check which view controller it came from
         switch fromViewController {
@@ -356,16 +520,15 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         default:
             break
         }
-        
-        // Reset everything
-        isMessageSent = false
-        messageTextView.resignFirstResponder()
-        messageTextView.text = ""
     }
     
     @IBAction func showGroupInfo(_ sender: Any) {
         dimView.isUserInteractionEnabled = true
         messageTextView.resignFirstResponder()
+        
+        self.view.bringSubview(toFront: dimView)
+        self.view.bringSubview(toFront: groupInfoView)
+        typingView.isHidden = true
         
         if !UIView.areAnimationsEnabled {
             UIView.setAnimationsEnabled(true)
@@ -377,11 +540,23 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    @IBAction func sendPressed(_ sender: Any) {
-        if !Validate.isInvalidInput(messageTextView.text!) && messageTextView.textColor != UIColor.lightGray {
+    @IBAction func fakeSendMesage(_ sender: Any) {
+        messageTextViewValue = fakeMessageTextView.text!
+        sendPressed(true)
+    }
+    
+    @objc func sendPressed(_ sender: Any) {
+        var textView: UITextView = fakeMessageTextView
+        if messageTextViewValue == "" {
+            messageTextViewValue = messageTextView.text
+            textView = messageTextView
+        }
+        
+        if !Validate.isInvalidInput(messageTextViewValue) && textView.textColor != UIColor.lightGray {
             isMessageSent = true
-            messageTextView.isEditable = false
+            textView.isEditable = false
             sendButton.isEnabled = false
+            fakeSendButton.isEnabled = false
             
             // TODO: *** Get picture ***
             
@@ -390,24 +565,26 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
             messagesDB.child(groupInformation.title).childByAutoId().setValue([
                 "author": UserData.username,
                 "group": groupInformation.title,
-                "content": messageTextView.text!,
+                "content": messageTextViewValue,
                 "date_sent": Date().timeIntervalSince1970,
                 "picture": UserData.picture
                 ])
             
             // Reset
-            messageTextView.isEditable = true
+            textView.isEditable = true
             sendButton.isEnabled = true
-            messageTextView.text = placeholder
-            messageTextView.textColor = UIColor.lightGray
+            fakeSendButton.isEnabled = true
+            textView.text = placeholder
+            textView.textColor = UIColor.lightGray
             
             if messageViewHeight.constant != heightMessageView {
-                messageTextView.becomeFirstResponder()
+                textView.becomeFirstResponder()
             }
             
             lastLines = 1
             lastContentHeight = startingContentHeight
             contentNotSent.removeValue(forKey: groupInformation.title)
+            messageTextViewValue = ""
         }
     }
     
@@ -475,16 +652,18 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: UITextViewDelegate Methods / UITextView
     func textViewDidBeginEditing(_ textView: UITextView) {
-        // Change placeholder to actual text
-        if textView.textColor == placeholderColor {
-            textView.text = ""
-            textView.textColor = UIColor.black
+        // BUG: Can see inputAccessoryView typing view slide over the fake typing view super quickly?
+        // For a better view, uncomment messageTextView.becomeFirstResponder()
+        if messageTextView.textColor == placeholderColor {
+            messageTextView.text = ""
+            messageTextView.textColor = UIColor.black
+            messageTextView.becomeFirstResponder()
         }
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
         // Change spaces and empty text to placeholder
-        if Validate.isInvalidInput(textView.text!) {
+        if Validate.isInvalidInput(messageTextView.text!) {
             textView.text = placeholder
             textView.textColor = placeholderColor
         }
@@ -520,7 +699,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     UIView.setAnimationsEnabled(true)
                 }
                 
-                // TODO: Table view height and bottom constraint responsiveness when contentSize of textView changes
                 UIView.animate(withDuration: Durations.textViewHeightDuration, animations: {
                     // If overflow, then only move the table view up accordingly
                     if self.messageTableViewHeight.constant < self.messageTableView.contentSize.height {
@@ -528,7 +706,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         self.messageTableView.contentOffset.y += changeInHeight
                     }
                     
-                    self.typingViewHeight.constant += changeInHeight
+                    self.typingViewHeight?.constant += changeInHeight
                     self.view.layoutIfNeeded()
                 })
                 
@@ -538,24 +716,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: JoinGroupDelegate Methods
-    func joinGroup(_ group: Group) {
-        if !UIView.areAnimationsEnabled {
-            UIView.setAnimationsEnabled(true)
-        }
-        
-        groupInformation = group
-        groupTitle.text = group.title
-        lastLines = 1
-        
-        initializeGroupInfo()
-        initializeLayout()
-        getMessages(onLoad: true)
-    }
-    
     // MARK: Keyboard (NotificationCenter) Methods
     @objc func keyboardWillShow(_ aNotification: NSNotification) {
-        print("show keyboard")
         if let userInfo = aNotification.userInfo {
             // Only show keyboard if it's NOT shown
             if messageViewHeight.constant == heightMessageView {
@@ -571,7 +733,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     UIView.setAnimationsEnabled(true)
                 }
                 
-//                addKeyboardRecognizers()
                 UIView.animate(withDuration: duration) {
                     /*
                      2018-03-15 23:12:34.860010-0500 ProxiChat[11441:433028] [Snapshotting] Snapshotting a view (0x7fc0c844a840, UIInputSetHostView)
@@ -592,29 +753,27 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     if leftOverSpace > 0 {
                         if leftOverSpace < keyboardHeight + self.heightTypingView + changeInHeight {
                             let diffY = keyboardHeight + self.heightTypingView + changeInHeight - leftOverSpace
-                            self.messageViewHeight.constant -= keyboardHeight
                             self.messageTableViewHeight.constant -= keyboardHeight
                             self.messageTableView.contentOffset.y += diffY
                         } else {
                             self.messageTableViewHeight.constant -= keyboardHeight
-                            self.messageViewHeight.constant -= keyboardHeight
                         }
                     } else {
-                        self.messageViewHeight.constant -= keyboardHeight
                         self.messageTableViewHeight.constant -= (keyboardHeight + changeInHeight)
                         self.messageTableView.contentOffset.y += keyboardHeight + changeInHeight
                     }
                     
-                    self.typingViewHeight.constant += changeInHeight
+                    self.messageViewHeight.constant -= keyboardHeight
                     self.view.layoutIfNeeded()
                 }
+                fakeTypingView.isUserInteractionEnabled = false
+                numberOfKeyboardShows += 1
             }
             isMessageSent = false
         }
     }
     
     @objc func keyboardWillHide(_ aNotification: NSNotification) {
-        print("hide keyboard")
         if let userInfo = aNotification.userInfo {
             // Only move views down if a message is not sent
             if !isMessageSent {
@@ -623,7 +782,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
                 let leftOverSpace = heightMessageTableView - self.messageTableView.contentSize.height
                 
-//                removeKeyboardRecognizers()
                 UIView.animate(withDuration: duration) {
                     if leftOverSpace > 0 {
                         if leftOverSpace < keyboardHeight + self.heightTypingView + changeInHeight {
@@ -637,7 +795,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     // Reset to starting values
                     self.messageViewHeight.constant = self.heightMessageView
                     self.messageTableViewHeight.constant = self.heightMessageTableView
-                    self.typingViewHeight.constant = self.heightTypingView
                     self.view.layoutIfNeeded()
                 }
             }
@@ -646,59 +803,23 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: UIGestureRecognizer Methods
     
-    /// Adds a `UITapGestureRecognizer` and a `UIPanGestureRecognizer` to hide keyboard. This is run when the keyboard will show.
-    func addKeyboardRecognizers() {
-        // This should never happen
-        if tapGesture != nil || panGesture != nil {
-            SVProgressHUD.showError(withStatus: AlertMessages.authError)
-            fatalError()
-        }
-        
-        tapGesture = UITapGestureRecognizer(target: self, action: #selector(tableViewTapped))
-        tapGesture?.delegate = self
-        messageTableView.addGestureRecognizer(tapGesture!)
-        
-        panGesture = UIPanGestureRecognizer(target: self, action: #selector(viewPanned(_:)))
-        panGesture?.minimumNumberOfTouches = 1
-        panGesture?.maximumNumberOfTouches = 1
-        panGesture?.delegate = self
-        self.view.addGestureRecognizer(panGesture!)
-    }
-    
-    /// Removes the `UITapGestureRecognizer` and the `UIPanGestureRecognizer`. This is run when the keyboard will hide.
-    func removeKeyboardRecognizers() {
-        if let tg = tapGesture {
-            messageTableView.removeGestureRecognizer(tg)
-            tg.delegate = nil
-            tapGesture = nil
-        } else {
-            SVProgressHUD.showError(withStatus: AlertMessages.authError)
-        }
-        if let pg = panGesture {
-            self.view.removeGestureRecognizer(pg)
-            pg.delegate = nil
-            panGesture = nil
-        } else {
-            SVProgressHUD.showError(withStatus: AlertMessages.authError)
-        }
-    }
-    
     @objc func tableViewTapped() {
-        messageTextView.endEditing(true)
-    }
-    
-    @objc func viewPanned(_ aPan: UIPanGestureRecognizer) {
-        if aPan.velocity(in: self.view).y != 0 {
-            print("some vertical")
-//            let point = aPan.location(in: self.view)
-//            print(point)
-        } else {
-            print("some horizontal")
+        // If keyboard is showing
+        if messageViewHeight.constant != heightMessageView {
+            messageTextView.endEditing(true)
+            messageTextView.resignFirstResponder()
         }
     }
     
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
+    @objc func closeGroupInfo() {
+        UIView.animate(withDuration: Durations.showGroupInfoDuration, animations: {
+            self.dimView.alpha = 0
+            self.groupInfoViewRightConstraint.constant = -self.groupInfoViewWidth.constant
+            self.view.layoutIfNeeded()
+        }) { (complete) in
+            self.typingView.isHidden = false
+            self.dimView.isUserInteractionEnabled = false
+        }
     }
     
     // MARK: Navigation Methods
@@ -712,14 +833,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         if segue.identifier == "goBackToGroups" {
             let destinationVC = segue.destination as! GroupsViewController
-            destinationVC.delegate = self
             destinationVC.messageObj = self
-            UserData.createNewMessageViewController = false
         } else if segue.identifier == "goBackToStarredGroups" {
             let destinationVC = segue.destination as! StarredGroupsViewController
-            destinationVC.delegate = self
             destinationVC.messageObj = self
-            UserData.createNewMessageViewController = false
         } else if segue.identifier == "goToMembers" {
 //            let destinationVC = segue.destination as! MembersViewController
             // TODO: Finish this later if needed
@@ -728,87 +845,17 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: Miscellaneous Methods
     
-    func initializeLayout() {
-        messageTextView.text = " " // Used to store default height of 1 line (startingContentHeight)
-        startingContentHeight = messageTextView.contentSize.height
-        lastContentHeight = startingContentHeight
-        maxContentHeight = CGFloat(floorf(Float(startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(maxLines - 1))))
-        
-        let keyExists = contentNotSent[groupInformation.title] != nil
-        if !keyExists {
-            messageTextView.text = placeholder
-            messageTextView.textColor = placeholderColor
-        } else {
-            messageTextView.text = contentNotSent[groupInformation.title]
-            messageTextView.textColor = UIColor.black
-        }
-        
-        // Responsive layout
-        typingViewHeight.constant = startingContentHeight + paddingTextView * 2 // Relative to text view starting content size + 10 padding top + 10 padding bottom
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
-        messageViewHeight.constant = Dimensions.safeAreaHeight - infoViewHeight.constant
-        messageTableViewHeight.constant = messageViewHeight.constant - typingViewHeight.constant
-        
-        // Store starter dimensions / layout values
-        heightTypingView = typingViewHeight.constant
-        heightMessageView = messageViewHeight.constant
-        heightMessageTableView = messageTableViewHeight.constant
-        
-        // Initialize group info view
-        groupInfoViewWidth.constant = self.view.frame.width * groupInfoRatio
-        groupInfoViewRightConstraint.constant = -groupInfoViewWidth.constant
-        groupInfoTableView.rowHeight = Dimensions.getPoints(60) // Height of each row - TODO: Change row height later for better UI
-        groupInfoTableViewHeight.constant = groupInfoTableView.rowHeight * CGFloat(groupInfoArray.count)
-        groupInfoTableView.isScrollEnabled = false
-        
-        self.view.layoutIfNeeded()
-    }
-    
-    /// Initialize anything in the view that is related to the group.
-    func initializeGroupInfo() {
-        // CHANGE INDICES
-        // CHANGE STRING
-        let cd = ConvertDate(date: groupInformation.dateCreated)
-        
-        if groupInformation.creator == UserData.username {
-            groupInfoArray[groupInfoArray.count-1] = "Settings"
-        } else {
-            groupInfoArray[groupInfoArray.count-1] = "View Creator Profile"
-        }
-        if groupInformation.members.count == 1 {
-            groupInfoArray[1] = String(groupInformation.members.count) + " Star"
-        } else {
-            groupInfoArray[1] = String(groupInformation.members.count) + " Stars"
-        }
-        groupInfoArray[0] = groupInfoArray[0].replacingOccurrences(of: "#", with: String(groupInformation.numOnline))
-        
-        print("initialize group info date: ", cd.convert())
-        creatorLabel.text = "Created by \(groupInformation.creator) on \(cd.convert())"
-        titleLabel.text = groupInformation.title
-        groupImageView.image = UIImage(named: "noPicture") // TODO: Get group picture
-    }
-    
     /// Edit UIViewController transition left -> right
     func slideRightTransition() {
         let transition = CATransition()
-        transition.duration = Durations.messageTransitionDuration
+        transition.duration = Durations.navigationDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromLeft
         self.view.window?.layer.add(transition, forKey: nil)
     }
     
-    @objc func closeGroupInfo() {
-        UIView.animate(withDuration: Durations.showGroupInfoDuration, animations: {
-            self.dimView.alpha = 0
-            self.groupInfoViewRightConstraint.constant = -self.groupInfoViewWidth.constant
-            self.view.layoutIfNeeded()
-        }) { (complete) in
-            self.dimView.isUserInteractionEnabled = false
-        }
-    }
-    
-    /// Gets the change in height of the text view relative to one line of text. If there are 3 lines of text, then this method would return the height of 2 lines of text.
+    /// Gets the change in height of the text view / typing view relative to one line of text, i.e. if there are 3 lines of text, then this method would return the height of 2 lines of text.
     func getHeightChange() -> CGFloat {
         // Get the number of lines to calculate the height of the typing view
         var numLines = floorf(Float(messageTextView.contentSize.height / (messageTextView.font?.lineHeight)!))
@@ -858,5 +905,35 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         messageTableView.insertRows(at: indexArray.count == 0 ? [indexPath] : indexArray, with: UITableViewRowAnimation.none)
         messageTableView.endUpdates()
         UIView.setAnimationsEnabled(true)
+    }
+    
+    // MARK: PROTOTYPE METHODS FOR FUTURE IMPLEMENTATIONS
+    func starClicked() {
+        // Clicked vs. unclicked
+        let groupsDB = Database.database().reference().child(FirebaseNames.groups)
+        groupsDB
+            .queryOrderedByKey()
+            .queryEqual(toValue: groupInformation.title)
+            .observeSingleEvent(of: .value) { (snapshot) in
+                // Check if the group still exists
+                if snapshot.childrenCount == 0 {
+                    SVProgressHUD.showError(withStatus: "The group you want to join does not exist. It has most likely been removed.")
+                    self.goBack(true)
+                    return
+                }
+                
+                // Add to members
+                groupsDB.child("\(self.groupInformation.title)/members/\(UserData.username)").setValue(true)
+                
+                // Reload data in group info view
+                // CHANGE INDICES
+                // CHANGE STRING
+                self.groupInformation.members[UserData.username] = true
+                self.groupInfoArray[1] = String(self.groupInformation.members.count) + " Stars"
+                
+                DispatchQueue.main.async {
+                    self.groupInfoTableView.reloadRows(at: [IndexPath(row: 1, section: 0)], with: .none)
+                }
+        }
     }
 }

@@ -84,12 +84,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         // TODO: Get the user profile picture here
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight, true)
         profilePictureHeight.constant = Dimensions.pictureDimension
         profilePictureWidth.constant = profilePictureHeight.constant
-        radiusLabelTopConstraint.constant = Dimensions.getPoints(radiusLabelTopConstraint.constant)
-        radiusViewTopConstraint.constant = Dimensions.getPoints(radiusViewTopConstraint.constant)
-        tableViewTopConstraint.constant = Dimensions.getPoints(tableViewTopConstraint.constant)
+        radiusLabelTopConstraint.constant = Dimensions.getPoints(radiusLabelTopConstraint.constant, true)
+        radiusViewTopConstraint.constant = Dimensions.getPoints(radiusViewTopConstraint.constant, true)
+        tableViewTopConstraint.constant = Dimensions.getPoints(tableViewTopConstraint.constant, true)
         
         // Circular image view
         profilePicture.layer.borderWidth = 1
@@ -127,7 +127,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         // Space from bottom left corner of radius view to the bottom of the profile view
         let leftOverSpace = Dimensions.safeAreaHeight - (infoViewHeight.constant + tableViewTopConstraint.constant)
         // Subtract top constraint and bottom constraint - bottom constraint is equal to the cell labels' distance from left
-        profileTableViewHeightConstraint.constant = leftOverSpace - Dimensions.getPoints(8) - Dimensions.getPoints(16)
+        profileTableViewHeightConstraint.constant = leftOverSpace - Dimensions.getPoints(8, true) - Dimensions.getPoints(16, true)
         profileTableView.rowHeight = profileTableViewHeightConstraint.constant / CGFloat(numOfRows)
         
         // Initialize alerts
@@ -352,7 +352,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     // MARK: Miscellaneous Methods
     func slideLeftTransition() {
         let transition = CATransition()
-        transition.duration = Durations.messageTransitionDuration
+        transition.duration = Durations.navigationDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromRight

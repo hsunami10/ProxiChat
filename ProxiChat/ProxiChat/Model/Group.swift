@@ -25,16 +25,16 @@ struct Group {
      Initialize all group object values.
      
      - parameters:
-         - title: The title of the group.
-         - numMembers: The number of members (stars) of the group.
-         - numOnline: The number of users currently in chat.
-         - is_public: Private or Public group?
-         - password: The password for the group, only if it's private.
-         - creator: The username of the creator of the group.
-         - latitude: Latitude coordinate.
-         - longitude: Longitude coordinate.
-         - dateCreated: The date this group was created.
-         - image: The group image.
+        - title: The title of the group.
+        - numOnline: The number of users currently in chat.
+        - is_public: Private or Public group?
+        - password: The password for the group, only if it's private.
+        - creator: The username of the creator of the group.
+        - latitude: Latitude coordinate.
+        - longitude: Longitude coordinate.
+        - dateCreated: The time of creation from 1970. (Unix timestamp)
+        - image: The group image.
+        - members: A `Dictionary<String, Bool> that holds all the members.
      */
     init(_ title: Any?, _ numOnline: Any?, _ is_public: Any?, _ password: Any?,
          _ creator: Any?, _ latitude: Any?, _ longitude: Any?, _ dateCreated: Any?, _ image: Any?, _ members: Any?) {

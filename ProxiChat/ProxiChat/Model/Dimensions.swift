@@ -21,26 +21,11 @@ struct Dimensions {
     static let iPhone8PlusSafeAreaHeight: CGFloat = 716
     static let iPhone8PlusSafeAreaWidth: CGFloat = 414
     /// Height of the information views - on the top of all view controllers
-    static let infoViewHeight: CGFloat = Dimensions.getPoints(50)
+    static let infoViewHeight: CGFloat = Dimensions.getPoints(50, true)
     
     // MARK: Profile Factors
-    static let pictureDimension: CGFloat = Dimensions.getPoints(170)
-    static let infoViewDimension: CGFloat = Dimensions.getPoints(50)
-    
-    /**
-     Get the factor / ratio relative to the iPhone 8 Plus resolution.
-     
-     - parameters:
-        - num: The number of points.
-        - isHeight: Determines whether or not to measure vertically or horizontally.
-     */
-    static func getFactor(_ num: CGFloat, _ isHeight: Bool) -> CGFloat {
-        if isHeight {
-            return num / Dimensions.iPhone8PlusSafeAreaHeight
-        } else {
-            return num / Dimensions.iPhone8PlusSafeAreaWidth
-        }
-    }
+    static let pictureDimension: CGFloat = Dimensions.getPoints(170, true)
+    static let infoViewDimension: CGFloat = Dimensions.getPoints(50, true)
     
     /**
      Get the relative points.
@@ -49,9 +34,13 @@ struct Dimensions {
      
      - parameters:
         - numberOfPoints: The number of points to specify.
-        - isHeight: Determines whether the height (vertical) or width (horizontal) is measured. The default value is `true`.
+        - isHeight: Determines whether the height (vertical) or width (horizontal) is measured.
     */
-    static func getPoints(_ numberOfPoints: CGFloat, _ isHeight: Bool = true) -> CGFloat {
-        return Dimensions.safeAreaHeight * Dimensions.getFactor(numberOfPoints, isHeight)
+    static func getPoints(_ numberOfPoints: CGFloat, _ isHeight: Bool) -> CGFloat {
+        if isHeight {
+            return (Dimensions.safeAreaHeight / Dimensions.iPhone8PlusSafeAreaHeight) * numberOfPoints
+        } else {
+            return (Dimensions.safeAreaWidth / Dimensions.iPhone8PlusSafeAreaWidth) * numberOfPoints
+        }
     }
 }

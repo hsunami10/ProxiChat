@@ -64,7 +64,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         _ = NavigationSideMenu.init(self)
         
         // Responsive layout
-        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight)
+        infoViewHeight.constant = Dimensions.getPoints(Dimensions.infoViewHeight, true)
         groupsTableView.delegate = self
         groupsTableView.dataSource = self
         groupsTableView.register(UINib.init(nibName: "GroupCell", bundle: nil), forCellReuseIdentifier: "groupCell")
@@ -80,13 +80,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }))
         locationErrorAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
-        // Add Refresh Control to Table View
-        if #available(iOS 10.0, *) {
-            groupsTableView.refreshControl = refreshControl
-        } else {
-            groupsTableView.addSubview(refreshControl)
-        }
-        
+        groupsTableView.refreshControl = refreshControl
         SVProgressHUD.show()
         
         // CoreLocation initialization
@@ -342,11 +336,6 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // MARK: Navigation Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // If user navigates to any other view besides message view, then must create new message view controller
-        if segue.identifier != "joinGroup" {
-            UserData.createNewMessageViewController = true
-        }
-        
         if segue.identifier == "joinGroup" {
             let destinationVC = segue.destination as! MessageViewController
             destinationVC.groupInformation = selectedGroup
@@ -360,14 +349,8 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     /// Selects group, and performs segue to MessageViewController.
     func joinGroup(_ row: Int) {
         selectedGroup = groupArray[row]
-        if UserData.createNewMessageViewController { // Create MessageViewController
-            slideLeftTransition()
-            performSegue(withIdentifier: "joinGroup", sender: self)
-        } else { // Pass chosen group data back to the same MessageViewController and dismiss
-            delegate?.joinGroup(selectedGroup)
-            slideLeftTransition()
-            self.dismiss(animated: false, completion: nil)
-        }
+        slideLeftTransition()
+        performSegue(withIdentifier: "joinGroup", sender: self)
     }
     
     // MARK: Miscellaneous Methods
@@ -434,7 +417,7 @@ class GroupsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     /// Edit UIViewController transition right -> left.
     func slideLeftTransition() {
         let transition = CATransition()
-        transition.duration = Durations.messageTransitionDuration
+        transition.duration = Durations.navigationDuration
         transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
         transition.type = kCATransitionPush
         transition.subtype = kCATransitionFromRight

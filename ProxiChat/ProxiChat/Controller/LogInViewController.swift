@@ -11,6 +11,8 @@ import SwiftyJSON
 import SVProgressHUD
 import Firebase
 
+// TODO: FIGURE OUT HOW TO SET UP AND CHANGE CONSTRAINTS
+
 /*
  TODO / BUGS:
  - add sending email if someone forgot username and/or password
@@ -24,6 +26,60 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var usernameTextField: UITextField! // Username and Email
     @IBOutlet var passwordTextField: UITextField!
     @IBOutlet var errorLabel: UILabel!
+    
+    
+    
+    
+    
+    
+    
+//    var sub: UIView!
+//    var subsub: UIView!
+//    var subsub2: UIView!
+
+//    lazy var testContainer: UIView = {
+//        print("test container")
+//        sub = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50))
+//        sub.translatesAutoresizingMaskIntoConstraints = false
+//        sub.backgroundColor = UIColor.blue
+//
+//        subsub = UIView()
+//        subsub.translatesAutoresizingMaskIntoConstraints = false
+//        subsub.backgroundColor = UIColor.red
+//        subsub.accessibilityIdentifier = "subsub view 1"
+//        sub.addSubview(subsub)
+//
+//        subsub.widthAnchor.constraint(equalToConstant: self.view.frame.width / 2).isActive = true
+//        subsub.heightAnchor.constraint(equalToConstant: 25).isActive = true
+//        subsub.bottomAnchor.constraint(equalTo: sub.bottomAnchor, constant: -10).isActive = true
+//
+//
+//        subsub2 = UIView()
+//        subsub2.accessibilityIdentifier = "subsub view 2"
+//        sub.addSubview(subsub2)
+//
+//        print("end of creating new inputAccessoryView")
+//        return sub
+//    }()
+//
+//    /// Override inputAccessoryView to allow for other views to follow the keyboard drag.
+//    override var inputAccessoryView: UIView? {
+//        get {
+//            return testContainer
+//        }
+//    }
+//
+//    override var canBecomeFirstResponder: Bool {
+//        get {
+//            return true
+//        }
+//    }
+    
+    
+    
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
