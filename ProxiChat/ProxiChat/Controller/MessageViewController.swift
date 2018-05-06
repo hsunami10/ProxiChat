@@ -18,11 +18,12 @@ import Firebase
  - find a way to cache whether or not the keyboard is showing / hiding when leaving view - like facebook messenger
  
  BUGS
- - shifting messagetableview on keyboard show is not accurate?
- - find groups -> then profile -> then to a chat room with no messages -> then show keyboard = no animation?
+ - find groups -> then starred groups -> then to a chat room with no messages -> then show keyboard = no animation?
     - but there's animation when you stay in the same groups page
-    - only Case 1 & 2
+    - only happens in starred groups, not find groups??? check to see if there's anything different in starred groups
+ - after creating a group, when you send a message that needs multiple lines, the height isn't larger - it cuts off with ...
  - Change typing view height when content size changes - also make sure it changes correctly alongside keyboard show and hide
+ - most of the time, showing group info view doesn't animate when keyboard is showing
  - FIX -> messages jump down when paginating - keep the content in the same position
  */
 
@@ -247,12 +248,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         // Initialize layouts and elements
         initializeFakeTypingView()
-        fakeTypingView.isUserInteractionEnabled = false
         
         // Show the inputAccessoryView typing view after the segue animation finishes
         DispatchQueue.main.asyncAfter(deadline: .now() + Durations.navigationDuration) {
             self.typingView.isHidden = false
             self.typingView.isUserInteractionEnabled = true
+            self.fakeTypingView.isUserInteractionEnabled = false
             self.changeTableView = true
         }
         
@@ -294,6 +295,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         fakeMessageTextView.keyboardType = .alphabet
         fakeMessageTextView.isScrollEnabled = true
         fakeMessageTextView.alwaysBounceVertical = false
+        fakeMessageTextView.isUserInteractionEnabled = false
         
         // Get height of typing view, relative to padding and message text view height
         fakeMessageTextView.text = " "
@@ -529,10 +531,12 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @IBAction func showGroupInfo(_ sender: Any) {
         dimView.isUserInteractionEnabled = true
-        messageTextView.resignFirstResponder()
-        
         self.view.bringSubview(toFront: dimView)
         self.view.bringSubview(toFront: groupInfoView)
+        
+        messageTextView.resignFirstResponder()
+        fakeMessageTextView.text = messageTextView.text
+        fakeMessageTextView.textColor = messageTextView.textColor
         typingView.isHidden = true
         
         if !UIView.areAnimationsEnabled {
@@ -724,8 +728,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                 // Get keyboard animation duration
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
                 
-                // Get keyboard height
-                let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
+                // Get keyboard height, includes inputAccessoryView height
+                let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)! - self.heightTypingView
                 
                 let changeInHeight = getHeightChange()
                 
@@ -763,7 +767,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         }
                     } else {
                         print("case 2")
-                        self.messageTableViewHeight.constant -= (keyboardHeight + changeInHeight)
+                        self.messageTableViewHeight.constant -= keyboardHeight + changeInHeight
                         self.messageTableView.contentOffset.y += keyboardHeight + changeInHeight
                     }
                     
@@ -786,7 +790,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         if let userInfo = aNotification.userInfo, !isKeyboardHidden {
             // Only move views down if a message is not sent
             if !isMessageSent {
-                let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)!
+                let keyboardHeight: CGFloat = ((userInfo[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height)! - self.heightTypingView
                 let changeInHeight = getHeightChange()
                 let duration: TimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0
                 let leftOverSpace = heightMessageTableView - self.messageTableView.contentSize.height
@@ -816,6 +820,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func tableViewTapped() {
         // If keyboard is showing
         if messageViewHeight.constant != heightMessageView {
+            print("table view tapped - end editing")
             messageTextView.endEditing(true)
             messageTextView.resignFirstResponder()
         }
