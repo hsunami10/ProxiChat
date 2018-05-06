@@ -1394,9 +1394,6 @@
                                             <constraint firstAttribute="height" constant="36" id="7Ix-8o-hbP"/>
                                         </constraints>
                                         <state key="normal" title="Send"/>
-                                        <connections>
-                                            <action selector="fakeSendMesage:" destination="bNj-gu-XBO" eventType="touchUpInside" id="rD4-Mi-BFe"/>
-                                        </connections>
                                     </button>
                                 </subviews>
                                 <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
