@@ -18,15 +18,26 @@ class InputAccessoryView: UIView {
     // Cached Properties
     var initialText = ""
     var initialTextColor = UIColor.black
-    var changeInHeight: CGFloat = 0
     
     static var messageViewController: MessageViewController!
     
     override var intrinsicContentSize: CGSize {
-//        let textSize = messageTextView.sizeThatFits(CGSize(width: messageTextView.bounds.width, height: CGFloat.greatestFiniteMagnitude))
-//        return CGSize(width: bounds.width, height: textSize.height)
-        print("intrinsic content size")
-        return CGSize(width: frame.size.width, height: frame.size.height + changeInHeight)
+        // Return height of the text view with one line if the keyboard is hidden
+        guard let mvc = InputAccessoryView.messageViewController else { return CGSize(width: bounds.width, height: InputAccessoryView.messageViewController.heightTypingView )}
+        if mvc.messageTableView.scrollIndicatorInsets.bottom == 0 || mvc.isKeyboardHidden {
+            print("one line")
+            return CGSize(width: bounds.width, height: InputAccessoryView.messageViewController.heightTypingView)
+        }
+        
+        
+        print("real content size")
+        
+        // TODO: This doesn't make it bounce, but how to start scrolling when it hits a certain number of lines?
+        // If this can be figured out, then keep it - otherwise go back to an earlier commit
+        let sizeToFitIn = CGSize(width: messageTextView.bounds.size.width, height: .greatestFiniteMagnitude)
+        let newSize = messageTextView.sizeThatFits(sizeToFitIn)
+        let newHeight = newSize.height
+        return CGSize(width: bounds.width, height: newHeight)
     }
     
     override init(frame: CGRect) {
@@ -55,13 +66,14 @@ class InputAccessoryView: UIView {
      - parameters:
         - messageTextView: The UITextView (user input) that is needed to be used.
         - sendButton: The button (that handles sending) that is needed to be used.
-        - messageVC: MessageViewController passed in to handle layout and initializes typing view properties.
+        - messageVC: MessageViewController instance passed in to handle layout and initializes typing view properties.
+        - inputAccess: InputAccessoryView instance passed in.
      */
     static func createViewAndInitialize(_ messageTextView: UITextView, _ sendButton: UIButton, _ messageVC: MessageViewController?, _ inputAccess: InputAccessoryView?) {
         
         messageTextView.font = Font.getFont(16)
         messageTextView.keyboardType = .alphabet
-        messageTextView.isScrollEnabled = true
+        messageTextView.isScrollEnabled = false
         messageTextView.alwaysBounceVertical = false
         
         sendButton.setTitle("Send", for: .normal)
@@ -74,7 +86,23 @@ class InputAccessoryView: UIView {
             mvc.startingContentHeight = messageTextView.contentSize.height // Get height of one line
             mvc.lastContentHeight = mvc.startingContentHeight
             mvc.maxContentHeight = CGFloat(floorf(Float(mvc.startingContentHeight + (messageTextView.font?.lineHeight)! * CGFloat(mvc.maxLines - 1))))
-            mvc.heightTypingView = mvc.startingContentHeight + mvc.paddingTextView * 2
+            
+            // Get initial 1 line height of UITextView
+            let sizeToFitIn = CGSize(width: messageTextView.bounds.size.width, height: .greatestFiniteMagnitude)
+            let newSize = messageTextView.sizeThatFits(sizeToFitIn)
+            let newHeight = newSize.height
+            
+            let keyExists = contentNotSent[mvc.groupInformation.title] != nil
+            if !keyExists {
+                mvc.fakeMessageTextView.text = mvc.placeholder
+                mvc.fakeMessageTextView.textColor = mvc.placeholderColor
+            } else {
+                mvc.fakeMessageTextView.text = contentNotSent[mvc.groupInformation.title]
+                mvc.fakeMessageTextView.textColor = UIColor.black
+            }
+            mvc.fakeTypingView.isUserInteractionEnabled = false
+            
+            mvc.heightTypingView = newHeight + mvc.paddingTextView * 2
             mvc.messageTableViewHeight.constant = mvc.messageViewHeight.constant - mvc.heightTypingView
             mvc.heightMessageTableView = mvc.messageTableViewHeight.constant
             
@@ -91,16 +119,6 @@ class InputAccessoryView: UIView {
             mvc.fakeSendButtonBottom.constant = mvc.bottomSendButton
             mvc.fakeSendButtonRight.constant = mvc.rightSendButton
             
-            let keyExists = contentNotSent[mvc.groupInformation.title] != nil
-            if !keyExists {
-                mvc.fakeMessageTextView.text = mvc.placeholder
-                mvc.fakeMessageTextView.textColor = mvc.placeholderColor
-            } else {
-                mvc.fakeMessageTextView.text = contentNotSent[mvc.groupInformation.title]
-                mvc.fakeMessageTextView.textColor = UIColor.black
-            }
-            
-            mvc.fakeTypingView.isUserInteractionEnabled = false
             messageViewController = mvc
         } else {
             // Initialize actual inputAccessoryView - InputAccessoryView

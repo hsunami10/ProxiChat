@@ -16,10 +16,20 @@ import Firebase
  TODO
  - display images (find how to show images uploaded from phone - url? path?) - use firebase storage?
  - find a way to cache whether or not the keyboard is showing / hiding when leaving view - like facebook messenger
+ - maybe animate typingView changing height?
  
  BUGS
+ - have typing view height always be a one liner when the keyboard is hidden
+ - start scrolling when the max number of lines are hit
+    - figure out a way to store the height of the max number of lines
+    - check if the sizeThatFits height is >= or <
+        - if >=, then enable scrolling and keep it at that max height
+        - if <, then disable scrolling and set the height to the new sizeThatFits height
  - handle shifting up messages when height changing and it covers some messages
- - handle shiting up messages when other people send messages, and it covers some messages
+ - handle shifting up messages when other people send messages, and it covers some messages
+    - when the keyboard is up and messages are sent, if there's no scrolling / adjusting content offset, it could cover up those messages
+ - for all above, look at observeValue (contentSize), keyboardWillShow, keyboardWillHide
+ 
  - after creating a group, when you send a message that needs multiple lines, the height isn't larger - it cuts off with ...
  - FIX -> messages jump down when paginating - keep the content in the same position
  */
@@ -36,8 +46,9 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     private var refreshControl: UIRefreshControl!
     private var pageQuery: UInt?
     private var tapGesture: UITapGestureRecognizer?
-    private var changeTableView = false
-    private var isKeyboardHidden = false
+    
+    var changeTableView = false
+    var isKeyboardHidden = false
     
     // For pagination and getting messages
     /**
@@ -189,6 +200,8 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         // Get messages
         getMessages(onLoad: true)
+        
+        self.view.layoutIfNeeded()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -540,6 +553,7 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         if Validate.isInvalidInput(typingView.messageTextView.text!) {
             textView.text = placeholder
             textView.textColor = placeholderColor
+            contentNotSent.removeValue(forKey: groupInformation.title)
         }
     }
     
@@ -552,22 +566,14 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    /*
-     TODO: Do this to change height instead? It's cleaner.
-     let sizeToFitIn = CGSize(width: textView.bounds.size.width, height: .greatestFiniteMagnitude)
-     let newSize = textView.sizeThatFits(sizeToFitIn)
-     var newHeight = newSize.height
-     
-     // That part depends on your approach to placing constraints, it's just my example
-     textInputHeightConstraint?.constant = newHeight
-    */
-    // BUG: Deleting multiple lines shifts strangely?
     // Respond to contentSize change in messageTextView
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         print("observed content size changed")
         
-        // Safe unwrapping
-        if object is UITextView, let textView = object as? UITextView {
+        // Only change height if the keyboard is showing
+        if object is UITextView, let textView = object as? UITextView, messageTableView.scrollIndicatorInsets.bottom != 0 {
+            print("change height of text view")
+            
             let lines = textView.contentSize.height / (textView.font?.lineHeight)! // Float
             let wholeLines = Int(floorf(Float(lines))) // Whole number
             
@@ -593,19 +599,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         self.messageTableView.contentOffset.y += changeInHeight
                     }
                     
+                    // Only change height if the keyboard is showing
                     if self.typingView != nil {
-                        print("change height of typing view")
-                        self.typingView.changeInHeight = changeInHeight
                         self.typingView.invalidateIntrinsicContentSize()
-                        
-                        // BUG: This code makes the view jump, but centers text vertically?
-                        if let superview = self.typingView.superview {
-                            print("superview")
-                            superview.setNeedsLayout()
-                            superview.layoutIfNeeded()
-                        }
                     }
-                    
                     self.view.layoutIfNeeded()
                 })
                 
@@ -669,7 +666,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                         self.messageTableView.contentOffset.y += keyboardHeight + changeInHeight
                     }
                     
-                    self.typingView.changeInHeight = changeInHeight
                     self.typingView.invalidateIntrinsicContentSize()
                     self.view.layoutIfNeeded()
                 }
@@ -707,7 +703,6 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
                     // Reset to starting values
                     self.messageTableView.contentInset.bottom = 0
                     self.messageTableView.scrollIndicatorInsets.bottom = 0
-                    self.typingView.changeInHeight = -changeInHeight
                     self.isKeyboardHidden = true
                     
                     self.typingView.invalidateIntrinsicContentSize()
@@ -760,6 +755,10 @@ class MessageViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     // MARK: Miscellaneous Methods
+    
+    func getNewSize() {
+        
+    }
     
     /// Edit UIViewController transition left -> right
     func slideRightTransition() {
